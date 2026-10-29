@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import en from '../lib/en.json'
 import { setMode } from '../three/mode'
+import { isSceneStyle, type SceneStyle } from '../three/sceneTypes'
 import { transition } from '../lib/transition'
 import { DEFAULTS, DEF_SETTINGS, type Content, type Faq, type Lang, type LegalDoc, type OvItem, type Pair, type Partner } from '../lib/content'
 
@@ -17,6 +18,16 @@ function readLang(): Lang {
   const nav = (navigator.languages && navigator.languages[0]) || navigator.language || 'vi'
   return /^vi\b/i.test(nav) ? 'vi' : 'en'
 }
+/** Xem thử kiểu 3D bằng địa chỉ ?scene=factory (nhớ trong phiên duyệt web này). ?scene=off để bỏ xem thử. */
+function readSceneOverride(): SceneStyle | null {
+  try {
+    const q = new URLSearchParams(location.search).get('scene')
+    if (q === 'off') sessionStorage.removeItem('3rd-scene')
+    else if (isSceneStyle(q)) sessionStorage.setItem('3rd-scene', q)
+    const v = sessionStorage.getItem('3rd-scene')
+    return isSceneStyle(v) ? v : null
+  } catch { return null }
+}
 const THEME_KEY = '3rd-theme'
 export type Theme = 'light' | 'dark'
 function readTheme(): Theme {
@@ -31,8 +42,14 @@ function readCache(): Content | null {
 }
 
 export const useSite = defineStore('site', {
-  state: () => ({ lang: readLang() as Lang, theme: readTheme() as Theme, cms: readCache() as Content | null }),
+  state: () => ({ lang: readLang() as Lang, theme: readTheme() as Theme, cms: readCache() as Content | null, sceneOverride: readSceneOverride() }),
   getters: {
+    /** Kiểu cảnh 3D: ?scene=... (xem thử) > cài đặt trong CMS > kiểu cũ. */
+    sceneStyle(s): SceneStyle {
+      if (s.sceneOverride) return s.sceneOverride
+      const v = s.cms?.settings?.scene_style
+      return isSceneStyle(v) ? v : 'classic'
+    },
     faqItems(s): Faq[] { return s.cms?.faq ?? DEFAULTS.faq },
     partners(s): Partner[] { return s.cms?.partners?.length ? s.cms.partners : DEFAULTS.partners },
   },

@@ -279,6 +279,7 @@ func TestContentSaveRestore(t *testing.T) {
 		"tel xấu":          `{"settings":{"hotline_tel":"abc"}}`,
 		"ga xấu":           `{"settings":{"analytics_id":"zzz"}}`,
 		"url xấu":          `{"settings":{"facebook":"javascript:alert(1)"}}`,
+		"kiểu 3D xấu":      `{"settings":{"scene_style":"hacker"}}`,
 		"không phải chữ":   `{"ov":{"a":{"vi":5}}}`,
 	} {
 		if r := put(body); r.code != 400 {
@@ -287,7 +288,7 @@ func TestContentSaveRestore(t *testing.T) {
 	}
 	good := `{"ov":{"Xin chào":{"vi":"  Chào bạn ","en":"Hello"},"rỗng":{}},"faq":[{"id":"x y!","cat":{"vi":"Chung","en":"General"},"q":{"vi":"Hỏi?","en":"Q?"},"a":{"vi":"Đáp","en":"A"},"home":true}],
 	  "partners":[{"name":"Đối tác","url":"https://a.vn","logo":"/uploads/seed-vpbank.webp","group":{"vi":"Ngân hàng"}}],
-	  "settings":{"email":"a@b.vn","hotline_tel":"+84 90-123.4567","unknown":"bỏ","analytics_id":"G-ABCDE12345"},
+	  "settings":{"email":"a@b.vn","hotline_tel":"+84 90-123.4567","unknown":"bỏ","analytics_id":"G-ABCDE12345","scene_style":"factory"},
 	  "legal":{"terms":{"title":{"vi":"Điều khoản"}},"privacy":{}}}`
 	r := put(good)
 	if r.code != 200 {
@@ -298,7 +299,7 @@ func TestContentSaveRestore(t *testing.T) {
 	if len(ov) != 1 || ov["Xin chào"].(map[string]any)["vi"] != "Chào bạn" {
 		t.Fatalf("ov: %v", ov)
 	}
-	if c["settings"].(map[string]any)["hotline_tel"] != "+84901234567" || c["settings"].(map[string]any)["unknown"] != nil {
+	if c["settings"].(map[string]any)["hotline_tel"] != "+84901234567" || c["settings"].(map[string]any)["unknown"] != nil || c["settings"].(map[string]any)["scene_style"] != "factory" {
 		t.Fatalf("settings: %v", c["settings"])
 	}
 	if c["faq"].([]any)[0].(map[string]any)["id"] != "xy" {

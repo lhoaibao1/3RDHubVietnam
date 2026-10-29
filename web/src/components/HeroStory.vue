@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import gsap from 'gsap'
 import { createHero, type Hero } from '@/three/hero'
+import { createStyledHero } from '@/three/scenes'
 import { RM } from '@/three/core'
 import { useSite } from '@/stores/site'
 
@@ -32,13 +33,29 @@ function go(k: number) {
 const scrolled = ref(false)
 function onScroll() { scrolled.value = scrollY > 40 }
 
-onMounted(() => {
-  addEventListener('scroll', onScroll, { passive: true })
+const style = computed(() => site.sceneStyle)
+let building = 0
+/** Dựng cảnh theo kiểu đang chọn (kiểu cũ hoặc một trong ba kiểu mới); đổi kiểu thì dựng lại trên canvas mới. */
+async function build() {
+  const my = ++building
+  hero?.dispose(); hero = null
+  await nextTick()
+  if (my !== building || !canvas.value || !tag.value) return
+  const cb = { onTag(k: number, label: string) { tagK.value = k; tagLabel.value = label } }
   try {
-    hero = createHero(canvas.value!, tag.value!, { onTag(k, label) { tagK.value = k; tagLabel.value = label } })
+    const h = style.value === 'classic' ? createHero(canvas.value, tag.value, cb) : await createStyledHero(style.value, canvas.value, tag.value, cb)
+    if (my !== building) { h.dispose(); return }
+    hero = h
+    hero.go(cur.value)
   } catch (e) {
     console.error(e)
   }
+}
+watch(style, build)
+
+onMounted(() => {
+  addEventListener('scroll', onScroll, { passive: true })
+  build()
   let last = performance.now()
   const tick = (n: number) => {
     raf = requestAnimationFrame(tick)
@@ -56,6 +73,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  building++
   removeEventListener('scroll', onScroll)
   cancelAnimationFrame(raf)
   hero?.dispose()
@@ -63,9 +81,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-<section class="story" id="mo-hinh">
+<section class="story" id="mo-hinh" :class="{ night: style !== 'classic' }">
   <div ref="pin" class="pin">
-    <canvas id="gl" ref="canvas" aria-label="Cảnh 3D mô hình tiếp thị liên kết: doanh nghiệp, 3RDHub, publisher, khách hàng, hoa hồng"></canvas>
+    <canvas id="gl" :key="style" ref="canvas" aria-label="Cảnh 3D mô hình tiếp thị liên kết: doanh nghiệp, 3RDHub, publisher, khách hàng, hoa hồng"></canvas>
     <div ref="tag" class="tag"><b>{{ tagK }}</b><span>{{ site.t(tagLabel) }}</span></div>
     <div class="panel">
       <div id="steps" ref="steps" class="steps">

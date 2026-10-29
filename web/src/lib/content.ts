@@ -30,7 +30,7 @@ export const DEF_SETTINGS: Record<string, string> = {
   company_name_en: '3RDVN Technology Co., Ltd',
   address_en: 'Group 10 Tinh Thuy, Quang Phu Ward, Da Nang City, Vietnam', working_hours: '', working_hours_en: '',
   facebook: '', zalo: '', tiktok: '', youtube: '', instagram: '',
-  site_title: '', meta_description: '', analytics_id: '',
+  site_title: '', meta_description: '', analytics_id: '', scene_style: 'classic',
 }
 
 export const SLUGS = ['mo-hinh', 'advertiser', 'cong-nghe', 'doi-tac', 'hoi-dap', 'lien-he'] as const

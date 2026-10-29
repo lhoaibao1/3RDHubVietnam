@@ -97,11 +97,12 @@ Thử `deploy.sh` mà không đụng hệ thống thật: `PGHOST=<thư mục so
 - **Đối tác**: thêm, sửa, xoá, sắp xếp, tải logo.
 - **Trang pháp lý**: sửa Điều khoản sử dụng và Chính sách bảo mật (VI/EN, có xem trước). Hai trang nằm riêng trên website: `/dieu-khoan`, `/bao-mat`.
 - **Yêu cầu khách**: form liên hệ lưu vào CMS (trạng thái, ghi chú, xuất CSV).
+- **Kiểu cảnh 3D** (trong Cài đặt): chọn một trong 4 kiểu cho trang chủ và các trang con (Cổ điển, 3D đẳng cự, Nhà máy tự động, Hệ sinh thái số), có ảnh xem trước và nút "Xem thử" (mở website với `?scene=<kiểu>`, chỉ trên trình duyệt của bạn).
 - **Cài đặt**: thông tin công ty (tên, mã số thuế, địa chỉ, giờ làm việc, email, hotline), link đăng ký, mạng xã hội, tiêu đề/mô tả SEO,
   mã Google Analytics, đổi mật khẩu.
 - **Lịch sử**: mỗi lần lưu là một phiên bản (giữ 60 bản gần nhất), khôi phục bằng một cú bấm.
 
-Hình ảnh, cảnh 3D và bố cục là phần thiết kế (nằm trong `web/`), không sửa trong CMS.
+Hình ảnh, nội dung cảnh 3D và bố cục là phần thiết kế (nằm trong `web/`), CMS chỉ chọn *kiểu* cảnh 3D. Mã các kiểu mới ở `web/src/three/styles/`.
 
 ## Bảo mật (tóm tắt)
 

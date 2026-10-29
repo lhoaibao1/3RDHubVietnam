@@ -52,3 +52,15 @@
 .cue.off{opacity:0}
 @keyframes cue{0%{transform:translateY(0);opacity:1}70%{transform:translateY(12px);opacity:0}100%{opacity:0}}
 @media(max-width:900px){.cue{display:none}}
+
+/* ===== kiểu cảnh 3D "đêm công nghệ": khu vực chứa cảnh luôn tối (kể cả khi trang đang ở chế độ sáng) ===== */
+.story.night,.pgh:has(.p3d.night){--bg:#07102B;--card:#0F1B45;--ink:#EDF1FF;--ink2:#A9B6DA;--line:#25346B;--or-t:#3B2418;color:var(--ink)}
+.story.night .panel::before{display:none}
+.p3d.night{background:none}
+.p3d.night::before,.p3d.night::after{content:none}
+.p3d.night .ft{background:rgba(9,18,52,.82);color:#EDF1FF;box-shadow:inset 0 0 0 1px rgba(110,160,255,.35),0 12px 30px -12px rgba(0,0,0,.6);backdrop-filter:none}
+.p3d.night .ft span{color:#A9B6DA}
+/* mép dưới cảnh mờ dần vào nền trang */
+.story.night #gl{-webkit-mask-image:linear-gradient(180deg,#000 82%,transparent);mask-image:linear-gradient(180deg,#000 82%,transparent)}
+.p3d.night .glp{-webkit-mask-image:linear-gradient(180deg,#000 86%,transparent);mask-image:linear-gradient(180deg,#000 86%,transparent)}
+.story.night .pin::before{display:none}

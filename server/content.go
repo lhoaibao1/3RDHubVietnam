@@ -12,7 +12,8 @@ import (
 const maxJSON = 3 * 1024 * 1024
 
 var settingKeys = []string{"signup_url", "email", "hotline", "hotline_tel", "company_name", "tax_id", "address", "working_hours", "working_hours_en",
-	"facebook", "zalo", "tiktok", "youtube", "instagram", "site_title", "meta_description", "analytics_id", "parent_url", "company_name_en", "address_en"}
+	"facebook", "zalo", "tiktok", "youtube", "instagram", "site_title", "meta_description", "analytics_id", "parent_url", "company_name_en", "address_en", "scene_style"}
+var sceneStyles = map[string]bool{"classic": true, "isometric": true, "factory": true, "ecosystem": true}
 var urlSettings = map[string]bool{"signup_url": true, "facebook": true, "zalo": true, "tiktok": true, "youtube": true, "instagram": true, "parent_url": true}
 var settingMax = map[string]int{"meta_description": 400, "address": 300, "company_name": 120, "company_name_en": 120, "address_en": 300, "site_title": 120, "tax_id": 40, "analytics_id": 40}
 var legalKeys = []string{"terms", "privacy"}
@@ -324,6 +325,9 @@ func cleanContent(in any) (Content, error) {
 			if !telRe.MatchString(v) {
 				return out, bad("Số gọi (hotline_tel) chỉ gồm số, có thể bắt đầu bằng +")
 			}
+		}
+		if k == "scene_style" && !sceneStyles[v] {
+			return out, bad("Kiểu cảnh 3D không hợp lệ")
 		}
 		if k == "analytics_id" && !analyticsRe.MatchString(v) {
 			return out, bad("Mã Google Analytics có dạng G-XXXXXXXXXX")
