@@ -39,6 +39,6 @@ i=s.index("$$('[data-copy]').forEach");j=s.index('\n',i)
 s=s[:j+1]+open('pages.js',encoding='utf8').read()+s[j+1:]
 k=s.rindex('})();\n</script>')
 en=json.load(open('en.json',encoding='utf8')) if os.path.exists('en.json') else {}
-s=s[:k]+'var BR='+json.dumps(BR,separators=(',',':'))+';\nwindow.__EN='+json.dumps(en,ensure_ascii=False,separators=(',',':'))+';\n'+open('scenes3d.js',encoding='utf8').read()+open('i18n.js',encoding='utf8').read()+s[k:]
+s=s[:k]+'var BR='+json.dumps(BR,separators=(',',':'))+';\nwindow.__EN='+json.dumps(en,ensure_ascii=False,separators=(',',':'))+';\n'+open('scenes3d.js',encoding='utf8').read()+open('i18n.js',encoding='utf8').read()+open('cms-client.js',encoding='utf8').read()+s[k:]
 open('fixed.html','w',encoding='utf8').write(s)
 print('ok',len(s))

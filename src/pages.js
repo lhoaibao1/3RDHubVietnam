@@ -1,6 +1,5 @@
 
 /* ---------- trang chi tiết từng module ---------- */
-var PARTNERS=PT;
 (function(){
   var ORDER=[['mo-hinh','Mô hình','Hành trình một hồ sơ, hình thức hoa hồng, trạng thái đơn'],['advertiser','Advertiser','Ba gói hợp tác và quy trình triển khai'],['cong-nghe','Công nghệ','Stack, luồng tracking và postback'],['doi-tac','Đối tác','Ngân hàng, công ty tài chính, mạng affiliate'],['hoi-dap','Hỏi đáp','Câu hỏi thường gặp theo từng nhóm'],['lien-he','Liên hệ','Đăng ký publisher hoặc gửi yêu cầu tư vấn']];
   var main=$('main'),pages=$$('#pages .pg'),links=$$('.nav nav a'),nav=$('.nav'),mnu=$('#mnu'),base=document.title,onPage=false;
@@ -25,11 +24,15 @@ var PARTNERS=PT;
   /* bảng so sánh: nhãn cột cho dạng thẻ trên mobile */
   var hd=$$('.cmp thead th').map(function(t){return t.textContent});$$('.cmp tbody tr').forEach(function(r){$$('td',r).forEach(function(td,i){td.setAttribute('data-l',hd[i+1])})});
 
-  /* đối tác theo nhóm */
-  var groups={};PT.forEach(function(p){(groups[p[3]]=groups[p[3]]||[]).push(p)});
-  $('#pgroups').innerHTML=Object.keys(groups).map(function(g){return '<div class="pgrp"><h3>'+g+'</h3><div class="pg2">'+groups[g].map(function(p){return '<a href="'+p[1]+'" target="_blank" rel="noopener"><span class="lg"><img src="'+LG[p[2]]+'" alt=""></span><b>'+p[0]+'</b><small>'+p[3]+'</small></a>'}).join('')+'</div></div>'}).join('');
-  var nb=PT.filter(function(p){return /Ngân hàng/.test(p[3])}).length,nf=PT.filter(function(p){return p[3]==='Công ty tài chính'}).length;
-  $('#pcnt').innerHTML='<div><b>'+PT.length+'</b><span>Đối tác đồng hành</span></div><div><b>'+nb+'</b><span>Ngân hàng</span></div><div><b>'+nf+'</b><span>Công ty tài chính</span></div><div><b>'+(PT.length-nb-nf)+'</b><span>Đối tác chiến lược, affiliate</span></div>';
+  /* đối tác theo nhóm (dữ liệu từ CMS nếu có) */
+  function buildPartnerPage(){var groups={},order=[];PARTNERS.forEach(function(p){var g=p.group.vi;if(!groups[g]){groups[g]={label:p.group,items:[]};order.push(g)}groups[g].items.push(p)});
+    var el=$('#pgroups');el.setAttribute('data-nl','');
+    el.innerHTML=order.map(function(g){var G=groups[g];return '<div class="pgrp"><h3>'+escH(LV(G.label))+'</h3><div class="pg2">'+G.items.map(function(p){return '<a href="'+escH(okUrl(p.url))+'" target="_blank" rel="noopener">'+'<span class="lg">'+(p.logo?'<img src="'+escH(p.logo)+'" alt="">':'')+'</span><b>'+escH(p.name)+'</b><small>'+escH(LV(p.group))+'</small></a>'}).join('')+'</div></div>'}).join('');
+    var nb=PARTNERS.filter(function(p){return /Ngân hàng/.test(p.group.vi)}).length,nf=PARTNERS.filter(function(p){return p.group.vi==='Công ty tài chính'}).length;
+    $('#pcnt').innerHTML='<div><b>'+PARTNERS.length+'</b><span>Đối tác đồng hành</span></div><div><b>'+nb+'</b><span>Ngân hàng</span></div><div><b>'+nf+'</b><span>Công ty tài chính</span></div><div><b>'+(PARTNERS.length-nb-nf)+'</b><span>Đối tác chiến lược, affiliate</span></div>';
+    var tb=$('#p-doi-tac .p3d .ft b');if(tb){tb.setAttribute('data-nl','');tb.textContent=PARTNERS.length+' '+(window.__lang&&__lang()==='en'?'partners':'đối tác')}}
+  buildPartnerPage();__hk.partnersPage=buildPartnerPage;
+  __hk.partners=function(){var c=window.__CMS;if(c&&c.partners&&c.partners.length){PARTNERS.length=0;c.partners.forEach(function(p){PARTNERS.push(p)})}buildPlist();buildPartnerPage()};
 
   /* hỏi đáp */
   var FQ=[
@@ -52,25 +55,24 @@ var PARTNERS=PT;
    ['Advertiser','Có thể xây hệ thống affiliate riêng không?','Có. 3RDVN Technology thiết kế và lập trình trọn gói gồm website cho cộng tác viên, hệ thống quản trị và kết nối đối tác, mang thương hiệu của bạn.'],
    ['Advertiser','Kết nối kỹ thuật với 3RDHub gồm những gì?','Postback để cập nhật trạng thái hồ sơ, API key riêng cho từng đối tác, môi trường test tách biệt và tài liệu API.']
   ];
-  var cats=['Tất cả'].concat(FQ.map(function(q){return q[0]}).filter(function(c,i,a){return a.indexOf(c)===i})),fcat='Tất cả';
-  $('#fcat').innerHTML=cats.map(function(c){return '<button type="button" data-c="'+c+'" aria-pressed="'+(c===fcat)+'">'+c+'</button>'}).join('');
-  function norm(s){return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d')}
-  function renderFQ(){var q=norm($('#fqs').value.trim()),html='',n=0;
-    cats.slice(1).forEach(function(c){if(fcat!=='Tất cả'&&c!==fcat)return;var it=FQ.filter(function(x){return x[0]===c&&(!q||norm(x[1]+' '+x[2]+' '+(window.__tr?__tr(x[1])+' '+__tr(x[2]):'')).indexOf(q)>-1)});if(!it.length)return;n+=it.length;
-      html+='<div><h2>'+c+'</h2>'+it.map(function(x){return '<details'+(q?' open':'')+'><summary>'+x[1]+'</summary><p>'+x[2]+'</p></details>'}).join('')+'</div>'});
-    $('#fq2').innerHTML=html;$('#fempty').hidden=n>0;$$('#fq2>div').forEach(function(d){d.classList.add('rv','in')})}
+  var FQD=FQ.map(function(q,i){var E=window.__EN||{};return {id:'d'+i,cat:{vi:q[0]},q:{vi:q[1]},a:{vi:q[2]}}});
+  var fcat='*';
+  function faqItems(){var c=window.__CMS;return c&&c.faq?c.faq:FQD}
+  function norm(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d')}
+  function renderFQ(){var items=faqItems(),q=norm($('#fqs').value.trim()),html='',n=0,cats=[];
+    items.forEach(function(f){if(cats.indexOf(f.cat.vi)<0)cats.push(f.cat.vi)});
+    if(fcat!=='*'&&cats.indexOf(fcat)<0)fcat='*';
+    var cb=$('#fcat');cb.setAttribute('data-nl','');
+    cb.innerHTML=['*'].concat(cats).map(function(c){var lbl=c==='*'?(window.__tr?__tr('Tất cả'):'Tất cả'):LV(items.filter(function(f){return f.cat.vi===c})[0].cat);return '<button type="button" data-c="'+escH(c)+'" aria-pressed="'+(c===fcat)+'">'+escH(lbl)+'</button>'}).join('');
+    cats.forEach(function(c){if(fcat!=='*'&&c!==fcat)return;var it=items.filter(function(f){return f.cat.vi===c&&(!q||norm([f.q.vi,ENT(f.q),f.a.vi,ENT(f.a)].join(' ')).indexOf(q)>-1)});if(!it.length)return;n+=it.length;
+      html+='<div><h2>'+escH(LV(it[0].cat))+'</h2>'+it.map(function(f){return '<details'+(q?' open':'')+'><summary>'+escH(LV(f.q))+'</summary><p>'+escH(LV(f.a)).replace(/\n/g,'<br>')+'</p></details>'}).join('')+'</div>'});
+    var box=$('#fq2');box.setAttribute('data-nl','');box.innerHTML=html;$('#fempty').hidden=n>0;$$('#fq2>div').forEach(function(d){d.classList.add('rv','in')})}
   $('#fqs').addEventListener('input',renderFQ);
-  $$('#fcat button').forEach(function(b){b.addEventListener('click',function(){fcat=b.dataset.c;$$('#fcat button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});renderFQ()})});
-  renderFQ();
+  $('#fcat').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;fcat=b.dataset.c;renderFQ()});
+  renderFQ();__hk.faqPage=renderFQ;
 
-  /* form liên hệ: soạn email gửi đội ngũ */
-  $('#form2').addEventListener('submit',function(e){e.preventDefault();var f=e.target,m=$('#msg2');m.className='msg';
-    if(f.name.value.trim().length<2){m.textContent='Nhập họ và tên.';m.classList.add('err2');f.name.focus();return}
-    if(f.phone.value.replace(/\D/g,'').length<9){m.textContent='Số điện thoại cần ít nhất 9 chữ số.';m.classList.add('err2');f.phone.focus();return}
-    var need=($('#form2 .need button[aria-pressed="true"]')||{}).dataset.n||'';
-    var body='Nhu cầu: '+need+'\nHọ và tên: '+f.name.value.trim()+'\nSố điện thoại: '+f.phone.value.trim()+'\nCông ty: '+f.company.value.trim()+'\n\n'+f.msg.value.trim();
-    location.href='mailto:admin_support@3rdvn.io.vn?subject='+encodeURIComponent('[3RDHub] '+need)+'&body='+encodeURIComponent(body);
-    m.textContent='Đã mở ứng dụng email với nội dung soạn sẵn. Nếu không thấy, hãy gọi hotline (+84) 398 192 414.';m.classList.add('ok')});
+  /* form liên hệ: gửi về CMS, nếu không được thì soạn email */
+  $('#form2').addEventListener('submit',function(e){e.preventDefault();submitLead(e.target,$('#msg2'))});
 
   /* router: "#/module" mở trang chi tiết, còn lại là trang chủ */
   function route(){var h=location.hash||'',m=h.match(/^#\/([a-z-]+)/),pg=m&&$('#p-'+m[1]);

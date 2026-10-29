@@ -161,7 +161,6 @@
 "Nhập họ và tên.": "Please enter your full name.",
 "Số điện thoại cần ít nhất 9 chữ số.": "Phone number needs at least 9 digits.",
 "Đã ghi nhận. Bản demo chưa gửi thông tin đi, hãy gọi hotline hoặc email để được hỗ trợ ngay.": "Noted. This demo doesn't send data yet; please call the hotline or email us for help right away.",
-"Đã mở ứng dụng email với nội dung soạn sẵn. Nếu không thấy, hãy gọi hotline (+84) 398 192 414.": "Your email app has opened with a pre-filled message. If it didn't, call the hotline (+84) 398 192 414.",
 "Một hồ sơ đi qua": "How an application moves through",
 "như thế nào.": "",
 "Từ lúc Advertiser đăng chiến dịch đến khi hoa hồng về ví publisher, mỗi bước đều có người chịu trách nhiệm và có dữ liệu ghi lại để đối chiếu.": "From the moment an advertiser posts a campaign until commission lands in the publisher's wallet, every step has an owner and a data trail for reconciliation.",
@@ -432,5 +431,10 @@
 "© 2026 3RDHub Vietnam, nền tảng tiếp thị liên kết thuộc 3RDVN Technology. Mã số thuế 4001342613": "© 2026 3RDHub Vietnam, an affiliate marketing platform by 3RDVN Technology. Tax ID 4001342613",
 "Điều khoản": "Terms",
 "Bảo mật": "Privacy",
-"Đăng ký ngay": "Sign up"
+"Đăng ký ngay": "Sign up",
+"Đang gửi...": "Sending...",
+"Cảm ơn bạn! Yêu cầu đã được gửi, đội ngũ 3RDVN Technology sẽ liên hệ sớm.": "Thank you! Your request has been sent and the 3RDVN Technology team will be in touch soon.",
+"Bạn gửi quá nhiều lần, vui lòng thử lại sau ít phút.": "You've sent too many requests. Please try again in a few minutes.",
+"Chưa gửi được, vui lòng thử lại.": "Couldn't send. Please try again.",
+"Đã mở ứng dụng email với nội dung soạn sẵn. Nếu không thấy, hãy gọi số hotline trên trang này.": "Your email app has opened with a pre-filled message. If it didn't, call the hotline on this page."
 }

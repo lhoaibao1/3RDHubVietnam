@@ -1,0 +1,412 @@
+{
+ "faq": [
+  {
+   "id": "f1",
+   "cat": {
+    "vi": "Chung",
+    "en": "General"
+   },
+   "q": {
+    "vi": "3RDHub Vietnam là gì?",
+    "en": "What is 3RDHub Vietnam?"
+   },
+   "a": {
+    "vi": "3RDHub Vietnam là nền tảng tiếp thị liên kết thuộc 3RDVN Technology. Advertiser đăng chiến dịch, publisher chia sẻ link riêng, hệ thống ghi nhận lượt bấm, hồ sơ và tính hoa hồng khi hồ sơ được duyệt.",
+    "en": "3RDHub Vietnam is an affiliate marketing platform by 3RDVN Technology. Advertisers post campaigns, publishers share personal links, and the system records clicks and applications and calculates commission when applications are approved."
+   },
+   "home": true
+  },
+  {
+   "id": "f2",
+   "cat": {
+    "vi": "Chung",
+    "en": "General"
+   },
+   "q": {
+    "vi": "3RDHub và 3RDVN Technology liên quan thế nào?",
+    "en": "How are 3RDHub and 3RDVN Technology related?"
+   },
+   "a": {
+    "vi": "3RDVN Technology là đơn vị xây dựng và vận hành 3RDHub Vietnam. Đội ngũ này cũng nhận thiết kế, lập trình hệ thống affiliate riêng cho Advertiser.",
+    "en": "3RDVN Technology builds and operates 3RDHub Vietnam. The same team also designs and builds custom affiliate systems for advertisers."
+   },
+   "home": false
+  },
+  {
+   "id": "f3",
+   "cat": {
+    "vi": "Chung",
+    "en": "General"
+   },
+   "q": {
+    "vi": "3RDHub đang có những sản phẩm nào?",
+    "en": "What products does 3RDHub offer?"
+   },
+   "a": {
+    "vi": "Các chiến dịch tài chính như mở thẻ tín dụng, vay tiêu dùng, bảo hiểm sức khoẻ và mở tài khoản số. Danh sách chiến dịch đang chạy xem trực tiếp trên app.",
+    "en": "Financial campaigns such as credit card sign-ups, consumer loans, health insurance and digital account opening. See live campaigns directly in the app."
+   },
+   "home": false
+  },
+  {
+   "id": "f4",
+   "cat": {
+    "vi": "Publisher",
+    "en": "Publisher"
+   },
+   "q": {
+    "vi": "Ai có thể làm publisher?",
+    "en": "Who can become a publisher?"
+   },
+   "a": {
+    "vi": "Bất kỳ ai có kênh tiếp cận khách hàng: TikTok, Facebook, nhóm Zalo, website hoặc tệp khách quen. Bạn đăng ký tài khoản, hoàn tất định danh rồi chọn chiến dịch.",
+    "en": "Anyone with a way to reach customers: TikTok, Facebook, Zalo groups, a website or a list of regular customers. Sign up, complete identity verification, then pick a campaign."
+   },
+   "home": true
+  },
+  {
+   "id": "f5",
+   "cat": {
+    "vi": "Publisher",
+    "en": "Publisher"
+   },
+   "q": {
+    "vi": "Đăng ký publisher gồm những bước nào?",
+    "en": "What are the steps to become a publisher?"
+   },
+   "a": {
+    "vi": "Tạo tài khoản trên app, hoàn tất định danh theo hướng dẫn, chọn chiến dịch và lấy link đầu tiên. Bạn không cần chờ đội ngũ liên hệ.",
+    "en": "Create an account in the app, complete verification as guided, pick a campaign and get your first link. No need to wait for the team to contact you."
+   },
+   "home": false
+  },
+  {
+   "id": "f6",
+   "cat": {
+    "vi": "Publisher",
+    "en": "Publisher"
+   },
+   "q": {
+    "vi": "Tôi được chia sẻ link ở đâu?",
+    "en": "Where can I share my link?"
+   },
+   "a": {
+    "vi": "Trên kênh bạn có: TikTok, Facebook, nhóm Zalo, website hoặc gửi trực tiếp cho khách. Một số chiến dịch có quy định riêng về kênh quảng bá, hãy đọc kỹ mô tả chiến dịch trước khi chạy.",
+    "en": "On any channel you have: TikTok, Facebook, Zalo groups, a website or directly to customers. Some campaigns have their own channel rules, so read the campaign description before you start."
+   },
+   "home": false
+  },
+  {
+   "id": "f7",
+   "cat": {
+    "vi": "Publisher",
+    "en": "Publisher"
+   },
+   "q": {
+    "vi": "Có thể làm theo đội nhóm không?",
+    "en": "Can I work as a team?"
+   },
+   "a": {
+    "vi": "Có. App có mục Đội nhóm để quản lý thành viên. Gọi hotline nếu bạn cần hướng dẫn thiết lập.",
+    "en": "Yes. The app has a Teams section for managing members. Call the hotline if you need help setting it up."
+   },
+   "home": false
+  },
+  {
+   "id": "f8",
+   "cat": {
+    "vi": "Hoa hồng và rút tiền",
+    "en": "Commission and withdrawals"
+   },
+   "q": {
+    "vi": "Hoa hồng được tính và chi trả thế nào?",
+    "en": "How is commission calculated and paid?"
+   },
+   "a": {
+    "vi": "Mỗi chiến dịch ghi rõ hình thức tính và mức hoa hồng. Khi Advertiser duyệt hồ sơ, hoa hồng được cộng vào ví sau đối soát. Bạn gửi yêu cầu rút và theo dõi trạng thái ngay trên app.",
+    "en": "Each campaign states its commission model and rate. Once the advertiser approves an application, commission is added to your wallet after reconciliation. Request a withdrawal and track it in the app."
+   },
+   "home": true
+  },
+  {
+   "id": "f9",
+   "cat": {
+    "vi": "Hoa hồng và rút tiền",
+    "en": "Commission and withdrawals"
+   },
+   "q": {
+    "vi": "CPL, CPS và CPA khác nhau thế nào?",
+    "en": "What's the difference between CPL, CPS and CPA?"
+   },
+   "a": {
+    "vi": "CPL trả theo hồ sơ được duyệt, ví dụ mở thẻ tín dụng. CPS trả theo khoản bán hoặc khoản vay thành công. CPA trả khi khách hoàn tất một hành động cụ thể như ký hợp đồng bảo hiểm hay mở tài khoản.",
+    "en": "CPL pays per approved application, e.g. a credit card sign-up. CPS pays per successful sale or loan. CPA pays when the customer completes a specific action such as signing an insurance policy or opening an account."
+   },
+   "home": false
+  },
+  {
+   "id": "f10",
+   "cat": {
+    "vi": "Hoa hồng và rút tiền",
+    "en": "Commission and withdrawals"
+   },
+   "q": {
+    "vi": "Bao lâu thì hoa hồng vào ví?",
+    "en": "How long until commission reaches my wallet?"
+   },
+   "a": {
+    "vi": "Hoa hồng vào ví sau khi Advertiser duyệt hồ sơ và qua đối soát. Thời gian duyệt tuỳ từng đối tác và chiến dịch, trạng thái luôn hiển thị trên app.",
+    "en": "Commission reaches your wallet after the advertiser approves the application and it is reconciled. Review time varies by partner and campaign, and the status is always shown in the app."
+   },
+   "home": false
+  },
+  {
+   "id": "f11",
+   "cat": {
+    "vi": "Hoa hồng và rút tiền",
+    "en": "Commission and withdrawals"
+   },
+   "q": {
+    "vi": "Rút tiền như thế nào?",
+    "en": "How do I withdraw?"
+   },
+   "a": {
+    "vi": "Vào mục Ví hoa hồng, gửi yêu cầu rút về tài khoản ngân hàng và theo dõi trạng thái duyệt rút trong lịch sử giao dịch.",
+    "en": "Go to Commission wallet, request a withdrawal to your bank account and track its approval in the transaction history."
+   },
+   "home": false
+  },
+  {
+   "id": "f12",
+   "cat": {
+    "vi": "Hoa hồng và rút tiền",
+    "en": "Commission and withdrawals"
+   },
+   "q": {
+    "vi": "Vì sao hồ sơ bị từ chối?",
+    "en": "Why was an application rejected?"
+   },
+   "a": {
+    "vi": "Advertiser xét duyệt hồ sơ theo tiêu chí riêng của sản phẩm. Hồ sơ không đạt chuyển sang trạng thái Từ chối và không tính hoa hồng.",
+    "en": "Advertisers review applications against their own product criteria. Applications that don't qualify move to Rejected and earn no commission."
+   },
+   "home": false
+  },
+  {
+   "id": "f13",
+   "cat": {
+    "vi": "Tracking và báo cáo",
+    "en": "Tracking and reports"
+   },
+   "q": {
+    "vi": "Làm sao biết khách đến từ link của tôi?",
+    "en": "How do I know a customer came from my link?"
+   },
+   "a": {
+    "vi": "Mỗi link mang mã publisher riêng, có thể gắn thêm Sub ID theo kênh. Lượt bấm, lead và đơn hiển thị theo thời gian thực trong mục Báo cáo.",
+    "en": "Each link carries your publisher code, and you can add a Sub ID per channel. Clicks, leads and orders show up in real time under Reports."
+   },
+   "home": true
+  },
+  {
+   "id": "f14",
+   "cat": {
+    "vi": "Tracking và báo cáo",
+    "en": "Tracking and reports"
+   },
+   "q": {
+    "vi": "Sub ID dùng để làm gì?",
+    "en": "What is a Sub ID for?"
+   },
+   "a": {
+    "vi": "Sub ID là nhãn bạn tự đặt cho từng kênh, ví dụ tiktok-04 hay fb-group. Báo cáo sẽ tách lượt bấm và đơn theo nhãn này để bạn biết kênh nào hiệu quả.",
+    "en": "A Sub ID is a label you set for each channel, e.g. tiktok-04 or fb-group. Reports split clicks and orders by this label so you can see which channel works."
+   },
+   "home": false
+  },
+  {
+   "id": "f15",
+   "cat": {
+    "vi": "Tracking và báo cáo",
+    "en": "Tracking and reports"
+   },
+   "q": {
+    "vi": "Nếu hồ sơ của khách không được ghi nhận?",
+    "en": "What if a customer's application isn't recorded?"
+   },
+   "a": {
+    "vi": "Bạn gửi báo mất đơn ngay trong hệ thống. Yêu cầu được đối chiếu với dữ liệu Advertiser trả về qua postback.",
+    "en": "File a missing-order report in the system. It is checked against the data the advertiser sends back via postback."
+   },
+   "home": true
+  },
+  {
+   "id": "f16",
+   "cat": {
+    "vi": "Advertiser",
+    "en": "Advertiser"
+   },
+   "q": {
+    "vi": "Advertiser muốn chạy chiến dịch thì làm sao?",
+    "en": "How can an advertiser run a campaign?"
+   },
+   "a": {
+    "vi": "Gửi yêu cầu ở trang Liên hệ. Đội ngũ 3RDVN Technology sẽ trao đổi về sản phẩm, hình thức hoa hồng và cách kết nối postback.",
+    "en": "Send a request on the Contact page. The 3RDVN Technology team will discuss your product, commission model and postback integration."
+   },
+   "home": true
+  },
+  {
+   "id": "f17",
+   "cat": {
+    "vi": "Advertiser",
+    "en": "Advertiser"
+   },
+   "q": {
+    "vi": "Có thể xây hệ thống affiliate riêng không?",
+    "en": "Can you build our own affiliate system?"
+   },
+   "a": {
+    "vi": "Có. 3RDVN Technology thiết kế và lập trình trọn gói gồm website cho cộng tác viên, hệ thống quản trị và kết nối đối tác, mang thương hiệu của bạn.",
+    "en": "Yes. 3RDVN Technology designs and builds it end to end: a publisher website, an admin system and partner integrations, all under your brand."
+   },
+   "home": false
+  },
+  {
+   "id": "f18",
+   "cat": {
+    "vi": "Advertiser",
+    "en": "Advertiser"
+   },
+   "q": {
+    "vi": "Kết nối kỹ thuật với 3RDHub gồm những gì?",
+    "en": "What does technical integration with 3RDHub involve?"
+   },
+   "a": {
+    "vi": "Postback để cập nhật trạng thái hồ sơ, API key riêng cho từng đối tác, môi trường test tách biệt và tài liệu API.",
+    "en": "A postback to update application status, a separate API key per partner, an isolated test environment and API docs."
+   },
+   "home": false
+  }
+ ],
+ "partners": [
+  {
+   "id": "p1",
+   "name": "FE Credit",
+   "url": "https://fecredit.com.vn",
+   "logo": "/uploads/seed-fecredit.webp",
+   "group": {
+    "vi": "Công ty tài chính",
+    "en": "Finance company"
+   }
+  },
+  {
+   "id": "p2",
+   "name": "LOTTE Finance",
+   "url": "https://lottefinance.vn",
+   "logo": "/uploads/seed-lotte.webp",
+   "group": {
+    "vi": "Công ty tài chính",
+    "en": "Finance company"
+   }
+  },
+  {
+   "id": "p3",
+   "name": "Mirae Asset Finance",
+   "url": "https://mafc.com.vn",
+   "logo": "/uploads/seed-mirae.webp",
+   "group": {
+    "vi": "Công ty tài chính",
+    "en": "Finance company"
+   }
+  },
+  {
+   "id": "p4",
+   "name": "Shinhan Finance",
+   "url": "https://shinhanfinance.com.vn",
+   "logo": "/uploads/seed-shinhan.webp",
+   "group": {
+    "vi": "Công ty tài chính",
+    "en": "Finance company"
+   }
+  },
+  {
+   "id": "p5",
+   "name": "SFinance",
+   "url": "https://www.sfinance.com.vn",
+   "logo": "/uploads/seed-sfinance.webp",
+   "group": {
+    "vi": "Công ty tài chính",
+    "en": "Finance company"
+   }
+  },
+  {
+   "id": "p6",
+   "name": "VPBank",
+   "url": "https://www.vpbank.com.vn",
+   "logo": "/uploads/seed-vpbank.webp",
+   "group": {
+    "vi": "Ngân hàng",
+    "en": "Bank"
+   }
+  },
+  {
+   "id": "p7",
+   "name": "TPBank",
+   "url": "https://tpb.vn",
+   "logo": "/uploads/seed-tpbank.webp",
+   "group": {
+    "vi": "Ngân hàng",
+    "en": "Bank"
+   }
+  },
+  {
+   "id": "p8",
+   "name": "Tnex by MSB",
+   "url": "https://tnex.com.vn",
+   "logo": "/uploads/seed-tnex.webp",
+   "group": {
+    "vi": "Ngân hàng số",
+    "en": "Digital bank"
+   }
+  },
+  {
+   "id": "p9",
+   "name": "Hoàng Thiên Finance",
+   "url": "https://hoangthienfinance.vn",
+   "logo": "/uploads/seed-hoangthien.webp",
+   "group": {
+    "vi": "Đối tác chiến lược",
+    "en": "Strategic partner"
+   }
+  },
+  {
+   "id": "p10",
+   "name": "AccessTrade",
+   "url": "https://accesstrade.vn/",
+   "logo": "/uploads/seed-accesstrade.webp",
+   "group": {
+    "vi": "Đối tác affiliate",
+    "en": "Affiliate partner"
+   }
+  },
+  {
+   "id": "p11",
+   "name": "HyperLead",
+   "url": "https://hyperlead.vn",
+   "logo": "/uploads/seed-hyperlead.webp",
+   "group": {
+    "vi": "Đối tác affiliate",
+    "en": "Affiliate partner"
+   }
+  }
+ ],
+ "settings": {
+  "signup_url": "https://app.3rdvn.io.vn/auth/login?tab=signup",
+  "email": "admin_support@3rdvn.io.vn",
+  "hotline": "(+84) 398 192 414",
+  "hotline_tel": "+84398192414",
+  "terms_url": "https://app.3rdvn.io.vn/terms",
+  "privacy_url": "https://app.3rdvn.io.vn/privacy"
+ }
+}
