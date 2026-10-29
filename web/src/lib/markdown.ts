@@ -3,7 +3,12 @@ const esc = (t: string) => t.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 
 function inline(t: string): string {
   const x = esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-  return x.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|mailto:[^)\s]+)\)/g, (_m, a, b) => `<a href="${b}" target="_blank" rel="noopener">${a}</a>`)
+  return x.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|mailto:[^)\s]+|\/[A-Za-z0-9\-\/#?=&._]*)\)/g, (_m, a, b) => (b.startsWith('/') ? `<a href="${b}">${a}</a>` : `<a href="${b}" target="_blank" rel="noopener">${a}</a>`))
+}
+
+/** Thay {{company_name}}, {{tax_id}}... bằng giá trị trong phần Cài đặt của CMS. */
+export function fillTokens(text: string, get: (key: string) => string): string {
+  return text.replace(/\{\{\s*([a-z_]+)\s*\}\}/g, (m, k) => get(k) || m)
 }
 
 export function renderLegal(text: string): string {

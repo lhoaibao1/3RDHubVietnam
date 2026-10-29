@@ -16,6 +16,7 @@ const company: Field[] = [
   { key: 'hotline_tel', label: 'Số hotline (để bấm gọi)', hint: 'Chỉ gồm số, ví dụ: +84398192414' },
 ]
 const links: Field[] = [
+  { key: 'parent_url', label: 'Website công ty mẹ', hint: 'Chân trang và trang pháp lý có liên kết tới đây', type: 'url' },
   { key: 'signup_url', label: 'Link nút "Đăng ký ngay"', hint: 'Trang đăng ký trên app', type: 'url' },
   { key: 'facebook', label: 'Facebook', hint: 'https://facebook.com/...', type: 'url' },
   { key: 'zalo', label: 'Zalo', hint: 'https://zalo.me/...', type: 'url' },

@@ -5,7 +5,7 @@ const assert = require('assert');
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const ADMIN = process.env.ADMIN_URL || 'http://cms.localhost:8787', SITE = process.env.SITE_URL || 'http://127.0.0.1:8787';
-  const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+  const ctx = await b.newContext({ viewport: { width: 1440, height: 900 }, locale: 'vi-VN' });
   const p = await ctx.newPage();
   const errs = [];
   p.on('pageerror', e => errs.push('PAGEERROR ' + e));
@@ -62,13 +62,13 @@ const assert = require('assert');
   await p.screenshot({ path: '' + (process.env.OUT || '/tmp') + '/adm_settings.png' });
 
   // kiểm tra website công khai nhận thay đổi (ngữ cảnh mới, không cache)
-  const s = await (await b.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+  const s = await (await b.newContext({ viewport: { width: 1440, height: 900 }, locale: 'vi-VN' })).newPage();
   s.on('pageerror', e => errs.push('SITE PAGEERROR ' + e));
   await s.goto(SITE + '/'); await s.waitForTimeout(1500);
   assert.strictEqual((await s.textContent('.nav .btn.or')).trim(), 'Tham gia ngay'); ok('website: nút nav đã đổi thành "Tham gia ngay"');
-  await s.click('.lang button[aria-label=English]');
+  await s.click('.langbtn'); await s.waitForTimeout(700);
   assert.strictEqual((await s.textContent('.nav .btn.or')).trim(), 'Join now'); ok('website: bản EN = "Join now"');
-  await s.click('.lang button[aria-label="Tiếng Việt"]');
+  await s.click('.langbtn'); await s.waitForTimeout(700);
   const foot = await s.textContent('footer');
   assert(foot.includes('(+84) 900 111 222') && foot.includes('Công ty Thử Nghiệm'), 'footer'); ok('website: chân trang lấy hotline và tên công ty mới');
   assert(await s.locator('footer .ftsoc a[href="https://facebook.com/3rdhub"]').count() === 1); ok('website: có icon Facebook ở chân trang');

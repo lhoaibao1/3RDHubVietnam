@@ -1,0 +1,54 @@
+/* ===== nền trang trí cho mọi khu vực: mỗi nơi một màu và một hoạ tiết riêng, tự đổi theo sáng/tối ===== */
+:root{--bgi:var(--ink)}
+.biz,.tech,.partners,.faq,#lien-he,.pg{position:relative;isolation:isolate}
+.biz::before,.tech::before,.partners::before,.faq::before,#lien-he::before,.pg::before,
+.biz::after,.tech::after,.partners::after,.faq::after,#lien-he::after,.pg::after{content:"";position:absolute;z-index:-1;pointer-events:none;left:50%;width:100vw;transform:translateX(-50%)}
+/* lớp 1: các vệt màu lớn, mềm */
+.biz::before,.tech::before,.partners::before,.faq::before,#lien-he::before,.pg::before{top:-60px;bottom:-60px;background:
+  radial-gradient(46% 38% at var(--bx1,12%) var(--by1,18%),color-mix(in srgb,var(--bt) 17%,transparent),transparent 72%),
+  radial-gradient(40% 34% at var(--bx2,88%) var(--by2,70%),color-mix(in srgb,var(--bt2,var(--bt)) 15%,transparent),transparent 72%);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent)}
+/* lớp 2: hoạ tiết mờ dần ở mép trên/dưới, trôi rất chậm */
+.biz::after,.tech::after,.partners::after,.faq::after,#lien-he::after,.pg::after{top:0;bottom:0;opacity:.9;background:var(--pat);background-size:var(--patsz,auto);
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);animation:patdrift 40s linear infinite}
+@keyframes patdrift{to{background-position:var(--patmv,60px 60px)}}
+@media(prefers-reduced-motion:reduce){.biz::after,.tech::after,.partners::after,.faq::after,#lien-he::after,.pg::after{animation:none}}
+
+/* hoạ tiết dùng chung (định nghĩa ngay trên từng khu vực để lấy đúng màu --bt của khu vực đó) */
+.biz,.tech,.partners,.faq,#lien-he,.pg{
+  --dots:radial-gradient(circle,color-mix(in srgb,var(--bt) 55%,transparent) 1.5px,transparent 1.7px);
+  --grid:linear-gradient(color-mix(in srgb,var(--bt) 22%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--bt) 22%,transparent) 1px,transparent 1px);
+  --rings:repeating-radial-gradient(circle at 82% 28%,color-mix(in srgb,var(--bt) 34%,transparent) 0 1.5px,transparent 1.5px 38px);
+  --diag:repeating-linear-gradient(135deg,color-mix(in srgb,var(--bt) 30%,transparent) 0 1.5px,transparent 1.5px 24px);
+  --waves:repeating-radial-gradient(ellipse 120% 80% at 15% 105%,color-mix(in srgb,var(--bt) 34%,transparent) 0 2px,transparent 2px 34px);
+  --circuit:linear-gradient(color-mix(in srgb,var(--bt) 22%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--bt) 22%,transparent) 1px,transparent 1px),radial-gradient(circle,color-mix(in srgb,var(--bt) 60%,transparent) 2.2px,transparent 2.6px);
+}
+/* trang chủ */
+.biz{--bt:#7B4DFF;--bt2:#FF4D8D;--pat:var(--grid);--patsz:44px 44px;--patmv:44px 44px;--bx1:6%;--by1:10%}
+.tech{--bt:#00ADD8;--bt2:#42B883;--pat:var(--circuit);--patsz:56px 56px,56px 56px,112px 112px;--patmv:56px 56px,56px 56px,112px 112px;--bx1:92%;--by1:14%;--bx2:8%;--by2:76%}
+.partners{--bt:#12A06A;--bt2:#FFB238;--pat:var(--rings);--patmv:0 0}
+.faq{--bt:#FFB238;--bt2:#FF6A2B;--pat:var(--waves);--patmv:0 0}
+#lien-he:not(.pg){--bt:#FF4D8D;--bt2:#FF6A2B;--pat:var(--diag);--patsz:auto;--patmv:48px 0}
+/* trang chi tiết */
+#p-mo-hinh{--bt:#FF6A2B;--bt2:#7B4DFF;--pat:var(--dots);--patsz:30px 30px;--patmv:30px 30px}
+#p-advertiser{--bt:#7B4DFF;--bt2:#FF4D8D;--pat:var(--grid);--patsz:44px 44px;--patmv:44px 44px;--bx1:90%}
+#p-cong-nghe{--bt:#00ADD8;--bt2:#42B883;--pat:var(--circuit);--patsz:56px 56px,56px 56px,112px 112px;--patmv:56px 56px,56px 56px,112px 112px}
+#p-doi-tac{--bt:#12A06A;--bt2:#1BA6D9;--pat:var(--rings);--patmv:0 0}
+#p-hoi-dap{--bt:#FFB238;--bt2:#FF6A2B;--pat:var(--waves);--patmv:0 0}
+#p-lien-he{--bt:#FF4D8D;--bt2:#FFB238;--pat:var(--diag);--patmv:48px 0}
+.legalpg{--bt:#5B6279;--bt2:#7B4DFF;--pat:var(--dots);--patsz:34px 34px;--patmv:34px 34px}
+/* chế độ tối: vệt màu rực hơn một chút */
+:root[data-theme="dark"] .biz::before,:root[data-theme="dark"] .tech::before,:root[data-theme="dark"] .partners::before,:root[data-theme="dark"] .faq::before,:root[data-theme="dark"] #lien-he::before,:root[data-theme="dark"] .pg::before{filter:saturate(1.2) brightness(1.25)}
+
+/* ===== hiệu ứng khi cuộn: các hướng xuất hiện khác nhau ===== */
+.rv-l{transform:translateX(-46px)}
+.rv-r{transform:translateX(46px)}
+.rv-z{transform:translateY(34px) scale(.94)}
+.rv-l.in,.rv-r.in,.rv-z.in{transform:none}
+.scrollbar{position:fixed;left:0;top:0;height:3px;width:100%;z-index:80;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,#FF6A2B,#FF4D8D,#7B4DFF);pointer-events:none}
+.cue{position:absolute;right:max(24px,calc((100vw - 1200px)/2));bottom:70px;z-index:6;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink2);font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:1;transition:opacity .4s;pointer-events:none}
+.cue i{width:24px;height:38px;border-radius:14px;border:2px solid currentColor;position:relative}
+.cue i::after{content:"";position:absolute;left:50%;top:7px;width:4px;height:8px;margin-left:-2px;border-radius:3px;background:var(--or);animation:cue 1.6s ease-in-out infinite}
+.cue.off{opacity:0}
+@keyframes cue{0%{transform:translateY(0);opacity:1}70%{transform:translateY(12px);opacity:0}100%{opacity:0}}
+@media(max-width:900px){.cue{display:none}}

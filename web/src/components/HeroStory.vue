@@ -29,7 +29,11 @@ function go(k: number) {
   hero?.go(k)
 }
 
+const scrolled = ref(false)
+function onScroll() { scrolled.value = scrollY > 40 }
+
 onMounted(() => {
+  addEventListener('scroll', onScroll, { passive: true })
   try {
     hero = createHero(canvas.value!, tag.value!, { onTag(k, label) { tagK.value = k; tagLabel.value = label } })
   } catch (e) {
@@ -52,6 +56,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  removeEventListener('scroll', onScroll)
   cancelAnimationFrame(raf)
   hero?.dispose()
 })
@@ -72,6 +77,7 @@ onBeforeUnmount(() => {
         <article class="st" :class="{ on: cur === 5 }" :aria-hidden="cur !== 5"><div class="k">Bước 5, hoa hồng</div><h2><span>Hồ sơ được duyệt,</span><span class="o">tiền về ví.</span></h2><p>Hoa hồng cộng vào số dư sau đối soát. Bạn gửi yêu cầu rút và theo dõi trạng thái duyệt rút tiền.</p><div class="mini"><div class="r"><span class="lb">Số dư ví hoa hồng</span><b>12.450.000đ</b></div><div class="r"><span>Yêu cầu rút #W-208</span><span class="pl">Đã chuyển</span></div></div><div class="acts"><a class="btn or" :href="site.S('signup_url')" target="_blank" rel="noopener">Bắt đầu làm publisher</a></div></article>
       </div>
     </div>
+    <div class="cue" :class="{ off: scrolled }" aria-hidden="true"><i /><span>Cuộn xuống</span></div>
     <div class="rail">
       <button v-for="(n, i) in NAMES" :key="n" ref="rails" type="button" :class="{ on: cur === i }" :aria-label="$t(n)" @click="go(i)">{{ $t(n) }}</button>
     </div>

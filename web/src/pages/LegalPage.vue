@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useSite } from '@/stores/site'
-import { renderLegal } from '@/lib/markdown'
+import { fillTokens, renderLegal } from '@/lib/markdown'
 
 // Trang pháp lý riêng (/dieu-khoan, /bao-mat): nội dung lấy từ CMS, chưa có thì dùng bản mặc định.
 const props = defineProps<{ doc: 'terms' | 'privacy' }>()
 const site = useSite()
 const d = computed(() => site.legal(props.doc))
-const html = computed(() => renderLegal(d.value.body))
+const html = computed(() => renderLegal(fillTokens(d.value.body, (k) => site.S(k))))
 </script>
 
 <template>

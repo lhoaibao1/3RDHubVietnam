@@ -1,29 +1,64 @@
 import { defineStore } from 'pinia'
 import en from '../lib/en.json'
+import { setMode } from '../three/mode'
+import { transition } from '../lib/transition'
 import { DEFAULTS, DEF_SETTINGS, type Content, type Faq, type Lang, type LegalDoc, type OvItem, type Pair, type Partner } from '../lib/content'
 
 const EN = en as Record<string, string>
 const CACHE_KEY = '3rd-cms-v1'
 const LANG_KEY = '3rd-lang'
 
+/** Lần đầu vào site: theo ngôn ngữ trình duyệt (tiếng Việt thì hiện tiếng Việt, còn lại hiện tiếng Anh). Sau đó nhớ lựa chọn của người dùng. */
 function readLang(): Lang {
-  try { return localStorage.getItem(LANG_KEY) === 'en' ? 'en' : 'vi' } catch { return 'vi' }
+  try {
+    const v = localStorage.getItem(LANG_KEY)
+    if (v === 'en' || v === 'vi') return v
+  } catch { /* bỏ qua */ }
+  const nav = (navigator.languages && navigator.languages[0]) || navigator.language || 'vi'
+  return /^vi\b/i.test(nav) ? 'vi' : 'en'
+}
+const THEME_KEY = '3rd-theme'
+export type Theme = 'light' | 'dark'
+function readTheme(): Theme {
+  try {
+    const v = localStorage.getItem(THEME_KEY)
+    if (v === 'light' || v === 'dark') return v
+  } catch { /* bỏ qua */ }
+  return typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 function readCache(): Content | null {
   try { const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); return c && typeof c === 'object' ? c : null } catch { return null }
 }
 
 export const useSite = defineStore('site', {
-  state: () => ({ lang: readLang() as Lang, cms: readCache() as Content | null }),
+  state: () => ({ lang: readLang() as Lang, theme: readTheme() as Theme, cms: readCache() as Content | null }),
   getters: {
     faqItems(s): Faq[] { return s.cms?.faq ?? DEFAULTS.faq },
     partners(s): Partner[] { return s.cms?.partners?.length ? s.cms.partners : DEFAULTS.partners },
   },
   actions: {
+    /** Đổi ngôn ngữ bằng một chạm, có hiệu ứng chuyển mượt (View Transitions) khi trình duyệt hỗ trợ. */
+    toggleLang() {
+      const l: Lang = this.lang === 'vi' ? 'en' : 'vi'
+      transition(() => { this.setLang(l) }, 'lang')
+    },
     setLang(l: Lang) {
       this.lang = l
       try { localStorage.setItem(LANG_KEY, l) } catch { /* bỏ qua */ }
       document.documentElement.lang = l
+    },
+    toggleTheme(origin?: { x: number; y: number }) {
+      const t: Theme = this.theme === 'dark' ? 'light' : 'dark'
+      transition(() => { this.setTheme(t) }, 'theme', origin)
+    },
+    setTheme(t: Theme) {
+      this.theme = t
+      try { localStorage.setItem(THEME_KEY, t) } catch { /* bỏ qua */ }
+      document.documentElement.dataset.theme = t
+      setMode(t)
+      document.documentElement.style.colorScheme = t
+      const m = document.querySelector('meta[name=theme-color]')
+      if (m) m.setAttribute('content', t === 'dark' ? '#0E1426' : '#F3F1EC')
     },
     /** Lấy nội dung mới nhất từ CMS và lưu đệm để lần sau hiện ngay. */
     async load() {

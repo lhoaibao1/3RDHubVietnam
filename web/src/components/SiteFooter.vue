@@ -40,6 +40,7 @@ const legal = Object.keys(LEGAL_SLUGS)
           <li class="coname"><b>{{ site.S('company_name') }}</b></li>
           <li><span>Mã số thuế</span><b>{{ site.S('tax_id') }}</b></li>
           <li v-if="site.S('address')"><span>Địa chỉ</span><b>{{ site.S('address') }}</b></li>
+          <li><span>Website công ty</span><a :href="site.S('parent_url')" target="_blank" rel="noopener">{{ site.S('parent_url').replace(/^https?:\/\//, '').replace(/\/$/, '') }}</a></li>
           <li><span>Email</span><a :href="'mailto:' + site.S('email')">{{ site.S('email') }}</a></li>
           <li><span>Hotline</span><a :href="'tel:' + site.S('hotline_tel')">{{ site.S('hotline') }}</a></li>
           <li v-if="hours"><span>Giờ làm việc</span><b>{{ hours }}</b></li>
