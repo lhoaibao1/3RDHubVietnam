@@ -2,6 +2,7 @@
 import * as T from 'three'
 import { BRANDS as BR } from '../lib/icons.generated'
 import type { Partner } from '../lib/content'
+import { dpr, meter, onQuality } from './quality'
 import { bankB, bars as barsP, hub, mailbox, monitor, phoneDev, rack, tower, tree } from './props'
 import { ENV, FONT, MAT, M, C, RB, RM, ao, blinkEyes, ctex, cyl, getMode, glow, mesh, onMode, pool, rgeo, robot, rr, screen, sparkles, sph, type Mode } from './core'
 
@@ -12,7 +13,7 @@ function boot() {
 /* ---------- 3D cho từng trang module: camera phối cảnh, một renderer dùng chung, canvas chuyển theo trang đang mở ---------- */
   var cv=document.createElement('canvas');cv.className='glp';cv.setAttribute('aria-hidden','true');
   var R=new T.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
-  R.setClearColor(0,0);R.outputEncoding=T.sRGBEncoding;R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=getMode()==='dark'?1.0:1.05;R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;
+  R.setClearColor(0,0);R.outputEncoding=T.sRGBEncoding;R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=getMode()==='dark'?1.0:1.05;R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;R.shadowMap.autoUpdate=false;
   var cam=new T.PerspectiveCamera(30,1,.5,400),W=1,H=1,vis=false,cur:any=null,SC:any={},clk=new T.Clock(),UPV=new T.Vector3(0,1,0),px=0,py=0,tx0=0,ty0=0;
   function V(x?:any,y?:any,z?:any){return new T.Vector3(x,y,z)}
   function bgCol(){var m=getComputedStyle(document.body).backgroundColor.match(/\d+/g)||[243,241,236];return new T.Color('rgb('+m[0]+','+m[1]+','+m[2]+')')}
@@ -63,7 +64,7 @@ function boot() {
     cyl(g,r-.13,.04,topM,0,.5,0,96);
     var neon=new T.Mesh(new T.TorusGeometry(r-.06,.045,10,140),new T.MeshBasicMaterial({color:C(A),toneMapped:false}));neon.rotation.x=Math.PI/2;neon.position.y=.52;g.add(neon);
     var neon2=new T.Mesh(new T.TorusGeometry(r+.2,.03,8,140),new T.MeshBasicMaterial({color:C(A),toneMapped:false,transparent:true,opacity:.7}));neon2.rotation.x=Math.PI/2;neon2.position.y=.2;g.add(neon2);
-    pool(g,r*2.6,A,.02,.5);
+    pool(g,r*2.1,A,.02,.45);
     onMode(function(m:Mode){body.emissiveIntensity=m==='dark'?.5:0;body.needsUpdate=true});body.emissiveIntensity=getMode()==='dark'?.5:0;
     g.userData.top=.54;return g}
   function bank(p?:any,s?:any){var b=new T.Group();b.scale.setScalar(s||1);p.add(b);
@@ -187,10 +188,11 @@ function boot() {
     if(q.fn)q.fn(t)});
     /* hiệu ứng xuất hiện: từng cụm bật lên lần lượt */
     var kids=o.root.children;for(var i=0;i<kids.length;i++){var c=kids[i];if(c.userData.s0==null)c.userData.s0=c.scale.x;var k=Math.min(1,Math.max(0,(t-o.t0-i*.12)/.75));var s=k<1?1+2.2*Math.pow(k-1,3)+1.2*Math.pow(k-1,2):1;c.scale.setScalar(Math.max(.001,c.userData.s0*s))}}
-  function size(){var r=cv.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);R.setPixelRatio(Math.min(devicePixelRatio||1,2));R.setSize(W,H,false)}
+  function size(){var r=cv.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);R.setPixelRatio(dpr());R.setSize(W,H,false)}
   new ResizeObserver(size).observe(cv);new IntersectionObserver(function(e){vis=e[0].isIntersecting}).observe(cv);
   window.addEventListener('pointermove',function(e){tx0=(e.clientX/innerWidth-.5)*2;ty0=(e.clientY/innerHeight-.5)*2},{passive:true});
-  (function loop(){requestAnimationFrame(loop);if(!cur||!vis)return;var t=clk.getElapsedTime();px+=(tx0-px)*.05;py+=(ty0-py)*.05;
+  var lastF=0,fc=0,mt=meter();onQuality(size);
+  (function loop(){requestAnimationFrame(loop);if(!cur||!vis)return;var tf=performance.now();if(tf-lastF<22)return;mt(tf-lastF);lastF=tf;if(fc++%3===0)R.shadowMap.needsUpdate=true;var t=clk.getElapsedTime();px+=(tx0-px)*.05;py+=(ty0-py)*.05;
     run(cur,RM?cur.t0+99:t);
     var mob=W<=900,asp=W/H,ea=mob?asp:asp*.56,vf=cam.fov*Math.PI/180,hf=2*Math.atan(Math.tan(vf/2)*ea),dist=cur.R*(mob?(cur.mz||1):.88)/Math.sin(Math.min(vf,hf)/2);
     var az=cur.az+(RM?0:Math.sin(t*.18)*.1)+px*.12,el=cur.el+py*.05;

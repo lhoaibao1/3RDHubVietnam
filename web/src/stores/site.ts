@@ -73,6 +73,15 @@ export const useSite = defineStore('site', {
       } catch { /* không có CMS: dùng nội dung mặc định */ }
     },
     S(k: string): string { return this.cms?.settings?.[k] || DEF_SETTINGS[k] || '' },
+    /** Giá trị cài đặt theo ngôn ngữ đang chọn: tên công ty, địa chỉ có bản tiếng Anh riêng (khoá *_en). */
+    SL(k: string): string {
+      if (this.lang !== 'en') return this.S(k)
+      const st = this.cms?.settings || {}
+      if (st[k + '_en']) return st[k + '_en']
+      // đã sửa bản tiếng Việt mà chưa có bản tiếng Anh: dùng luôn giá trị đó, tránh hiện bản mặc định cũ
+      if (st[k] && st[k] !== DEF_SETTINGS[k]) return st[k]
+      return DEF_SETTINGS[k + '_en'] || this.S(k)
+    },
     /** Bản tuỳ chỉnh từ CMS cho một chuỗi gốc tiếng Việt (nếu có). */
     ov(k: string): OvItem | null {
       const o = this.cms?.ov?.[k]

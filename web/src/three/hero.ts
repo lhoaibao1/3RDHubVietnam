@@ -1,5 +1,6 @@
 // Cảnh 3D trang chủ: 5 trạm của mô hình affiliate trên một đường dẫn, camera trực giao bay qua từng bước.
 import * as T from 'three'
+import { dpr, meter, onQuality } from './quality'
 import { bankB, hub, phoneDev, rack } from './props'
 import { ENV, MAT, M, C, RB, RM, FONT, blinkEyes, cyl, ctex, getMode, glow, mesh, onMode, pool, robot, rr, screen, sparkles, sph, type Mode } from './core'
 
@@ -16,11 +17,11 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
   var R: any, scene: any, cam: any, W = 1, H = 1, anim: any[] = [], stations: any[] = [], curve: any, progMesh: any, coin: any
   R=new T.WebGLRenderer({canvas:canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
   R.setClearColor(0,0);R.outputEncoding=T.sRGBEncoding;R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=getMode()==='dark'?1.05:1.18;
-  R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;
+  R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;R.shadowMap.autoUpdate=false;
   scene=new T.Scene();
   cam=new T.OrthographicCamera(-10,10,10,-10,.1,400);
   var hemi=new T.HemisphereLight(0xffffff,0xE9DFCF,.5);scene.add(hemi);scene.environment=ENV(getMode());
-  var sun=new T.DirectionalLight(0xFFF4E6,1.6);sun.position.set(-30,60,30);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);
+  var sun=new T.DirectionalLight(0xFFF4E6,1.6);sun.position.set(-30,60,30);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
   var sc=sun.shadow.camera;sc.left=-55;sc.right=55;sc.top=55;sc.bottom=-55;sc.near=1;sc.far=200;sun.shadow.bias=-.0004;sun.shadow.normalBias=.02;sun.shadow.radius=6;scene.add(sun);scene.add(sun.target);
   var fill=new T.DirectionalLight(0xDDE6FF,.35);fill.position.set(40,20,-20);scene.add(fill);
   var rimA=new T.DirectionalLight(0xFF8A4C,0);rimA.position.set(-40,14,-30);scene.add(rimA);var rimB=new T.DirectionalLight(0x38D6FF,0);rimB.position.set(44,12,-34);scene.add(rimB);
@@ -127,17 +128,17 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
   /* camera */
   var DIR=new T.Vector3(1,1.05,1).normalize(),tgt=new T.Vector3(),zoom=1,FIT=60;
   var KEY=[{t:new T.Vector3(0,2,-1),z:1}].concat(SP.map(function(s,i){return {t:new T.Vector3(s[0],stations[i].h*.5,s[1]),z:[2.0,2.45,2.45,2.4,2.4][i]}}));
-  function size(){var r=canvas.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);R.setPixelRatio(Math.min(devicePixelRatio||1,2));R.setSize(W,H,false)}
+  function size(){var r=canvas.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);R.setPixelRatio(dpr());R.setSize(W,H,false)}
   function camUpd(){var asp=W/H,mob=W<=900;var base=mob?Math.max(62/asp,34):Math.max(58,92/asp);var fh=base/(mob?1+(zoom-1)*1.45:zoom),fw=fh*asp;
     cam.left=-fw/2;cam.right=fw/2;cam.top=fh/2;cam.bottom=-fh/2;
     if(!mob)cam.setViewOffset(W,H,-W*.2,0,W,H);else cam.clearViewOffset();
     cam.updateProjectionMatrix();cam.position.copy(tgt).addScaledVector(DIR,120);cam.lookAt(tgt);
     sun.position.set(tgt.x-30,60,tgt.z+30);sun.target.position.copy(tgt);}
   size();
-  var P=0,PT=0,clock=new T.Clock(),vis=true,v=new T.Vector3(),raf=0,lastK=-1;
+  var P=0,PT=0,clock=new T.Clock(),vis=true,v=new T.Vector3(),raf=0,lastK=-1,lastF=0,fc=0,mt=meter(),bots:any[]=[];
   function ease(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}
   function frame(){
-    raf=requestAnimationFrame(frame);if(!vis)return;
+    raf=requestAnimationFrame(frame);if(!vis)return;var tf=performance.now();if(tf-lastF<14)return;mt(tf-lastF);lastF=tf;if(fc++%3===0)R.shadowMap.needsUpdate=true;
     var dt=Math.min(.05,clock.getDelta()),time=clock.elapsedTime;
     P+= (PT-P)*(RM?1:Math.min(1,dt*2.2));
     var i=Math.min(4,Math.floor(P)),f=P-i,e=ease(f),a=KEY[i],b=KEY[i+1];
@@ -146,11 +147,13 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
     if(i>=1){u=FR[i-1]+(FR[Math.min(4,i)]-FR[i-1])*e}else{u=0}
     setProg(u);coin.rotation.y=time*2.2;coin.position.y=2.2+Math.sin(time*3)*.25;
     anim.forEach(function(o){if(o.fn)o.fn(time);if(o.bob){o.bob.position.y=o.y0+Math.sin(time*1.6+o.ph)*.35;if(o.spinY)o.bob.rotation.y=.78+Math.sin(time*.8)*.4}if(o.blink)o.blink.visible=Math.sin(time*4+o.ph)>-.3;if(o.float){o.float.position.y=o.y0+((time*.6+o.ph)%3);o.float.material.opacity=1-((time*.6+o.ph)%3)/3}if(o.spinZ){o.spinZ.rotation.z=time*.6;if(o.b2)o.b2.rotation.z=time*.6+Math.PI/2}});
-    scene.traverse(function(o){if(o.userData&&o.userData.eyes)blinkEyes(o,time);if(o.userData&&o.userData.wave){o.userData.wave.rotation.z=-2.3+Math.sin(time*5+o.userData.ph)*.35}});
+    bots.forEach(function(o){blinkEyes(o,time);if(o.userData.wave){o.userData.wave.rotation.z=-2.3+Math.sin(time*5+o.userData.ph)*.35}});
     camUpd();R.render(scene,cam);
     /* tag */
     var k=Math.round(P);if(k>=1&&Math.abs(P-k)<.3){var s=SP[k-1];v.set(s[0],stations[k-1].h+6.5,s[1]).project(cam);tagEl.style.transform='translate('+((v.x*.5+.5)*W-60)+'px,'+((-v.y*.5+.5)*H-20)+'px)';if(k!==lastK){lastK=k;cb.onTag(k,LBL[k-1])}tagEl.style.opacity='1'}else tagEl.style.opacity='0';
   }
+  scene.traverse(function(o:any){if(o.userData&&o.userData.eyes)bots.push(o)});
+  var offQ=onQuality(size);
   var io=new IntersectionObserver(function(e){vis=e[0].isIntersecting});io.observe(canvas);
   var ro=new ResizeObserver(size);ro.observe(canvas);
   frame();
@@ -158,6 +161,6 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
   return {
     go(k) { PT = k },
     visible() { return vis },
-    dispose() { offMode(); cancelAnimationFrame(raf); io.disconnect(); ro.disconnect(); R.dispose(); scene.traverse(function (o) { if (o.geometry) o.geometry.dispose() }) },
+    dispose() { offMode(); offQ(); cancelAnimationFrame(raf); io.disconnect(); ro.disconnect(); R.dispose(); scene.traverse(function (o) { if (o.geometry) o.geometry.dispose() }) },
   }
 }

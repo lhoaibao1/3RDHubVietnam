@@ -7,7 +7,7 @@ import { fillTokens, renderLegal } from '@/lib/markdown'
 const props = defineProps<{ doc: 'terms' | 'privacy' }>()
 const site = useSite()
 const d = computed(() => site.legal(props.doc))
-const html = computed(() => renderLegal(fillTokens(d.value.body, (k) => site.S(k))))
+const html = computed(() => renderLegal(fillTokens(d.value.body, (k) => site.SL(k))))
 </script>
 
 <template>

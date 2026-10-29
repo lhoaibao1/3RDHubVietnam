@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import brand from '@/assets/brand.webp'
+import BrandIcon from './BrandIcon.vue'
 import { useSite } from '@/stores/site'
 import AnimDetails from './AnimDetails.vue'
 
@@ -16,7 +16,7 @@ const items = computed(() => site.faqItems.filter((f) => f.home))
         <h2>Câu hỏi thường gặp</h2>
         <p>Chưa thấy câu trả lời bạn cần? Gọi hotline hoặc gửi email, đội ngũ 3RDVN Technology phản hồi trong giờ làm việc.</p>
         <RouterLink class="more" to="/hoi-dap">Xem chi tiết →</RouterLink>
-        <div class="fqc"><img :src="brand" alt=""><div><small>Hotline</small><b>{{ site.S('hotline') }}</b></div></div>
+        <div class="fqc"><BrandIcon /><div><small>Hotline</small><b>{{ site.S('hotline') }}</b></div></div>
       </div>
       <div class="fq">
         <AnimDetails v-for="(f, i) in items" :key="f.id" :summary="site.pick(f.q)" :text="site.pick(f.a)" :open="i === 0" />
