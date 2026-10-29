@@ -6,3 +6,7 @@ npm/
 *.log
 .env
 cms/data/
+
+.data/
+web/node_modules/
+web/dist/

@@ -71,6 +71,10 @@ func main() {
 			log.Fatal(err)
 		}
 		if err := a.importLegacy(ctx, os.Args[2]); err != nil {
+			if errors.Is(err, errHasData) {
+				log.Print(err)
+				os.Exit(3)
+			}
 			log.Fatal(err)
 		}
 		if len(os.Args) > 3 {

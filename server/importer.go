@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,6 +19,9 @@ type legacyDump struct {
 	} `json:"revisions"`
 	Leads []leadRow `json:"leads"`
 }
+
+// errHasData: CSDL đã có dữ liệu nên không import (main thoát với mã 3, deploy.sh coi là bình thường).
+var errHasData = errors.New("đã có dữ liệu")
 
 // importLegacy nạp dữ liệu từ bản Python/SQLite cũ vào PostgreSQL. Chỉ chạy được khi CSDL còn trống
 // (chưa có nội dung nào được lưu), để không ghi đè dữ liệu đang dùng.
@@ -35,7 +39,7 @@ func (a *App) importLegacy(ctx context.Context, file string) error {
 		return err
 	}
 	if n > 0 {
-		return fmt.Errorf("CSDL đã có dữ liệu (%d bản ghi), bỏ qua import để không ghi đè", n)
+		return fmt.Errorf("CSDL đã có dữ liệu (%d bản ghi), bỏ qua import để không ghi đè: %w", n, errHasData)
 	}
 	tx, err := a.pool.Begin(ctx)
 	if err != nil {

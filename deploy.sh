@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# 3RDHub Vietnam: đưa site tĩnh + CMS lên VPS Ubuntu (nginx hoặc apache cho site, nginx cho CMS).
-# Không đụng vào các site khác trên server (vd. một site có sẵn).
+# 3RDHub Vietnam: đưa website (Vue, đã build sẵn) + backend Go + PostgreSQL lên VPS Ubuntu.
+# Không đụng vào các site khác trên server. Máy chủ KHÔNG cần Node.js: giao diện đã build sẵn trong site/ và admin/.
 #
 #   bash deploy.sh check          chỉ ĐỌC, cho biết server đang có gì, không đổi gì
-#   bash deploy.sh apply          cài site tĩnh (sao lưu, kiểm tra cấu hình, tự gỡ nếu lỗi)
-#   bash deploy.sh cms            cài CMS: dịch vụ nền + cms.<domain> + nối API vào site (chạy sau 'apply' cũng được, trước cũng được)
+#   bash deploy.sh apply          cài website (sao lưu, kiểm tra cấu hình, tự gỡ nếu lỗi); nếu backend đã cài thì cập nhật luôn backend
+#   bash deploy.sh cms            cài/cập nhật backend: tự cài PostgreSQL + Go, tạo CSDL, build, nạp dữ liệu bản cũ (SQLite), dịch vụ nền, cms.<domain>
 #   bash deploy.sh cms-password   đặt lại mật khẩu quản trị CMS (in mật khẩu mới ra màn hình)
 #   EMAIL=ban@mail.com bash deploy.sh ssl   (tuỳ chọn) HTTPS Let's Encrypt cho nginx
 #
 # Biến tuỳ chọn: DOMAIN (mặc định 3rdhubvietnam.tech), CMS_SUB (mặc định cms.$DOMAIN),
-#   ADMIN_PASSWORD (mật khẩu quản trị ban đầu; bỏ trống thì tự tạo), FORCE=1 (ghi đè khi trùng tên miền)
+#   ADMIN_PASSWORD (mật khẩu quản trị ban đầu; bỏ trống thì tự tạo), FORCE=1 (ghi đè khi trùng tên miền),
+#   GO_BIN (đường dẫn go có sẵn), GO_VERSION (phiên bản Go tự tải nếu máy chưa có, mặc định 1.22.12)
 set -euo pipefail
 
 DOMAIN="${DOMAIN:-3rdhubvietnam.tech}"
@@ -22,6 +23,11 @@ CMS_ENV="${CMS_ENV:-$ETC/3rdhub-cms.env}"
 UNIT_DIR="${UNIT_DIR:-$ETC/systemd/system}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SITE="$HERE/site"
+ADMIN_SRC="$HERE/admin"
+SERVER_SRC="$HERE/server"
+DB_NAME="${DB_NAME:-tdhubcms}"
+DB_USER="${DB_USER:-tdhubcms}"
+GO_VERSION="${GO_VERSION:-1.22.12}"
 MODE="${1:-check}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 
@@ -31,6 +37,12 @@ warn() { printf '\033[1;33m! %s\033[0m\n' "$*"; }
 die()  { printf '\033[1;31mX %s\033[0m\n' "$*" >&2; exit 1; }
 
 [ "$(id -u)" = 0 ] || die "Hãy chạy bằng root (hoặc thêm sudo)."
+
+# chỉ một lần triển khai chạy tại một thời điểm (cron 2 phút/lần có thể chồng lên lần cài đầu vốn lâu hơn)
+if [ "$MODE" != check ] && command -v flock >/dev/null 2>&1; then
+  exec 9>"${LOCK_FILE:-/var/lock/3rdhub-deploy.lock}" 2>/dev/null || exec 9>"/tmp/3rdhub-deploy.lock"
+  flock -n 9 || { echo "Đang có một lần triển khai khác chạy, bỏ qua lần này."; exit 0; }
+fi
 
 NGINX=""
 for c in "$(command -v nginx 2>/dev/null || true)" /www/server/nginx/sbin/nginx /usr/local/nginx/sbin/nginx /usr/sbin/nginx; do
@@ -133,7 +145,9 @@ do_check() {
   say "Web server"
   if [ -n "$NGINX" ]; then echo "nginx: $NGINX ($("$NGINX" -v 2>&1))"; else echo "không thấy nginx"; fi
   [ -n "$APACHE" ] && echo "apache: $APACHE" || true
-  command -v python3 >/dev/null 2>&1 && echo "python3: $(python3 -V 2>&1)" || echo "python3: chưa cài (CMS cần python3 >= 3.8)"
+  if find_go >/dev/null 2>&1; then echo "go: $("$(find_go)" version)"; else echo "go: chưa có (deploy.sh cms sẽ tự cài Go $GO_VERSION)"; fi
+  if command -v psql >/dev/null 2>&1; then echo "postgresql: $(psql --version)"; else echo "postgresql: chưa cài (deploy.sh cms sẽ tự cài)"; fi
+  command -v python3 >/dev/null 2>&1 && echo "python3: $(python3 -V 2>&1) (chỉ dùng khi nạp dữ liệu từ bản CMS cũ)" || echo "python3: chưa cài"
   say "Panel quản lý (nếu có)"
   ls -d /www/server/panel /usr/local/CyberCP /opt/1panel /etc/1panel /home/cloudpanel 2>/dev/null || echo "không thấy aaPanel / CyberPanel / 1Panel / CloudPanel"
   if [ -n "$NGINX" ]; then
@@ -146,7 +160,11 @@ do_check() {
   ls -la /var/www 2>/dev/null || echo "/var/www chưa có"
   ls -la "$WEBROOT" 2>/dev/null || echo "$WEBROOT chưa có"
   say "CMS"
-  if cms_installed; then echo "đã cài, cổng $(cms_port)"; systemctl is-active 3rdhub-cms 2>/dev/null || true; else echo "chưa cài"; fi
+  if cms_installed; then
+    echo "đã cài, cổng $(cms_port)"; systemctl is-active 3rdhub-cms 2>/dev/null || true
+    if grep -q '^DATABASE_URL=' "$CMS_ENV" 2>/dev/null; then echo "backend: Go + PostgreSQL"; else echo "backend: bản cũ (Python + SQLite), sẽ được nâng cấp khi chạy 'bash deploy.sh cms'"; fi
+  else echo "chưa cài"; fi
+  systemctl is-active postgresql 2>/dev/null | sed 's/^/postgresql: /' || true
   say "Firewall"
   if command -v ufw >/dev/null 2>&1; then ufw status | head -10; else echo "không dùng ufw"; fi
   say "DNS máy này thấy"
@@ -196,7 +214,7 @@ main_vhost() {
   if cms_installed; then
     local port; port="$(cms_port)"
     api="
-    # CMS: chỉ mở 3 đường dẫn công khai. Trang quản trị nằm ở $CMS_SUB
+    # Backend Go: chỉ mở 3 đường dẫn công khai. Trang quản trị nằm ở $CMS_SUB
     location = /api/content {
 $(proxy_block "$port")
     }
@@ -211,7 +229,7 @@ $(proxy_block "$port")
 "
   fi
   cat <<CONF
-# 3RDHub Vietnam: site tĩnh. Tạo bởi deploy.sh $STAMP
+# 3RDHub Vietnam: website (Vue, build sẵn). Tạo bởi deploy.sh $STAMP
 server {
     listen 80;
     listen [::]:80;
@@ -234,8 +252,9 @@ $api
         try_files \$uri \$uri/ /index.html;
         expires -1;
     }
-    location ^~ /lib/ {
-        expires 30d;
+    location ^~ /assets/ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
     }
     location ~* \.(?:png|ico|svg|webp|webmanifest)$ {
         expires 7d;
@@ -285,73 +304,200 @@ do_apply() {
   elif [ -n "$APACHE" ]; then apply_apache
   else die "Không thấy nginx hay apache. Chạy 'bash deploy.sh check' rồi gửi kết quả cho người hỗ trợ."; fi
   prune_backups
-  echo; ok "Hoàn tất. Mở: http://$DOMAIN"
+  echo; ok "Hoàn tất website. Mở: http://$DOMAIN"
   echo "Nếu dùng Cloudflare (đám mây cam): vào SSL/TLS và chọn 'Flexible' để chạy HTTPS ngay."
-  echo "Muốn thêm CMS: bash deploy.sh cms"
+  if cms_installed && [ -n "$NGINX" ] && [ "${NO_CHAIN:-0}" != 1 ]; then
+    say "Backend đã cài trên máy này: cập nhật luôn"
+    do_cms
+  else
+    echo "Muốn thêm CMS: bash deploy.sh cms"
+  fi
 }
 
-# ----------------------------------------------------------------- CMS
-free_port() {
-  python3 - <<'PY'
-import socket
-for p in range(8787, 8830):
-    s = socket.socket()
-    try:
-        s.bind(("127.0.0.1", p)); s.close(); print(p); break
-    except OSError:
-        s.close()
-PY
+# ----------------------------------------------------------------- Backend Go + PostgreSQL
+# chạy lệnh với quyền người dùng dịch vụ (khi thử nghiệm SKIP_SYSTEM=1 thì chạy bằng chính người đang gọi)
+as_cms() { if [ "${SKIP_SYSTEM:-0}" = 1 ]; then "$@"; else runuser -u tdhubcms -- "$@"; fi; }
+pg_psql() { (cd /tmp && runuser -u postgres -- env ${PGPORT:+PGPORT=$PGPORT} ${PGHOST:+PGHOST=$PGHOST} psql -v ON_ERROR_STOP=1 -tAq "$@"); }
+
+go_ok() { # $1=đường dẫn go; đạt nếu >= 1.22
+  local v maj min
+  v="$(GOTOOLCHAIN=local "$1" env GOVERSION 2>/dev/null | sed 's/^go//')" || return 1
+  maj="${v%%.*}"; min="${v#*.}"; min="${min%%.*}"
+  case "$maj$min" in ''|*[!0-9]*) return 1 ;; esac
+  [ "$maj" -gt 1 ] || { [ "$maj" -eq 1 ] && [ "$min" -ge 22 ]; }
+}
+find_go() {
+  local c
+  for c in "${GO_BIN:-}" /usr/local/go/bin/go "$(command -v go 2>/dev/null || true)"; do
+    [ -n "$c" ] && [ -x "$c" ] && go_ok "$c" && { echo "$c"; return 0; }
+  done
+  return 1
+}
+install_go() {
+  [ "${SKIP_SYSTEM:-0}" != 1 ] || die "Thiếu Go >= 1.22 (đang ở chế độ thử SKIP_SYSTEM, không tự cài)."
+  local arch tgz tmp sum want
+  case "$(uname -m)" in x86_64|amd64) arch=amd64 ;; aarch64|arm64) arch=arm64 ;; *) die "CPU $(uname -m) chưa hỗ trợ tự cài Go. Cài Go >= 1.22 thủ công rồi chạy lại (hoặc đặt GO_BIN=/đường/dẫn/go)." ;; esac
+  tgz="go${GO_VERSION}.linux-${arch}.tar.gz"; tmp="$(mktemp -d)"
+  say "Tải Go $GO_VERSION ($arch) từ go.dev"
+  curl -fsSL -m 600 -o "$tmp/$tgz" "https://go.dev/dl/$tgz" || { rm -rf "$tmp"; die "Không tải được Go. Kiểm tra mạng của VPS hoặc cài Go >= 1.22 thủ công (GO_BIN=/đường/dẫn/go)."; }
+  want="$(curl -fsSL -m 60 'https://go.dev/dl/?mode=json&include=all' | python3 -c 'import json,sys
+n=sys.argv[1]
+for r in json.load(sys.stdin):
+    for f in r["files"]:
+        if f["filename"]==n: print(f["sha256"]); raise SystemExit' "$tgz" || true)"
+  sum="$(sha256sum "$tmp/$tgz" | cut -d' ' -f1)"
+  [ -n "$want" ] && [ "$sum" = "$want" ] || { rm -rf "$tmp"; die "Không xác minh được checksum của $tgz, dừng để an toàn."; }
+  tar -C "$tmp" -xzf "$tmp/$tgz"
+  rm -rf "/usr/local/go-$GO_VERSION"; mv "$tmp/go" "/usr/local/go-$GO_VERSION"; rm -rf "$tmp"
+  if [ -e /usr/local/go ] && [ ! -L /usr/local/go ]; then mv /usr/local/go "/usr/local/go.old-$STAMP"; fi
+  ln -sfn "/usr/local/go-$GO_VERSION" /usr/local/go
+  ok "Đã cài Go $GO_VERSION vào /usr/local/go"
+}
+ensure_go() { find_go >/dev/null 2>&1 || install_go; find_go >/dev/null 2>&1 || die "Vẫn không có Go >= 1.22."; }
+
+ensure_postgres() {
+  if ! pg_psql -c 'SELECT 1' >/dev/null 2>&1; then
+    if ! command -v psql >/dev/null 2>&1 || ! id postgres >/dev/null 2>&1; then
+      [ "${SKIP_SYSTEM:-0}" != 1 ] || die "Không có PostgreSQL (đang ở chế độ thử SKIP_SYSTEM, không tự cài)."
+      say "Cài PostgreSQL"
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -y >/dev/null && apt-get install -y postgresql >/dev/null || die "apt không cài được postgresql."
+    fi
+    if [ "${SKIP_SYSTEM:-0}" != 1 ]; then systemctl enable --now postgresql >/dev/null 2>&1 || true; fi
+    local i; for i in $(seq 1 40); do pg_psql -c 'SELECT 1' >/dev/null 2>&1 && break; sleep 1; done
+    pg_psql -c 'SELECT 1' >/dev/null 2>&1 || die "PostgreSQL không chạy. Xem: systemctl status postgresql"
+  fi
+  ok "PostgreSQL sẵn sàng ($(pg_psql -c 'SHOW server_version' | cut -d' ' -f1))"
+}
+ensure_db() {
+  [ "$(pg_psql -c "SELECT 1 FROM pg_roles WHERE rolname='$DB_USER'")" = 1 ] || { pg_psql -c "CREATE ROLE \"$DB_USER\" LOGIN" >/dev/null; ok "Đã tạo vai trò CSDL $DB_USER"; }
+  [ "$(pg_psql -c "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'")" = 1 ] || { pg_psql -c "CREATE DATABASE \"$DB_NAME\" OWNER \"$DB_USER\"" >/dev/null; ok "Đã tạo CSDL $DB_NAME"; }
+}
+# kết nối qua unix socket, xác thực bằng chính người dùng hệ điều hành (peer): không có mật khẩu CSDL nào để lộ
+db_url() {
+  local sock port
+  sock="$(pg_psql -c 'SHOW unix_socket_directories' | cut -d, -f1 | tr -d ' ')"; port="$(pg_psql -c 'SHOW port')"
+  printf 'postgres://%s@/%s?host=%s&port=%s&sslmode=disable' "$DB_USER" "$DB_NAME" "$sock" "$port"
+}
+
+# đặt KEY=VALUE trong file môi trường; trả về 0 nếu có thay đổi
+env_set() {
+  local k="$1" v="$2" cur rest
+  cur="$(grep -E "^$k=" "$CMS_ENV" | head -1 | cut -d= -f2- || true)"
+  [ "$cur" = "$v" ] && return 1
+  rest="$(grep -v "^$k=" "$CMS_ENV" || true)"
+  { [ -n "$rest" ] && printf '%s\n' "$rest"; printf '%s=%s\n' "$k" "$v"; } > "$CMS_ENV"
+  return 0
+}
+
+# tên cổng trống đầu tiên từ 8787
+free_port() { local p; for p in $(seq 8787 8829); do ss -ltn 2>/dev/null | awk '{print $4}' | grep -q ":$p\$" || { echo "$p"; return; }; done; }
+rand_pass() { LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c 16 || true; }
+
+# mã nguồn Go đổi thì mới build lại (dấu vân tay của thư mục server/, kể cả vendor/)
+server_hash() { (cd "$SERVER_SRC" && find . -type f ! -name '*_test.go' -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1); }
+build_server() {
+  local GO h; GO="$(find_go)"; h="$(server_hash)"
+  if [ -x "$CMS_DIR/server" ] && [ "$(cat "$CMS_DIR/.build-hash" 2>/dev/null)" = "$h" ]; then ok "Backend không đổi mã nguồn, không build lại"; return 1; fi
+  say "Build backend Go ($("$GO" env GOVERSION))"
+  mkdir -p "$CMS_DIR"
+  ( cd "$SERVER_SRC" && HOME="${HOME:-/root}" GOCACHE="${GOCACHE:-/var/cache/3rdhub-gocache}" GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 \
+      "$GO" build -trimpath -o "$CMS_DIR/server.new" . ) || { rm -f "$CMS_DIR/server.new"; die "Build backend thất bại (xem lỗi ở trên). Backend đang chạy được giữ nguyên."; }
+  echo "$h" > "$CMS_DIR/.build-hash.new"
+  return 0
+}
+
+migrate_legacy() {
+  local old="$CMS_DATA/cms.db" dump="$CMS_DATA/legacy-dump.json" rc=0
+  [ -f "$old" ] && [ ! -f "$CMS_DATA/.sqlite-imported" ] || return 0
+  command -v python3 >/dev/null 2>&1 || die "Cần python3 để đọc dữ liệu bản CMS cũ (SQLite). apt-get install -y python3"
+  say "Nạp dữ liệu bản CMS cũ (SQLite) vào PostgreSQL"
+  python3 "$HERE/tools/export-sqlite.py" "$old" > "$dump" || { rm -f "$dump"; die "Không đọc được $old."; }
+  [ "${SKIP_SYSTEM:-0}" = 1 ] || chown tdhubcms:tdhubcms "$dump"; chmod 600 "$dump"
+  as_cms env DATABASE_URL="$DB_URL" CMS_DATA="$CMS_DATA" ADMIN_DIR="$CMS_DIR/admin" "$CMS_DIR/server" import "$dump" "$CMS_DATA/uploads" || rc=$?
+  rm -f "$dump"
+  case "$rc" in
+    0) ok "Đã nạp nội dung, yêu cầu khách và lịch sử từ bản cũ" ;;
+    3) warn "CSDL PostgreSQL đã có dữ liệu, bỏ qua bước nạp từ bản cũ (giữ nguyên dữ liệu hiện có)" ;;
+    *) die "Nạp dữ liệu từ bản cũ thất bại (mã $rc). Bản cũ vẫn còn nguyên ở $old." ;;
+  esac
+  mv "$old" "$old.migrated-$STAMP"; rm -f "$old-wal" "$old-shm"; : > "$CMS_DATA/.sqlite-imported"
 }
 
 do_cms() {
   [ -n "$NGINX" ] || die "CMS hiện chỉ cấu hình tự động cho nginx. Chạy 'bash deploy.sh check' rồi gửi kết quả cho người hỗ trợ."
-  [ -f "$HERE/cms/server.py" ] || die "Thiếu thư mục cms/ trong gói."
-  command -v python3 >/dev/null 2>&1 || { say "Cài python3"; apt-get update -y && apt-get install -y python3; }
-  python3 -c 'import sys,sqlite3; sys.exit(0 if sys.version_info>=(3,8) else 1)' || die "Cần python3 >= 3.8 có sqlite3."
+  [ -f "$SERVER_SRC/main.go" ] && [ -f "$ADMIN_SRC/index.html" ] || die "Thiếu server/ hoặc admin/ trong gói."
 
-  say "Cài mã nguồn CMS vào $CMS_DIR"
-  local RESTART=0
-  cmp -s "$HERE/cms/server.py" "$CMS_DIR/server.py" 2>/dev/null || RESTART=1   # giao diện admin và dữ liệu mặc định đọc lại mỗi yêu cầu, chỉ server.py mới cần khởi động lại
-  mkdir -p "$CMS_DIR"
-  cp -a "$HERE/cms/." "$CMS_DIR/"
-  find "$CMS_DIR" -type d -exec chmod 755 {} +; find "$CMS_DIR" -type f -exec chmod 644 {} +
-  mkdir -p "$CMS_DATA"
+  say "Chuẩn bị PostgreSQL và Go"
+  ensure_go
+  ensure_postgres
+  ensure_db
+  DB_URL="$(db_url)"
+
+  mkdir -p "$CMS_DATA" "$CMS_DIR"
   if [ "${SKIP_SYSTEM:-0}" != 1 ]; then
     id tdhubcms >/dev/null 2>&1 || useradd --system --no-create-home --shell /usr/sbin/nologin tdhubcms
     chown -R tdhubcms:tdhubcms "$CMS_DATA"; chmod 750 "$CMS_DATA"
   fi
 
-  local NEWPASS=""
+  local RESTART=0 BUILT=0 LEGACY=0 UNITF="$UNIT_DIR/3rdhub-cms.service" NEWPASS=""
+  [ -f "$CMS_DIR/server.py" ] && LEGACY=1
+  build_server && BUILT=1
+  [ "$BUILT" = 1 ] && RESTART=1
+
+  # sao lưu bản cũ (Python) trước khi thay, để quay lại được nếu bản mới không chạy
+  local LEGACY_TGZ=""
+  if [ "$LEGACY" = 1 ]; then
+    LEGACY_TGZ="/root/backup-cms-legacy-$STAMP.tgz"
+    tar czf "$LEGACY_TGZ" -C / "${CMS_DIR#/}" "${UNITF#/}" "${CMS_ENV#/}" $( [ -f "$CMS_DATA/cms.db" ] && echo "${CMS_DATA#/}/cms.db" ) 2>/dev/null \
+      && ok "Đã sao lưu bản CMS cũ: $LEGACY_TGZ" || warn "Không sao lưu được bản cũ đầy đủ (tiếp tục, dữ liệu SQLite vẫn còn nguyên)"
+  fi
+
+  say "Cài mã nguồn backend vào $CMS_DIR"
+  if [ "$BUILT" = 1 ]; then mv -f "$CMS_DIR/server.new" "$CMS_DIR/server"; mv -f "$CMS_DIR/.build-hash.new" "$CMS_DIR/.build-hash"; chmod 755 "$CMS_DIR/server"; fi
+  if ! diff -rq "$ADMIN_SRC" "$CMS_DIR/admin" >/dev/null 2>&1; then
+    rm -rf "$CMS_DIR/admin"; cp -a "$ADMIN_SRC" "$CMS_DIR/admin"
+    find "$CMS_DIR/admin" -type d -exec chmod 755 {} +; find "$CMS_DIR/admin" -type f -exec chmod 644 {} +
+  fi
+  if [ "$LEGACY" = 1 ]; then rm -rf "$CMS_DIR/server.py" "$CMS_DIR/defaults.json" "$CMS_DIR/seed" "$CMS_DIR/data"; fi
+  rm -f "$CMS_DIR/.build-hash.new" "$CMS_DIR/server.new"
+
+  # file cấu hình môi trường: tạo mới, hoặc bổ sung các khoá của backend Go vào file cũ
   if [ ! -f "$CMS_ENV" ]; then
     local port pass; port="$(free_port)"; [ -n "$port" ] || die "Không tìm được cổng trống từ 8787 đến 8829."
-    pass="${ADMIN_PASSWORD:-$(python3 -c 'import secrets;print(secrets.token_urlsafe(12))')}"
+    pass="${ADMIN_PASSWORD:-$(rand_pass)}"
     umask 077
     cat > "$CMS_ENV" <<ENV
 PORT=$port
 BIND=127.0.0.1
 CMS_DATA=$CMS_DATA
 CMS_HOSTS=$CMS_SUB
+DATABASE_URL=$DB_URL
+ADMIN_DIR=$CMS_DIR/admin
 CMS_ADMIN_PASSWORD=$pass
 ENV
     umask 022
     NEWPASS="$pass"; RESTART=1
     ok "Đã tạo $CMS_ENV (cổng $port)"
+  else
+    if env_set DATABASE_URL "$DB_URL"; then RESTART=1; fi
+    if env_set ADMIN_DIR "$CMS_DIR/admin"; then RESTART=1; fi
   fi
   local PORT; PORT="$(cms_port)"
 
   mkdir -p "$UNIT_DIR"
-  local UNITF="$UNIT_DIR/3rdhub-cms.service"
   cat > "$UNITF.new" <<UNIT
 [Unit]
-Description=3RDHub CMS
-After=network.target
+Description=3RDHub CMS (Go + PostgreSQL)
+After=network.target postgresql.service
+Wants=postgresql.service
 
 [Service]
 User=tdhubcms
 Group=tdhubcms
 WorkingDirectory=$CMS_DIR
 EnvironmentFile=$CMS_ENV
-ExecStart=$(command -v python3) $CMS_DIR/server.py
+ExecStart=$CMS_DIR/server serve
 Restart=always
 RestartSec=3
 NoNewPrivileges=true
@@ -364,16 +510,33 @@ ReadWritePaths=$CMS_DATA
 WantedBy=multi-user.target
 UNIT
   if ! cmp -s "$UNITF.new" "$UNITF" 2>/dev/null; then mv -f "$UNITF.new" "$UNITF"; RESTART=1; else rm -f "$UNITF.new"; fi
+
   if [ "${SKIP_SYSTEM:-0}" != 1 ]; then
     systemctl is-active --quiet 3rdhub-cms || RESTART=1
+    if [ -f "$CMS_DATA/cms.db" ] && [ ! -f "$CMS_DATA/.sqlite-imported" ]; then
+      systemctl stop 3rdhub-cms 2>/dev/null || true   # ngắt bản cũ trước khi đọc SQLite để không mất dữ liệu ghi dở
+      RESTART=1
+    fi
+  fi
+  migrate_legacy
+  if [ "${SKIP_SYSTEM:-0}" != 1 ]; then
     if [ "$RESTART" = 1 ]; then
       systemctl daemon-reload && systemctl enable 3rdhub-cms >/dev/null 2>&1 && systemctl restart 3rdhub-cms
       ok "Đã khởi động lại CMS (mã nguồn hoặc cấu hình dịch vụ có đổi)"
     else
-      ok "CMS không đổi mã nguồn, giữ nguyên tiến trình đang chạy"
+      ok "CMS không đổi, giữ nguyên tiến trình đang chạy"
     fi
-    local i; for i in $(seq 1 30); do curl -fsS "http://127.0.0.1:$PORT/api/content" >/dev/null 2>&1 && break; sleep 0.5; done
-    curl -fsS "http://127.0.0.1:$PORT/api/content" >/dev/null 2>&1 || { journalctl -u 3rdhub-cms -n 30 --no-pager >&2 || true; die "CMS không khởi động được. Xem log ở trên."; }
+    local i; for i in $(seq 1 40); do curl -fsS "http://127.0.0.1:$PORT/api/content" >/dev/null 2>&1 && break; sleep 0.5; done
+    if ! curl -fsS "http://127.0.0.1:$PORT/api/content" >/dev/null 2>&1; then
+      journalctl -u 3rdhub-cms -n 30 --no-pager >&2 || true
+      if [ -n "$LEGACY_TGZ" ] && [ -f "$LEGACY_TGZ" ]; then
+        warn "Backend mới không chạy được, đang quay lại bản cũ từ $LEGACY_TGZ"
+        systemctl stop 3rdhub-cms 2>/dev/null || true
+        tar xzf "$LEGACY_TGZ" -C / && systemctl daemon-reload && systemctl restart 3rdhub-cms && warn "Đã khôi phục bản CMS cũ. Gửi log ở trên cho người hỗ trợ."
+        rm -f "$CMS_DATA/.sqlite-imported"
+      fi
+      die "Backend không khởi động được. Xem log ở trên."
+    fi
     ok "CMS đang chạy (dịch vụ 3rdhub-cms, cổng $PORT, chỉ nghe trên 127.0.0.1)"
     # mật khẩu ban đầu chỉ cần cho lần chạy đầu: gỡ khỏi file cấu hình
     sed -i '/^CMS_ADMIN_PASSWORD=/d' "$CMS_ENV"
@@ -421,8 +584,10 @@ CONF
 
 do_cms_password() {
   cms_installed || die "CMS chưa được cài (không thấy $CMS_ENV)."
-  local pw; pw="$(python3 -c 'import secrets;print(secrets.token_urlsafe(12))')"
-  runuser -u tdhubcms -- env CMS_DATA="$CMS_DATA" python3 "$CMS_DIR/server.py" --reset-password "$pw" >/dev/null
+  local pw url; pw="$(rand_pass)"
+  url="$(grep -E '^DATABASE_URL=' "$CMS_ENV" | head -1 | cut -d= -f2-)"
+  [ -n "$url" ] || die "CMS đang là bản cũ (chưa có PostgreSQL). Chạy 'bash deploy.sh cms' trước."
+  as_cms env DATABASE_URL="$url" CMS_DATA="$CMS_DATA" ADMIN_DIR="$CMS_DIR/admin" "$CMS_DIR/server" reset-password "$pw" >/dev/null
   systemctl restart 3rdhub-cms 2>/dev/null || true
   ok "Đã đặt lại mật khẩu quản trị."
   echo "  Mật khẩu mới: $pw"
