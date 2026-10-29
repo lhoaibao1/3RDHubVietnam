@@ -1,5 +1,6 @@
 // Cảnh 3D trang chủ: 5 trạm của mô hình affiliate trên một đường dẫn, camera trực giao bay qua từng bước.
 import * as T from 'three'
+import { bankB, hub, phoneDev, rack } from './props'
 import { ENV, MAT, M, C, RB, RM, FONT, blinkEyes, cyl, ctex, getMode, glow, mesh, onMode, pool, robot, rr, screen, sparkles, sph, type Mode } from './core'
 
 export const HERO_LABELS = ['Advertiser', '3RDHub', 'Publisher', 'Khách hàng', 'Hoa hồng']
@@ -30,6 +31,7 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
     floor.material.opacity=d?.5:.16;scene.environment=ENV(m);R.toneMappingExposure=d?1.05:1.18}
   var offMode=onMode(lights);lights(getMode());
 
+  function rbt(...a:any[]){var r=(robot as any)(...a);r.position.y=.8;return r}
   var ACC=[0xFF6A2B,0x7B4DFF,0x12A06A,0x1BA6D9,0xFFB238];
   var topTex=ctex(512,512,function(x:any,w:any,h:any){var g=x.createLinearGradient(0,0,w,h);g.addColorStop(0,'#FFFFFF');g.addColorStop(1,'#ECE7DD');x.fillStyle=g;x.fillRect(0,0,w,h);x.strokeStyle='rgba(110,100,85,.13)';x.lineWidth=2;for(var k=1;k<8;k++){x.beginPath();x.moveTo(k*w/8,0);x.lineTo(k*w/8,h);x.moveTo(0,k*h/8);x.lineTo(w,k*h/8);x.stroke()}
     x.strokeStyle='rgba(110,100,85,.35)';x.lineWidth=6;x.lineCap='round';[[40,40,1,1],[w-40,40,-1,1],[40,h-40,1,-1],[w-40,h-40,-1,-1]].forEach(function(c:any){x.beginPath();x.moveTo(c[0],c[1]+c[3]*46);x.lineTo(c[0],c[1]);x.lineTo(c[0]+c[2]*46,c[1]);x.stroke()})});
@@ -37,6 +39,7 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
     var edge=M(acc,{r:.3,e:acc,ei:0,cc:.4});RB(g,13.5,.5,13.5,1.2,edge,0,-.1,0);
     RB(g,13,.7,13,1.2,MAT.white,0,.1,0);
     var tp=new T.Mesh(new T.PlaneGeometry(12.2,12.2),new T.MeshStandardMaterial({map:topTex,roughness:.7}));tp.rotation.x=-Math.PI/2;tp.position.y=.805;tp.receiveShadow=true;g.add(tp);
+    function paintTop(m:Mode){(tp.material as any).color.set(m==='dark'?0x6B79B8:0xFFFFFF)}paintTop(getMode());onMode(paintTop);
     var neon=new T.Mesh(new T.PlaneGeometry(12.4,12.4),new T.MeshBasicMaterial({color:C(acc),toneMapped:false,transparent:true,opacity:.0}));
     onMode(function(m:Mode){edge.emissiveIntensity=m==='dark'?.7:0;edge.needsUpdate=true});edge.emissiveIntensity=getMode()==='dark'?.7:0;
     pool(g,17,acc,.05,.45);
@@ -46,25 +49,20 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
 
   /* S1 advertiser: ngân hàng + thẻ tín dụng */
   (function(){var g=platform(SP[0][0],SP[0][1],ACC[0]);
-    RB(g,7.4,.5,5.6,.2,MAT.cream,-1.2,.8,-1.8);RB(g,6.8,.4,5,.2,MAT.cream,-1.2,1.3,-1.8);
-    RB(g,6.2,4.2,4.2,.3,MAT.white,-1.2,1.7,-2.2);
-    for(var k=0;k<4;k++){cyl(g,.32,3.6,MAT.white,-3.6+k*1.6,1.7,.35,20);RB(g,.9,.2,.9,.06,MAT.cream,-3.6+k*1.6,5.3,.35)}
-    RB(g,7,.5,5.2,.2,MAT.navy,-1.2,5.5,-1.8);
-    var tri=new T.Shape();tri.moveTo(-3.6,0);tri.lineTo(3.6,0);tri.lineTo(0,1.9);tri.lineTo(-3.6,0);var pg=new T.ExtrudeGeometry(tri,{depth:4.6,bevelEnabled:true,bevelThickness:.12,bevelSize:.12,bevelSegments:3});pg.translate(0,0,-2.3);var ped=mesh(pg,MAT.orange,-1.2,6.0,-1.8);g.add(ped);
-    RB(g,1.2,2.2,.15,.06,MAT.navy,-1.2,1.7,-.05);
+    var bk=bankB(g,1.15);bk.position.set(-1.2,.8,-1.8);var ped=bk;
     var tx=ctex(640,150,function(x,w,h){x.fillStyle='#0B2A6F';rr(x,0,0,w,h,28);x.fill();x.fillStyle='#fff';x.font='900 66px '+FONT;x.textAlign='center';x.textBaseline='middle';x.fillText('ADVERTISER',w/2,h/2+4)});
-    screen(g,3.6,.85,tx,-1.2,5.75,.82);
+    screen(g,2.9,.7,tx,-1.2,5.45,1.2);
     var card=ctex(640,400,function(x,w,h){var gr=x.createLinearGradient(0,0,w,h);gr.addColorStop(0,'#0B2A6F');gr.addColorStop(1,'#2E5BD8');x.fillStyle=gr;rr(x,0,0,w,h,44);x.fill();x.fillStyle='#FFC24D';rr(x,60,130,110,84,14);x.fill();x.fillStyle='rgba(255,255,255,.9)';x.font='800 40px '+FONT;x.fillText('4520  ••••  ••••  2026',60,300);x.fillStyle='#FF6A2B';x.beginPath();x.arc(w-120,h-80,40,0,7);x.fill();x.fillStyle='rgba(255,193,77,.9)';x.beginPath();x.arc(w-80,h-80,40,0,7);x.fill();x.fillStyle='#fff';x.font='900 44px '+FONT;x.fillText('CREDIT',60,90)});
     var cg=new T.Group();var cb=mesh(new T.BoxGeometry(4.2,2.7,.18),MAT.navy);cg.add(cb);screen(cg,4.1,2.6,card,0,0,.1);cg.rotation.order='YXZ';cg.rotation.y=.78;cg.rotation.x=-.12;cg.position.set(3.2,3.6,2.6);g.add(cg);anim.push({bob:cg,y0:3.6,ph:0});
-    robot(g,1.45,-3.6,4.0,.78,{wave:true});
+    rbt(g,1.45,-3.6,4.0,.78,{wave:true});
     stations.push({g:g,h:6});})();
   /* S2 3RDHub */
   (function(){var g=platform(SP[1][0],SP[1][1],ACC[1]);
-    RB(g,6.4,3.4,6.4,.9,MAT.orange,0,.8,0);
+    var HB=hub(g,1.1,0,.8,0,0xFF6A2B);anim.push({fn:HB.tick});
     var lk=ctex(1024,320,function(x,w,h){x.fillStyle='#fff';rr(x,0,0,w,h,56);x.fill();x.fillStyle='#8890A6';x.font='800 40px '+FONT;x.textAlign='center';x.textBaseline='middle';x.fillText('Link của bạn',w/2,82);x.fillStyle='#0B2A6F';x.font='900 52px '+FONT;x.fillText('3rdvn.io.vn/aff/shb-finance',w/2,160);x.fillStyle='#FFE14D';rr(x,w/2-210,204,420,76,18);x.fill();x.fillStyle='#0B2A6F';x.fillText('?ref=RD260001',w/2,244)});
-    screen(g,5.4,1.69,lk,0,2.5,3.22);
-    for(var k=0;k<3;k++){var rk=RB(g,1.3,4.4,1.5,.25,MAT.navy,-4.9,.8,-3+k*2.1);var led=M(0x3CC48B,{e:0x3CC48B,ei:1.5});for(var j=0;j<4;j++){var ll=mesh(new T.BoxGeometry(.8,.08,.05),j%2?MAT.orange:led,-4.9,1.9+j*.8,-3+k*2.1+.77,true);g.add(ll);anim.push({blink:ll,ph:k+j})}}
-    robot(g,1.6,.8,.4,.78,{wave:true}).position.y=4.2;
+    screen(g,5.4,1.69,lk,0,2.4,4.6,0);
+    var RK=rack(g,-5.2,.8,-3.2,3);RK.leds.forEach(function(l:any,n:number){anim.push({blink:l,ph:n})});
+    rbt(g,1.6,4.2,3.4,.78,{wave:true});
     var ch=new T.Group();var t1=mesh(new T.TorusGeometry(1.1,.32,16,40),MAT.orange);t1.scale.set(1.5,1,1);t1.position.x=-.9;ch.add(t1);var t2=mesh(new T.TorusGeometry(1.1,.32,16,40),MAT.navy);t2.scale.set(1.5,1,1);t2.position.x=.9;t2.rotation.x=Math.PI/2;ch.add(t2);ch.position.set(-1.6,9.2,1.6);ch.rotation.y=.78;g.add(ch);anim.push({bob:ch,y0:9.2,ph:1.2,spinY:true});
     var cur=new T.Shape();cur.moveTo(0,0);cur.lineTo(0,-2.4);cur.lineTo(.6,-1.8);cur.lineTo(1.1,-2.9);cur.lineTo(1.5,-2.7);cur.lineTo(1.0,-1.6);cur.lineTo(1.8,-1.6);cur.lineTo(0,0);
     var cm2=mesh(new T.ExtrudeGeometry(cur,{depth:.35,bevelEnabled:true,bevelThickness:.08,bevelSize:.08,bevelSegments:3}),MAT.white);cm2.position.set(3.6,8.4,2.6);cm2.rotation.y=.78;cm2.rotation.z=.25;g.add(cm2);anim.push({bob:cm2,y0:8.4,ph:2.4});
@@ -79,7 +77,7 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
     RB(g,1.4,.08,1,.06,MAT.navy,1.9,2.7,-1.5);
     cyl(g,.3,.5,MAT.orange,2.4,2.7,-2.4,20);
     RB(g,1.6,.25,1.6,.2,MAT.navy,-.4,1.3,1.2);RB(g,1.6,1.6,.25,.15,MAT.navy,-.4,1.5,1.95);cyl(g,.12,1.2,MAT.dark,-.4,.8,1.2,8);
-    robot(g,1.45,-.4,1.0,Math.PI);
+    rbt(g,1.45,-.4,1.0,Math.PI);
     var tp=new T.Group();[0,2.1,4.2].forEach(function(a){var l=mesh(new T.CylinderGeometry(.06,.06,3.4,8),MAT.dark);l.position.set(Math.sin(a)*.6,1.6,Math.cos(a)*.6);l.rotation.set(Math.cos(a)*.18,0,-Math.sin(a)*.18);tp.add(l)});
     var rl=mesh(new T.TorusGeometry(1.1,.14,14,48),M(0xFFFFFF,{e:0xFFF3D6,ei:1.2}));rl.position.y=4.1;tp.add(rl);
     var ph2=new T.Group();RB(ph2,.85,1.6,.12,.12,MAT.navy,0,-.8,0);ph2.position.set(0,4.1,.06);tp.add(ph2);
@@ -92,8 +90,8 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
   /* S4 khách hàng */
   (function(){var g=platform(SP[3][0],SP[3][1],ACC[3]);
     var ph=ctex(300,600,function(x,w,h){x.fillStyle='#fff';x.fillRect(0,0,w,h);x.fillStyle='#0B2A6F';x.font='900 30px '+FONT;x.fillText('Mở thẻ tín dụng',26,70);x.fillStyle='#8890A6';x.font='600 20px '+FONT;x.fillText('SHB Finance',26,104);for(var i=0;i<4;i++){x.fillStyle='#EEF1F7';rr(x,26,140+i*80,w-52,56,14);x.fill()}x.fillStyle='#FF6A2B';rr(x,26,480,w-52,64,18);x.fill();x.fillStyle='#fff';x.font='900 26px '+FONT;x.textAlign='center';x.fillText('Đăng ký ngay',w/2,522)});
-    var p=new T.Group();RB(p,3.2,6.2,.45,.4,MAT.navy,0,0,0);screen(p,2.85,5.75,ph,0,3.1,.24);p.position.set(1.6,.8,-1.6);p.rotation.y=-.35;p.rotation.x=-.08;g.add(p);
-    robot(g,1.55,-2.4,2.4,.78,{wave:true});
+    phoneDev(g,3.2,6.2,ph,1.6,.8,-1.6,-.35);
+    rbt(g,1.55,-2.4,2.4,.78,{wave:true});
     var hs=new T.Group();RB(hs,3,2.6,3,.3,MAT.cream,0,0,0);var roof=mesh(new T.ConeGeometry(2.5,1.6,4),MAT.orange,0,3.4,0);roof.rotation.y=Math.PI/4;hs.add(roof);RB(hs,.8,1.4,.1,.05,MAT.navy,0,0,1.52);hs.position.set(-3.4,.8,-3.6);g.add(hs);
     stations.push({g:g,h:5});})();
   /* S5 hoa hồng */
@@ -109,7 +107,7 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
     wl.position.set(-4.2,.8,2.8);wl.rotation.y=.78;g.add(wl);
     var pc=ctex(256,256,function(x,w,h){x.fillStyle='#FF6A2B';x.beginPath();x.arc(128,128,118,0,7);x.fill();x.fillStyle='#fff';x.font='900 130px '+FONT;x.textAlign='center';x.textBaseline='middle';x.fillText('%',128,138)});
     var ps=new T.Sprite(new T.SpriteMaterial({map:pc,transparent:true,toneMapped:false}));ps.scale.set(2,2,1);ps.position.set(-1.2,8.6,-1.6);g.add(ps);anim.push({bob:ps,y0:8.6,ph:1.7});
-    robot(g,1.55,1.2,4.2,.78,{wave:true});
+    rbt(g,1.55,1.2,4.2,.78,{wave:true});
     stations.push({g:g,h:5});})();
 
   anim.push({fn:sparkles(scene,120,34,8,0xFFB238)});

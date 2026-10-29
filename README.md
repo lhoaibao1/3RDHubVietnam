@@ -24,6 +24,16 @@ PostgreSQL và Go, và `deploy.sh` tự cài cả hai.
 | `tools/` | `export-sqlite.py` (chuyển dữ liệu từ bản CMS cũ), `test-deploy.sh`, `e2e/` (thử bằng trình duyệt thật) |
 | `deploy.sh` | Triển khai lên VPS Ubuntu |
 
+## Tính năng giao diện
+
+- **Ngôn ngữ tự động**: lần đầu vào site theo ngôn ngữ trình duyệt (tiếng Việt thì hiện tiếng Việt, còn lại hiện tiếng Anh), nhớ lựa chọn sau đó. Nút cờ ở menu đổi ngôn ngữ bằng một chạm, có hiệu ứng chuyển mượt.
+- **Sáng / tối**: theo hệ thống lúc đầu, nút mặt trời / mặt trăng đổi bằng hiệu ứng loang tròn; các cảnh 3D đổi ánh sáng và màu theo chế độ.
+- **Cuộn trang**: thanh tiến độ, nội dung hiện dần theo nhiều hướng, mỗi khu vực một nền và hoạ tiết riêng (`web/src/styles/backgrounds.css`).
+- **SEO / chia sẻ link**: `npm run build` dựng sẵn trang HTML riêng cho từng đường dẫn (tiêu đề, mô tả, ảnh chia sẻ, JSON-LD), kèm `sitemap.xml` và `robots.txt`
+  (nội dung ở `web/scripts/seo.json`, địa chỉ gốc đặt bằng `SITE_URL`). Ảnh chia sẻ `web/public/og/*.png` tạo từ cảnh 3D thật bằng `node tools/make-og.js`.
+- **Trang pháp lý**: Điều khoản và Bảo mật viết theo pháp luật Việt Nam hiện hành (Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15, Luật Thương mại điện tử 122/2025/QH15...),
+  tự điền thông tin công ty từ mục Cài đặt (các mã `{{company_name}}`, `{{tax_id}}`, `{{address}}`, `{{email}}`, `{{hotline}}`, `{{parent_url}}`).
+
 ## Làm việc trên máy bạn
 
 ```bash

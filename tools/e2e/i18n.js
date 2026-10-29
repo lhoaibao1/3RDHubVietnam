@@ -3,11 +3,11 @@ const { chromium } = require('playwright');
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const base = process.env.BASE || 'http://127.0.0.1:8787';
-  const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  const p = await b.newPage({ viewport: { width: 1440, height: 900 }, locale: 'vi-VN' });
   const errs = [];
   p.on('pageerror', e => errs.push(String(e)));
   await p.goto(base + '/', { waitUntil: 'load' });
-  await p.click('.lang button[aria-label="English"]');
+  await p.click('.langbtn'); await p.waitForTimeout(700);
   for (const path of ['/', '/mo-hinh', '/advertiser', '/cong-nghe', '/doi-tac', '/hoi-dap', '/lien-he', '/dieu-khoan', '/bao-mat']) {
     await p.goto(base + path, { waitUntil: 'load' });
     await p.waitForTimeout(800);

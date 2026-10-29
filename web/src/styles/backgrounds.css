@@ -46,7 +46,7 @@
 .rv-z{transform:translateY(34px) scale(.94)}
 .rv-l.in,.rv-r.in,.rv-z.in{transform:none}
 .scrollbar{position:fixed;left:0;top:0;height:3px;width:100%;z-index:80;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,#FF6A2B,#FF4D8D,#7B4DFF);pointer-events:none}
-.cue{position:absolute;left:50%;bottom:64px;z-index:6;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink2);font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:1;transition:opacity .4s;pointer-events:none}
+.cue{position:absolute;right:max(24px,calc((100vw - 1200px)/2));bottom:70px;z-index:6;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink2);font-weight:800;font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:1;transition:opacity .4s;pointer-events:none}
 .cue i{width:24px;height:38px;border-radius:14px;border:2px solid currentColor;position:relative}
 .cue i::after{content:"";position:absolute;left:50%;top:7px;width:4px;height:8px;margin-left:-2px;border-radius:3px;background:var(--or);animation:cue 1.6s ease-in-out infinite}
 .cue.off{opacity:0}
