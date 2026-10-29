@@ -43,9 +43,10 @@
     partners: '<path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M10 21v-4h4v4"/>',
     leads: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.7 4H7.2a2 2 0 0 0-1.7 1.1z"/>',
     settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
-    history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/>'
+    history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/>',
+    legal: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>'
   };
-  var TABS = [['dash', 'Tổng quan'], ['text', 'Nội dung chữ'], ['faq', 'Hỏi đáp'], ['partners', 'Đối tác'], ['leads', 'Yêu cầu khách'], ['settings', 'Cài đặt'], ['history', 'Lịch sử']];
+  var TABS = [['dash', 'Tổng quan'], ['text', 'Nội dung chữ'], ['faq', 'Hỏi đáp'], ['partners', 'Đối tác'], ['legal', 'Trang pháp lý'], ['leads', 'Yêu cầu khách'], ['settings', 'Cài đặt'], ['history', 'Lịch sử']];
 
   function api(method, path, body, raw) {
     var opt = { method: method, credentials: 'same-origin', headers: { 'X-CMS': '1' } };
@@ -116,7 +117,7 @@
     app.innerHTML = '';
     var tabsNav = h('nav', { 'aria-label': 'Mục quản trị' }, TABS.map(function (t) {
       var bd = t[0] === 'leads' && S.leads.new ? h('span', { class: 'bd' }, S.leads.new) : null;
-      return h('button', { type: 'button', 'aria-current': S.tab === t[0] ? 'page' : null, onclick: function () { go(t[0]); } }, icon(ICONS[t[0]]), h('span', { class: 'lb' }, t[1]), bd);
+      return h('button', { type: 'button', 'data-tab': t[0], 'aria-current': S.tab === t[0] ? 'page' : null, onclick: function () { go(t[0]); } }, icon(ICONS[t[0]]), h('span', { class: 'lb' }, t[1]), bd);
     }));
     var side = h('aside', { class: 'side' }, brand(), tabsNav, h('div', { class: 'sp' }),
       h('div', { class: 'foot' },
@@ -129,7 +130,7 @@
     var body = h('div', { id: 'view' });
     var main = h('main', { class: 'main' }, h('div', { class: 'top' }, h('h1', null, title), savebar), body);
     app.appendChild(h('div', { class: 'shell' }, side, main));
-    ({ dash: vDash, text: vText, faq: vFaq, partners: vPartners, leads: vLeads, settings: vSettings, history: vHistory })[S.tab](body);
+    ({ dash: vDash, text: vText, faq: vFaq, partners: vPartners, legal: vLegal, leads: vLeads, settings: vSettings, history: vHistory })[S.tab](body);
   }
   function go(tab) { S.tab = tab; history.replaceState(null, '', '#' + tab); render(); window.scrollTo(0, 0); }
 
@@ -147,6 +148,7 @@
         h('button', { class: 'btn', type: 'button', onclick: function () { go('text'); } }, 'Sửa chữ trên website'),
         h('button', { class: 'btn gh', type: 'button', onclick: function () { go('faq'); } }, 'Quản lý hỏi đáp'),
         h('button', { class: 'btn gh', type: 'button', onclick: function () { go('partners'); } }, 'Quản lý đối tác'),
+        h('button', { class: 'btn gh', type: 'button', onclick: function () { go('legal'); } }, 'Điều khoản và bảo mật'),
         h('button', { class: 'btn gh', type: 'button', onclick: function () { go('leads'); } }, 'Xem yêu cầu khách'))));
     el.appendChild(h('div', { class: 'panel help' }, h('h2', null, 'Cách hoạt động'),
       h('ul', null,
@@ -289,7 +291,7 @@
     return api('GET', 'leads' + (qs.length ? '?' + qs.join('&') : '')).then(function (r) { S.leadsList = r; });
   }
   function updateBadge() {
-    var btn = document.querySelector('.side nav button:nth-child(5)'); if (!btn) return;
+    var btn = document.querySelector('.side nav button[data-tab="leads"]'); if (!btn) return;
     var bd = btn.querySelector('.bd'), n = S.leads.new || 0;
     if (!n) { if (bd) bd.remove(); return; }
     if (!bd) { bd = h('span', { class: 'bd' }); btn.appendChild(bd); }
@@ -332,21 +334,91 @@
     draw();
   }
 
+  /* ---------- Trang pháp lý ---------- */
+  var LEGALS = [['terms', 'Điều khoản sử dụng', 'dieu-khoan'], ['privacy', 'Chính sách bảo mật', 'bao-mat']];
+  function escT(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function inl(t) { var x = escT(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); return x.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|mailto:[^)\s]+)\)/g, function (m, a, b) { return '<a href="' + b + '" target="_blank" rel="noopener">' + a + '</a>'; }); }
+  function mdHtml(t) {
+    var out = [], para = [], ul = false;
+    function fp() { if (para.length) { out.push('<p>' + para.map(inl).join('<br>') + '</p>'); para = []; } }
+    function eu() { if (ul) { out.push('</ul>'); ul = false; } }
+    String(t || '').replace(/\r/g, '').split('\n').forEach(function (l) {
+      var m; if (!l.trim()) { fp(); eu(); return; }
+      if ((m = l.match(/^###\s+(.*)/))) { fp(); eu(); out.push('<h3>' + inl(m[1]) + '</h3>'); }
+      else if ((m = l.match(/^##\s+(.*)/))) { fp(); eu(); out.push('<h2>' + inl(m[1]) + '</h2>'); }
+      else if ((m = l.match(/^[-*]\s+(.*)/))) { fp(); if (!ul) { out.push('<ul>'); ul = true; } out.push('<li>' + inl(m[1]) + '</li>'); }
+      else { eu(); para.push(l); }
+    });
+    fp(); eu(); return out.join('');
+  }
+  function legalMerged(key) {
+    var def = (S.defaults.legal || {})[key] || { title: {}, updated: {}, body: {} }, cur = (S.content.legal || {})[key] || {}, o = {};
+    ['title', 'updated', 'body'].forEach(function (f) { o[f] = {}; ['vi', 'en'].forEach(function (lg) { o[f][lg] = (cur[f] && cur[f][lg]) || (def[f] && def[f][lg]) || ''; }); });
+    return o;
+  }
+  function vLegal(el) {
+    S.content.legal = S.content.legal || {};
+    el.appendChild(h('div', { class: 'panel help' }, h('h2', null, 'Trang Điều khoản và Chính sách bảo mật của website'),
+      h('p', { class: 'sub' }, 'Hai trang này nằm riêng trên website (không dùng chung với app). Sửa xong bấm "Lưu và đăng lên website".'),
+      h('ul', null,
+        h('li', null, h('b', null, 'Định dạng'), ': dòng trống để tách đoạn; ', h('b', null, '## Tiêu đề'), ' cho mục lớn, ', h('b', null, '### '), ' cho mục nhỏ; ', h('b', null, '- '), ' đầu dòng để tạo danh sách; ', h('b', null, '**chữ đậm**'), '; ', h('b', null, '[chữ hiển thị](https://...)'), ' để chèn liên kết.'),
+        h('li', null, 'Thông tin liên hệ, mã số thuế hiển thị ở chân trang lấy từ mục Cài đặt.'),
+        h('li', null, 'Nội dung mặc định là bản mẫu để bạn chỉnh. Nên để luật sư hoặc bộ phận pháp chế xem lại trước khi dùng chính thức.'))));
+    LEGALS.forEach(function (g) {
+      var key = g[0], cur = legalMerged(key), view = 'vi';
+      function ensure() { if (!S.content.legal[key]) S.content.legal[key] = clone(legalMerged(key)); return S.content.legal[key]; }
+      function setF(f, lg, v) { ensure()[f][lg] = v; markDirty(); }
+      var prevBox = h('div', { class: 'legalprev' });
+      function drawPrev() { var d = legalMerged(key); prevBox.innerHTML = '<h1>' + escT(d.title[view]) + '</h1><p class="lupd">' + (view === 'en' ? 'Last updated: ' : 'Cập nhật lần cuối: ') + escT(d.updated[view]) + '</p><div class="lbody">' + mdHtml(d.body[view]) + '</div>'; }
+      var pv = h('div', { class: 'chips' }, [['vi', 'Xem trước: Tiếng Việt'], ['en', 'Xem trước: English']].map(function (x) {
+        var b = h('button', { type: 'button', 'aria-pressed': view === x[0], onclick: function () { view = x[0]; Array.prototype.forEach.call(pv.children, function (c) { c.setAttribute('aria-pressed', c === b); }); drawPrev(); } }, x[1]); return b; }));
+      function tall(lg) { var t = h('textarea', { rows: 22, class: 'tall', value: cur.body[lg], oninput: function () { setF('body', lg, t.value); } }); return t; }
+      var panel = h('div', { class: 'panel' },
+        h('div', { class: 'bar', style: 'margin:0 0 6px' }, h('h2', { style: 'margin:0;flex:1' }, g[1]),
+          h('a', { class: 'btn gh sm', href: siteUrl() + '/' + g[2], target: '_blank', rel: 'noopener' }, 'Xem trên website ↗'),
+          h('button', { class: 'btn gh sm', type: 'button', onclick: function () { if (!confirm('Khôi phục "' + g[1] + '" về bản mặc định? (chưa lưu cho đến khi bạn bấm Lưu)')) return; delete S.content.legal[key]; markDirty(); render(); } }, 'Về bản mặc định')),
+        h('div', { class: 'row2', style: 'margin-top:10px' },
+          h('label', { class: 'f' }, 'Tiêu đề (Tiếng Việt)', h('input', { type: 'text', value: cur.title.vi, oninput: function (e) { setF('title', 'vi', e.target.value); } })),
+          h('label', { class: 'f' }, 'Title (English)', h('input', { type: 'text', value: cur.title.en, oninput: function (e) { setF('title', 'en', e.target.value); } }))),
+        h('div', { class: 'row2', style: 'margin-top:12px' },
+          h('label', { class: 'f' }, 'Ngày cập nhật (Tiếng Việt)', h('input', { type: 'text', value: cur.updated.vi, oninput: function (e) { setF('updated', 'vi', e.target.value); } })),
+          h('label', { class: 'f' }, 'Last updated (English)', h('input', { type: 'text', value: cur.updated.en, oninput: function (e) { setF('updated', 'en', e.target.value); } }))),
+        h('div', { class: 'row2', style: 'margin-top:12px' }, h('label', { class: 'f' }, 'Nội dung (Tiếng Việt)', tall('vi')), h('label', { class: 'f' }, 'Content (English)', tall('en'))),
+        h('div', { style: 'margin-top:16px;display:grid;gap:12px' }, pv, prevBox));
+      drawPrev();
+      el.appendChild(panel);
+    });
+  }
+
   /* ---------- Cài đặt ---------- */
   function vSettings(el) {
     var st = S.content.settings, D = S.defaults.settings;
-    function f(key, label, hint, type) {
-      return h('label', { class: 'f' }, label, h('input', { type: type || 'text', placeholder: D[key], value: st[key] || '', oninput: function (e) { var v = e.target.value.trim(); if (v) st[key] = v; else delete st[key]; markDirty(); } }), h('small', null, hint));
+    function f(key, label, hint, type, big) {
+      var inp = big ? h('textarea', { rows: 3, placeholder: D[key] || '', value: st[key] || '', oninput: function (e) { var v = e.target.value.trim(); if (v) st[key] = v; else delete st[key]; markDirty(); } })
+        : h('input', { type: type || 'text', placeholder: D[key] || '', value: st[key] || '', oninput: function (e) { var v = e.target.value.trim(); if (v) st[key] = v; else delete st[key]; markDirty(); } });
+      return h('label', { class: 'f' }, label, inp, h('small', null, hint));
     }
-    el.appendChild(h('div', { class: 'panel' }, h('h2', null, 'Thông tin liên hệ và liên kết'),
-      h('p', { class: 'sub' }, 'Để trống để dùng giá trị mặc định (hiện mờ trong ô). Áp dụng cho mọi nơi trên website: nút, liên kết, email, số hotline.'),
-      h('div', { class: 'grid g2' },
-        f('signup_url', 'Link nút "Đăng ký ngay"', 'Trang đăng ký trên app', 'url'),
-        f('email', 'Email hỗ trợ', 'Hiện ở trang Liên hệ, dùng cho nút Gửi email'),
-        f('hotline', 'Số hotline (hiển thị)', 'Ví dụ: (+84) 398 192 414'),
-        f('hotline_tel', 'Số hotline (để bấm gọi)', 'Chỉ gồm số, ví dụ: +84398192414'),
-        f('terms_url', 'Link Điều khoản', 'Chân trang', 'url'),
-        f('privacy_url', 'Link Bảo mật', 'Chân trang', 'url'))));
+    function panel(title, sub, fields) { return h('div', { class: 'panel' }, h('h2', null, title), h('p', { class: 'sub' }, sub), h('div', { class: 'grid g2' }, fields)); }
+    el.appendChild(panel('Thông tin công ty', 'Hiện ở chân trang và trang Liên hệ. Để trống để dùng giá trị mặc định (hiện mờ trong ô); mục Địa chỉ và Giờ làm việc để trống thì ẩn đi.', [
+      f('company_name', 'Tên công ty', 'Dùng trong dòng bản quyền ở chân trang'),
+      f('tax_id', 'Mã số thuế', ''),
+      f('address', 'Địa chỉ', 'Chưa điền thì chân trang không hiện dòng này'),
+      f('working_hours', 'Giờ làm việc (Tiếng Việt)', 'Ví dụ: 8:30 - 17:30, Thứ 2 đến Thứ 6'),
+      f('working_hours_en', 'Working hours (English)', 'Để trống thì dùng bản tiếng Việt'),
+      f('email', 'Email hỗ trợ', 'Hiện ở chân trang, trang Liên hệ, nút Gửi email', 'email'),
+      f('hotline', 'Số hotline (hiển thị)', 'Ví dụ: (+84) 398 192 414'),
+      f('hotline_tel', 'Số hotline (để bấm gọi)', 'Chỉ gồm số, ví dụ: +84398192414')]));
+    el.appendChild(panel('Liên kết và mạng xã hội', 'Mạng xã hội chỉ hiện biểu tượng ở chân trang khi bạn điền link.', [
+      f('signup_url', 'Link nút "Đăng ký ngay"', 'Trang đăng ký trên app', 'url'),
+      f('facebook', 'Facebook', 'https://facebook.com/...', 'url'),
+      f('zalo', 'Zalo', 'https://zalo.me/...', 'url'),
+      f('tiktok', 'TikTok', 'https://tiktok.com/@...', 'url'),
+      f('youtube', 'YouTube', 'https://youtube.com/@...', 'url'),
+      f('instagram', 'Instagram', 'https://instagram.com/...', 'url')]));
+    el.appendChild(panel('SEO và theo dõi', 'Tiêu đề và mô tả được áp dụng khi trang tải xong (Google đọc được; Facebook, Zalo khi chia sẻ link vẫn dùng ảnh và mô tả mặc định). Favicon và ảnh chia sẻ thay trong thư mục site/ của mã nguồn.', [
+      f('site_title', 'Tiêu đề website', 'Hiện trên tab trình duyệt. Mặc định: 3RDHub Vietnam'),
+      f('analytics_id', 'Mã Google Analytics', 'Dạng G-XXXXXXXXXX. Để trống thì không theo dõi', 'text'),
+      h('div', { style: 'grid-column:1/-1' }, f('meta_description', 'Mô tả website (meta description)', 'Khoảng 120 đến 160 ký tự', 'text', true))]));
     var cur = h('input', { type: 'password', autocomplete: 'current-password' }), nw = h('input', { type: 'password', autocomplete: 'new-password' }), nw2 = h('input', { type: 'password', autocomplete: 'new-password' }), msg = h('div', { class: 'msg', style: 'display:none' });
     var btn = h('button', { class: 'btn', type: 'submit' }, 'Đổi mật khẩu');
     el.appendChild(h('form', { class: 'panel', onsubmit: function (e) {
@@ -382,7 +454,7 @@
   /* ---------- khởi động ---------- */
   function boot() {
     Promise.all([api('GET', 'bootstrap'), fetch('strings.json').then(function (r) { return r.json(); })]).then(function (r) {
-      var b = r[0]; S.content = b.content; S.content.ov = S.content.ov || {}; S.content.faq = S.content.faq || clone(b.defaults.faq); S.content.partners = S.content.partners || clone(b.defaults.partners); S.content.settings = S.content.settings || {};
+      var b = r[0]; S.content = b.content; S.content.ov = S.content.ov || {}; S.content.faq = S.content.faq || clone(b.defaults.faq); S.content.partners = S.content.partners || clone(b.defaults.partners); S.content.settings = S.content.settings || {}; S.content.legal = S.content.legal || {};
       S.saved = clone(S.content); S.defaults = b.defaults; S.leads = b.leads; S.updated = b.updated; S.strings = r[1]; S.user = true; S.dirty = false;
       var t = location.hash.replace('#', ''); if (TABS.some(function (x) { return x[0] === t; })) S.tab = t;
       var p = S.tab === 'leads' ? loadLeads() : Promise.resolve();

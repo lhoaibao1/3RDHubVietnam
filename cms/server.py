@@ -43,7 +43,11 @@ CMS_HOSTS = [h.strip().lower() for h in os.environ.get("CMS_HOSTS", "").split(",
 SESSION_TTL = 12 * 3600
 MAX_JSON = 3 * 1024 * 1024
 MAX_UPLOAD = 2 * 1024 * 1024
-SETTING_KEYS = ("signup_url", "email", "hotline", "hotline_tel", "terms_url", "privacy_url")
+SETTING_KEYS = ("signup_url", "email", "hotline", "hotline_tel", "company_name", "tax_id", "address", "working_hours", "working_hours_en",
+                "facebook", "zalo", "tiktok", "youtube", "instagram", "site_title", "meta_description", "analytics_id")
+URL_SETTINGS = ("signup_url", "facebook", "zalo", "tiktok", "youtube", "instagram")
+SETTING_MAX = {"meta_description": 400, "address": 300, "company_name": 120, "site_title": 120, "tax_id": 40, "analytics_id": 40}
+LEGAL_KEYS = ("terms", "privacy")
 
 _lock = threading.Lock()
 _hits = defaultdict(deque)  # giới hạn tần suất: (loại, ip) -> thời điểm
@@ -142,7 +146,7 @@ def load_defaults():
 
 def default_content():
     d = load_defaults()
-    return {"ov": {}, "faq": d["faq"], "partners": d["partners"], "settings": {}}
+    return {"ov": {}, "faq": d["faq"], "partners": d["partners"], "settings": {}, "legal": {}}
 
 
 def init():
@@ -205,7 +209,7 @@ def pair(o, n, field):
 def clean_content(c):
     if not isinstance(c, dict):
         raise ValueError("Dữ liệu không hợp lệ")
-    out = {"ov": {}, "faq": [], "partners": [], "settings": {}}
+    out = {"ov": {}, "faq": [], "partners": [], "settings": {}, "legal": {}}
     ov = c.get("ov") or {}
     if not isinstance(ov, dict) or len(ov) > 5000:
         raise ValueError("Danh sách chữ tuỳ chỉnh không hợp lệ")
@@ -255,10 +259,10 @@ def clean_content(c):
                                 "name": name, "url": url, "logo": logo, "group": grp})
     st = c.get("settings") or {}
     for k in SETTING_KEYS:
-        v = s(st.get(k), 300, k).strip() if isinstance(st, dict) else ""
+        v = s(st.get(k), SETTING_MAX.get(k, 300), k).strip() if isinstance(st, dict) else ""
         if not v:
             continue
-        if k in ("signup_url", "terms_url", "privacy_url") and not URL_RE.match(v):
+        if k in URL_SETTINGS and not URL_RE.match(v):
             raise ValueError("'%s' phải là đường dẫn bắt đầu bằng http:// hoặc https://" % k)
         if k == "email" and not EMAIL_RE.match(v):
             raise ValueError("Email không hợp lệ")
@@ -266,7 +270,18 @@ def clean_content(c):
             v = re.sub(r"[\s.\-()]", "", v)
             if not TEL_RE.match(v):
                 raise ValueError("Số gọi (hotline_tel) chỉ gồm số, có thể bắt đầu bằng +")
+        if k == "analytics_id" and not re.match(r"^[A-Za-z]{1,3}-[A-Za-z0-9-]{4,20}$", v):
+            raise ValueError("Mã Google Analytics có dạng G-XXXXXXXXXX")
         out["settings"][k] = v
+    legal = c.get("legal") or {}
+    for key in LEGAL_KEYS:
+        d = legal.get(key) if isinstance(legal, dict) else None
+        if not isinstance(d, dict):
+            continue
+        item = {"title": pair(d.get("title"), 200, "Tiêu đề trang pháp lý"), "updated": pair(d.get("updated"), 80, "Ngày cập nhật"),
+                "body": pair(d.get("body"), 60000, "Nội dung trang pháp lý")}
+        if any(item[f][lg].strip() for f in item for lg in ("vi", "en")):
+            out["legal"][key] = item
     if len(json.dumps(out, ensure_ascii=False)) > MAX_JSON:
         raise ValueError("Nội dung quá lớn")
     return out
@@ -283,7 +298,7 @@ def save_content(con, content, note):
 def public_payload(con):
     c = kv_get(con, "content", default_content())
     return {"v": kv_get(con, "updated", 0), "ov": c.get("ov", {}), "faq": c.get("faq"), "partners": c.get("partners"),
-            "settings": c.get("settings", {})}
+            "settings": c.get("settings", {}), "legal": c.get("legal", {})}
 
 
 def detect_image(b):
@@ -404,6 +419,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.err(404, "Không tìm thấy")
             if SITE_DIR and self.command in ("GET", "HEAD"):
                 name = "index.html" if p in ("/", "") else p.lstrip("/")
+                if not os.path.isfile(os.path.join(SITE_DIR, name)) and "." not in os.path.basename(name):
+                    name = "index.html"  # như nginx try_files: đường dẫn không có file thì trả về trang chủ
                 return self.serve_file(SITE_DIR, name, cache="no-cache")
             return self.err(404, "Không tìm thấy")
         except ValueError as e:
@@ -499,7 +516,7 @@ class Handler(BaseHTTPRequestHandler):
                 d = load_defaults()
                 st = con.execute("SELECT status,COUNT(*) n FROM leads GROUP BY status").fetchall()
                 counts = {r["status"]: r["n"] for r in st}
-                return self.send(200, {"content": kv_get(con, "content"), "defaults": {"faq": d["faq"], "partners": d["partners"], "settings": d["settings"]},
+                return self.send(200, {"content": kv_get(con, "content"), "defaults": {"faq": d["faq"], "partners": d["partners"], "settings": d["settings"], "legal": d.get("legal", {})},
                                        "leads": counts, "updated": kv_get(con, "updated", 0)}, headers=H)
             if sub == "content" and self.command == "PUT":
                 d = self.read_json()

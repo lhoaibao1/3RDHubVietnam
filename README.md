@@ -2,7 +2,7 @@
 
 Website **3RDHub Vietnam** (nền tảng tiếp thị liên kết, 3RDVN Technology) kèm **CMS** để tự quản lý nội dung.
 
-- Site: HTML + Three.js + GSAP, trang chủ và 6 trang chi tiết (đường dẫn `#/ten-trang`), cảnh 3D riêng từng trang, đổi ngôn ngữ **VI / EN**, responsive.
+- Site: HTML + Three.js + GSAP, trang chủ và 6 trang chi tiết (đường dẫn `#/ten-trang`), 2 trang pháp lý, chân trang thông tin công ty, cảnh 3D riêng từng trang, đổi ngôn ngữ **VI / EN**, responsive.
 - CMS: backend Python (chỉ thư viện chuẩn, không cần cài gói nào) + trang quản trị tại `cms.<domain>`.
 
 ## Cấu trúc
@@ -46,8 +46,9 @@ Sao lưu trong `/root/` được tự dọn, giữ 10 bản mới nhất mỗi l
 - **Nội dung chữ**: sửa hơn 450 đoạn chữ (tiếng Việt và English) trên trang chủ và 6 trang chi tiết; "Về gốc" từng đoạn.
 - **Hỏi đáp**: thêm, sửa, xoá, sắp xếp, chia nhóm; chọn câu nào hiện ở trang chủ.
 - **Đối tác**: thêm, sửa, xoá, sắp xếp, tải logo.
+- **Trang pháp lý**: sửa Điều khoản sử dụng và Chính sách bảo mật (VI/EN, có xem trước). Hai trang nằm riêng trên website: `/dieu-khoan`, `/bao-mat`.
 - **Yêu cầu khách**: form liên hệ lưu vào CMS (trạng thái, ghi chú, xuất CSV).
-- **Cài đặt**: link đăng ký, email, hotline, điều khoản, bảo mật; đổi mật khẩu.
+- **Cài đặt**: thông tin công ty (tên, mã số thuế, địa chỉ, giờ làm việc), email, hotline, link đăng ký, mạng xã hội (Facebook, Zalo, TikTok, YouTube, Instagram), SEO (tiêu đề, mô tả), mã Google Analytics; đổi mật khẩu.
 - **Lịch sử**: 60 phiên bản gần nhất, khôi phục bằng một cú bấm.
 
 Hình ảnh, cảnh 3D và bố cục là phần thiết kế, sửa trong mã nguồn.
@@ -79,6 +80,8 @@ CMS_DATA=/tmp/cmsdata CMS_ADMIN_PASSWORD='mat-khau-thu-123' SITE_DIR=../site pyt
 - `scenes3d.js`: cảnh 3D của 6 trang chi tiết
 - `i18n.js`, `en.json`: đổi ngôn ngữ, bản dịch, áp dụng nội dung từ CMS
 - `cms-client.js`: tải nội dung từ CMS
+- `legal.json`: nội dung mặc định của Điều khoản và Chính sách bảo mật (VI/EN)
+- `make_assets.js`, `assets/`: favicon, icon app, ảnh chia sẻ mạng xã hội (`node make_assets.js` tạo lại từ logo)
 - `extract_defaults.js`, `extract_strings.js`: tạo lại dữ liệu mặc định và danh sách chữ cho CMS (chạy sau khi đổi nội dung gốc)
 
 ```bash

@@ -3,7 +3,7 @@
 (function(){
   var D=window.__EN||{},lang='vi',SKIP=/^(SCRIPT|STYLE|CODE|PRE|SVG|PATH|NOSCRIPT)$/,NOTR='.term,#tout,[data-nl]';
   try{lang=localStorage.getItem('3rd-lang')||'vi'}catch(e){}
-  var DEF={signup_url:'https://app.3rdvn.io.vn/auth/login?tab=signup',email:'admin_support@3rdvn.io.vn',hotline:'(+84) 398 192 414',hotline_tel:'+84398192414',terms_url:'https://app.3rdvn.io.vn/terms',privacy_url:'https://app.3rdvn.io.vn/privacy'};
+  var DEF={signup_url:'https://app.3rdvn.io.vn/auth/login?tab=signup',email:'admin_support@3rdvn.io.vn',hotline:'(+84) 398 192 414',hotline_tel:'+84398192414',company_name:'3RDVN Technology',tax_id:'4001342613',address:'',working_hours:'',working_hours_en:'',facebook:'',zalo:'',tiktok:'',youtube:'',instagram:'',site_title:'',meta_description:'',analytics_id:''};
   function cms(){return window.__CMS||{}}
   function S(k){var s=cms().settings||{};return s[k]||DEF[k]}
   /* chữ gốc (tiếng Việt, đã trim) -> bản tuỳ chỉnh từ CMS nếu có */
@@ -20,7 +20,7 @@
     if(root.nodeType!==1||SKIP.test(root.nodeName.toUpperCase())||root.closest(NOTR))return;attrs(root);for(var c=root.firstChild;c;c=c.nextSibling)walk(c)}
   var vit=document.title,setT=null;function title(){if(document.title!==setT)vit=document.title;setT=vit.split(' · ').map(trans).join(' · ');document.title=setT}
   /* liên kết, số hotline, email lấy từ phần "Cài đặt" của CMS */
-  var TAGS=[['signup_url','a[href^="https://app.3rdvn.io.vn/auth/login?tab=signup"]'],['mailto','a[href^="mailto:"]'],['tel','a[href^="tel:"]'],['terms_url','a[href="'+DEF.terms_url+'"]'],['privacy_url','a[href="'+DEF.privacy_url+'"]']];
+  var TAGS=[['signup_url','a[href^="https://app.3rdvn.io.vn/auth/login?tab=signup"]'],['mailto','a[href^="mailto:"]'],['tel','a[href^="tel:"]']];
   function settings(){TAGS.forEach(function(t){$$(t[1]).forEach(function(a){if(!a.dataset.set)a.dataset.set=t[0]})});
     $$('a[data-set]').forEach(function(a){var k=a.dataset.set,v=k==='mailto'?'mailto:'+S('email'):k==='tel'?'tel:'+S('hotline_tel'):S(k);if(a.getAttribute('href')!==v)a.setAttribute('href',v)});
     $$('[data-copy]').forEach(function(b){if(!b.dataset.cp)b.dataset.cp=/@/.test(b.dataset.copy)?'email':'tel';b.dataset.copy=b.dataset.cp==='email'?S('email'):S('hotline_tel')})}

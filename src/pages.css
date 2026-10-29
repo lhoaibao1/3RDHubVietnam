@@ -303,3 +303,50 @@
   .anat .g4{grid-template-columns:minmax(0,1fr);gap:10px}
   .anat .g4 div{grid-template-columns:12px 1fr;column-gap:10px}
 }
+
+/* ===== chân trang ===== */
+footer.ft2{width:100vw;margin:110px 0 0 calc(50% - 50vw);background:var(--ink);color:rgba(255,255,255,.78);padding:64px 0 calc(28px + env(safe-area-inset-bottom,0px));font-size:15px;position:relative;overflow:hidden}
+footer.ft2::before{content:"";position:absolute;right:-120px;top:-160px;width:460px;height:460px;border-radius:50%;background:radial-gradient(circle,rgba(255,106,43,.28),transparent 68%);pointer-events:none}
+footer.ft2 a{text-decoration:none;color:inherit}
+footer.ft2 a:hover{color:#fff}
+.ft2 .w{padding-inline:max(16px,calc((100vw - 1200px)/2));max-width:none;margin:0}
+.ftg{display:grid;grid-template-columns:minmax(0,1.5fr) repeat(2,minmax(0,.8fr)) minmax(0,1.3fr);gap:40px;position:relative}
+.ftl{display:inline-flex;margin-bottom:16px;background:#fff;border-radius:14px;padding:6px 12px}
+.ftl .hd{height:28px;width:auto}.ftl .bn{font-weight:900;font-size:19px;letter-spacing:-.02em;color:#0B2A6F;line-height:1}.ftl .bn i{font-style:normal;color:var(--or);margin-left:4px}
+.ftd{max-width:34em;line-height:1.65}
+.ftsoc{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.ftsoc a{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.1);display:grid;place-items:center;transition:background .25s,transform .25s}
+.ftsoc a:hover{background:var(--or);transform:translateY(-3px)}
+.ftsoc svg{width:19px;height:19px;fill:#fff}
+.ftc h3{margin:0 0 14px;color:#fff;font-size:15px;font-weight:900;letter-spacing:.02em;text-transform:uppercase}
+.ftc>a{display:block;padding:5px 0;font-weight:700}
+.ftc ul{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.ftc li{display:grid;grid-template-columns:96px minmax(0,1fr);gap:10px;align-items:baseline}
+.ftc li span{color:rgba(255,255,255,.55);font-size:13.5px}
+.ftc li b{color:#fff;font-weight:800;overflow-wrap:anywhere}
+.ftc li a{font-weight:700;overflow-wrap:anywhere}
+.ftc li.coname{display:block}.ftc li.coname b{font-size:17px}
+.ftc li[hidden]{display:none}
+.ftbot{margin-top:44px;padding-top:22px;border-top:1px solid rgba(255,255,255,.14);display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 32px;font-size:13.5px;color:rgba(255,255,255,.62);position:relative}
+.ftbot p{margin:0}.ftbot .ftcopy{color:rgba(255,255,255,.9);font-weight:800}
+.ftbot .ftnote{max-width:46em}
+@media(max-width:900px){
+  footer.ft2{margin-top:70px;padding-top:44px}
+  .ftg{grid-template-columns:repeat(2,minmax(0,1fr));gap:32px 20px}
+  .ftb,.ftco{grid-column:1/-1}
+  .ftb{order:-2}.ftco{order:-1}
+  .ftbot{margin-top:32px;display:grid}
+}
+/* ===== trang pháp lý ===== */
+.legalpg{padding-top:130px}
+.legal{max-width:780px;margin:0 auto}
+.legal h1{font-size:clamp(32px,4.4vw,52px);margin-bottom:10px}
+.legal .lupd{color:var(--ink2);font-weight:700;margin:0 0 34px}
+.legal .lbody{font-size:16.5px;line-height:1.75;color:var(--ink)}
+.legal .lbody p{margin:0 0 16px;color:var(--ink2)}
+.legal .lbody h2{font-size:22px;margin:38px 0 12px;color:var(--ink)}
+.legal .lbody h3{font-size:18px;margin:26px 0 8px}
+.legal .lbody ul{margin:0 0 16px;padding-left:22px;color:var(--ink2);display:grid;gap:8px}
+.legal .lbody strong{color:var(--ink)}
+.legal .lbody a{color:var(--or-d);font-weight:700}
+@media(max-width:900px){.legalpg{padding-top:92px}.legal .lbody{font-size:15.5px}.legal .lbody h2{font-size:20px;margin-top:30px}}

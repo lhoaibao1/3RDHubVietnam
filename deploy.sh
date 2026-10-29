@@ -204,10 +204,10 @@ $(proxy_block "$port")
         client_max_body_size 64k;
 $(proxy_block "$port")
     }
-    location /uploads/ {
+    location ^~ /uploads/ {
 $(proxy_block "$port")
     }
-    location /api/ { return 404; }
+    location ^~ /api/ { return 404; }
 "
   fi
   cat <<CONF
@@ -234,8 +234,11 @@ $api
         try_files \$uri \$uri/ /index.html;
         expires -1;
     }
-    location /lib/ {
+    location ^~ /lib/ {
         expires 30d;
+    }
+    location ~* \.(?:png|ico|svg|webp|webmanifest)$ {
+        expires 7d;
     }
     location ~ /\. { deny all; }
 }

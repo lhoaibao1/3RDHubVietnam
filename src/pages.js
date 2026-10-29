@@ -2,7 +2,9 @@
 /* ---------- trang chi tiết từng module ---------- */
 (function(){
   var ORDER=[['mo-hinh','Mô hình','Hành trình một hồ sơ, hình thức hoa hồng, trạng thái đơn'],['advertiser','Advertiser','Ba gói hợp tác và quy trình triển khai'],['cong-nghe','Công nghệ','Stack, luồng tracking và postback'],['doi-tac','Đối tác','Ngân hàng, công ty tài chính, mạng affiliate'],['hoi-dap','Hỏi đáp','Câu hỏi thường gặp theo từng nhóm'],['lien-he','Liên hệ','Đăng ký publisher hoặc gửi yêu cầu tư vấn']];
-  var main=$('main'),pages=$$('#pages .pg'),links=$$('.nav nav a'),nav=$('.nav'),mnu=$('#mnu'),base=document.title,onPage=false;
+  var main=$('main'),pages=$$('#pages .pg'),links=$$('.nav nav a'),nav=$('.nav'),mnu=$('#mnu'),onPage=false,curSlug='';
+  var LEGALS=[['dieu-khoan','terms','Điều khoản sử dụng'],['bao-mat','privacy','Chính sách bảo mật']];
+  function BASE(){return (window.__S&&__S('site_title'))||'3RDHub Vietnam'}
 
   /* cuối mỗi trang: khối CTA */
   ORDER.forEach(function(o){if(o[0]==='lien-he')return;var d=document.createElement('div');d.className='pnext';
@@ -74,14 +76,55 @@
   /* form liên hệ: gửi về CMS, nếu không được thì soạn email */
   $('#form2').addEventListener('submit',function(e){e.preventDefault();submitLead(e.target,$('#msg2'))});
 
+  /* ---------- trang pháp lý (nội dung từ CMS, nếu chưa có thì dùng bản mặc định) ---------- */
+  function legalDoc(key){var c=window.__CMS,d=c&&c.legal&&c.legal[key],def=(window.__LEGAL||{})[key]||{title:{},updated:{},body:{}},o={};
+    ['title','updated','body'].forEach(function(f){o[f]={};['vi','en'].forEach(function(lg){o[f][lg]=(d&&d[f]&&d[f][lg])||(def[f]&&def[f][lg])||''})});return o}
+  function inl(t){var x=escH(t);x=x.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+    return x.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|mailto:[^)\s]+)\)/g,function(m,a,b){return '<a href="'+b+'" target="_blank" rel="noopener">'+a+'</a>'})}
+  function md(t){var out=[],para=[],ul=false;function fp(){if(para.length){out.push('<p>'+para.map(inl).join('<br>')+'</p>');para=[]}}function eu(){if(ul){out.push('</ul>');ul=false}}
+    String(t||'').replace(/\r/g,'').split('\n').forEach(function(l){var m;
+      if(!l.trim()){fp();eu();return}
+      if(m=l.match(/^###\s+(.*)/)){fp();eu();out.push('<h3>'+inl(m[1])+'</h3>')}
+      else if(m=l.match(/^##\s+(.*)/)){fp();eu();out.push('<h2>'+inl(m[1])+'</h2>')}
+      else if(m=l.match(/^[-*]\s+(.*)/)){fp();if(!ul){out.push('<ul>');ul=true}out.push('<li>'+inl(m[1])+'</li>')}
+      else{eu();para.push(l)}});fp();eu();return out.join('')}
+  function renderLegal(){LEGALS.forEach(function(g){var d=legalDoc(g[1]),pg=$('#p-'+g[0]);if(!pg)return;
+    pg.querySelector('h1').textContent=LV(d.title);
+    pg.querySelector('.lupd').textContent=(window.__tr?__tr('Cập nhật lần cuối'):'Cập nhật lần cuối')+': '+LV(d.updated);
+    pg.querySelector('.lbody').innerHTML=md(LV(d.body))});
+    if(curSlug)document.title=titleFor(curSlug)}
+  renderLegal();__hk.legal=renderLegal;
+
+  /* ---------- chân trang: thông tin công ty, mạng xã hội, bản quyền ---------- */
+  var SOCN=[['facebook','Facebook'],['zalo','Zalo'],['tiktok','TikTok'],['youtube','YouTube'],['instagram','Instagram']];
+  function buildFooter(){var S=window.__S||function(){return ''},en=window.__lang&&__lang()==='en',T=window.__tr||function(x){return x};
+    var fb=$('#ftbrand');if(fb&&!fb.firstChild){var hb=$('.nav .brand');if(hb)fb.innerHTML=hb.innerHTML}
+    $$('[data-co]').forEach(function(el){var k=el.dataset.co,v=k==='working_hours'?(en&&S('working_hours_en'))||S('working_hours'):S(k);el.textContent=v;var row=el.closest('[data-co-row]');if(row)row.hidden=!v});
+    var name=S('company_name'),y=new Date().getFullYear();
+    var c=$('#ftcopy');if(c)c.textContent=T('© {year} {name}. Bảo lưu mọi quyền.').replace('{year}',y).replace('{name}',name);
+    var n=$('#ftnote');if(n)n.textContent=T('Nội dung, thương hiệu và hình ảnh trên website thuộc quyền sở hữu của {name} và các chủ sở hữu tương ứng. Không sao chép khi chưa có sự đồng ý bằng văn bản.').replace('{name}',name);
+    var so=$('#ftsoc');if(so&&typeof BR!=='undefined')so.innerHTML=SOCN.filter(function(x){return S(x[0])&&BR[x[0]]}).map(function(x){var u=S(x[0]);return /^https?:\/\//i.test(u)?'<a href="'+escH(u)+'" target="_blank" rel="noopener noreferrer" aria-label="'+x[1]+'"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="'+BR[x[0]].p+'"/></svg></a>':''}).join('')}
+  buildFooter();__hk.footer=buildFooter;
+
+  /* ---------- SEO và theo dõi (mô tả, tiêu đề, Google Analytics nếu có) ---------- */
+  function applySeo(){var S=window.__S;if(!S)return;var d=S('meta_description');
+    if(d)['meta[name=description]','meta[property="og:description"]'].forEach(function(sel){var m=$(sel);if(m)m.setAttribute('content',d)});
+    var t=S('site_title');if(t){var m=$('meta[property="og:title"]');if(m)m.setAttribute('content',t)}
+    document.title=curSlug?titleFor(curSlug):BASE();
+    var ga=S('analytics_id');if(ga&&!window.__gaOn&&/^[A-Za-z]{1,3}-[A-Za-z0-9-]{4,20}$/.test(ga)){window.__gaOn=1;var sc=document.createElement('script');sc.async=true;sc.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(ga);document.head.appendChild(sc);window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',ga)}}
+  __hk.seo=applySeo;
+
+  /* tiêu đề tab trình duyệt theo trang đang mở */
+  function titleFor(slug){var o=ORDER.concat(LEGALS).filter(function(x){return x[0]===slug})[0];if(!o)return BASE();
+    var l=LEGALS.filter(function(x){return x[0]===slug})[0],t=l?LV(legalDoc(l[1]).title):o[1];return t+' · '+BASE()}
   /* router: "#/module" mở trang chi tiết, còn lại là trang chủ */
   function route(){var h=location.hash||'',m=h.match(/^#\/([a-z-]+)/),pg=m&&$('#p-'+m[1]);
     nav.classList.remove('open');mnu.setAttribute('aria-expanded','false');
     pages.forEach(function(p){p.hidden=p!==pg});main.hidden=!!pg;
     links.forEach(function(a){if(pg&&a.getAttribute('href')==='#/'+m[1])a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
-    if(pg){var o=ORDER.filter(function(x){return x[0]===m[1]})[0];document.title=(o?o[1]+' · ':'')+base;window.scrollTo(0,0);onPage=true;reveal(pg);cycle(pg);if(window.__p3)window.__p3(m[1]);return}
-    clearInterval(cyc);
-    document.title=base;var t=h.length>1&&h.charAt(1)!=='/'&&document.getElementById(h.slice(1));
+    if(pg){curSlug=m[1];document.title=titleFor(curSlug);window.scrollTo(0,0);onPage=true;reveal(pg);cycle(pg);if(window.__p3)window.__p3(m[1]);return}
+    clearInterval(cyc);curSlug='';
+    document.title=BASE();var t=h.length>1&&h.charAt(1)!=='/'&&document.getElementById(h.slice(1));
     if(t)t.scrollIntoView();else if(onPage)window.scrollTo(0,0);onPage=false}
   window.addEventListener('hashchange',route);route();
   mnu.addEventListener('click',function(){var o=nav.classList.toggle('open');mnu.setAttribute('aria-expanded',o)});

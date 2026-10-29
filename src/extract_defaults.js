@@ -11,5 +11,6 @@ for(const [k,v] of Object.entries(LG)){const m=v.match(/^data:image\/(\w+);base6
 const homeIdx=[0,3,7,12,14,15];
 const faq=FQ.map((q,i)=>({id:'f'+(i+1),cat:{vi:q[0],en:tr(q[0])},q:{vi:q[1],en:tr(q[1])},a:{vi:q[2],en:tr(q[2])},home:homeIdx.includes(i)}));
 const partners=PT.map((p,i)=>({id:'p'+(i+1),name:p[0],url:p[1],logo:'/uploads/seed-'+names[p[2]],group:{vi:p[3],en:tr(p[3])}}));
-fs.writeFileSync('cms/defaults.json',JSON.stringify({faq,partners,settings:{signup_url:'https://app.3rdvn.io.vn/auth/login?tab=signup',email:'admin_support@3rdvn.io.vn',hotline:'(+84) 398 192 414',hotline_tel:'+84398192414',terms_url:'https://app.3rdvn.io.vn/terms',privacy_url:'https://app.3rdvn.io.vn/privacy'}},null,1));
+const legal=JSON.parse(fs.readFileSync('legal.json','utf8'));
+fs.writeFileSync('cms/defaults.json',JSON.stringify({faq,partners,legal,settings:{signup_url:'https://app.3rdvn.io.vn/auth/login?tab=signup',email:'admin_support@3rdvn.io.vn',hotline:'(+84) 398 192 414',hotline_tel:'+84398192414',company_name:'3RDVN Technology',tax_id:'4001342613',address:'',working_hours:'',working_hours_en:'',facebook:'',zalo:'',tiktok:'',youtube:'',instagram:'',site_title:'',meta_description:'',analytics_id:''}},null,1));
 console.log('faq',faq.length,'partners',partners.length,'logos',Object.values(names).join(','));

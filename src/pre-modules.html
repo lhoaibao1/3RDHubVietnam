@@ -181,8 +181,6 @@ form input:focus,form textarea:focus{outline:none;border-color:var(--or)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .msg{font-size:14.5px;font-weight:700;min-height:1.2em}.msg.ok{color:var(--ok)}.msg.err2{color:#D93A4A}
 @media(max-width:900px){.contact{grid-template-columns:1fr}.two{grid-template-columns:1fr}}
-footer{max-width:1200px;margin:0 auto;padding-block:36px calc(32px + env(safe-area-inset-bottom,0px));display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 24px;font-size:14px;color:var(--ink2)}
-footer a{text-decoration:none}footer a:hover{color:var(--ink)}
 @media(max-width:900px){
   .nav{gap:8px;padding:6px 6px 6px 12px;top:calc(env(safe-area-inset-top,0px) + 10px)}
   .brand{gap:7px}.brand .hd{height:22px}.brand .bn{font-size:16px}
@@ -471,7 +469,31 @@ footer a{text-decoration:none}footer a:hover{color:var(--ink)}
   </div>
 </section>
 </main>
-<footer><span>© 2026 3RDHub Vietnam, nền tảng tiếp thị liên kết thuộc 3RDVN Technology. Mã số thuế 4001342613</span><span><a href="https://app.3rdvn.io.vn/terms" target="_blank" rel="noopener">Điều khoản</a> · <a href="https://app.3rdvn.io.vn/privacy" target="_blank" rel="noopener">Bảo mật</a></span></footer>
+<footer class="ft2">
+  <div class="w ftg">
+    <div class="ftb">
+      <a class="brand ftl" href="#/" id="ftbrand" aria-label="3RDHub Vietnam"></a>
+      <p class="ftd">Nền tảng tiếp thị liên kết kết nối Advertiser tài chính với mạng lưới publisher. Mỗi lượt bấm, mỗi hồ sơ và mỗi đồng hoa hồng đều được ghi nhận.</p>
+      <div class="ftsoc" id="ftsoc" data-nl></div>
+    </div>
+    <nav class="ftc" aria-label="Khám phá"><h3>Khám phá</h3><a href="#/mo-hinh">Mô hình</a><a href="#/advertiser">Advertiser</a><a href="#/cong-nghe">Công nghệ</a><a href="#/doi-tac">Đối tác</a><a href="#/hoi-dap">Hỏi đáp</a><a href="#/lien-he">Liên hệ</a></nav>
+    <nav class="ftc" aria-label="Pháp lý"><h3>Pháp lý</h3><a href="#/dieu-khoan">Điều khoản sử dụng</a><a href="#/bao-mat">Chính sách bảo mật</a></nav>
+    <div class="ftc ftco"><h3>Thông tin công ty</h3>
+      <ul>
+        <li class="coname"><b data-co="company_name" data-nl>3RDVN Technology</b></li>
+        <li><span>Mã số thuế</span><b data-co="tax_id" data-nl>4001342613</b></li>
+        <li data-co-row="address" hidden><span>Địa chỉ</span><b data-co="address" data-nl></b></li>
+        <li><span>Email</span><a href="mailto:admin_support@3rdvn.io.vn">admin_support@3rdvn.io.vn</a></li>
+        <li><span>Hotline</span><a href="tel:+84398192414">(+84) 398 192 414</a></li>
+        <li data-co-row="working_hours" hidden><span>Giờ làm việc</span><b data-co="working_hours" data-nl></b></li>
+      </ul>
+    </div>
+  </div>
+  <div class="w ftbot">
+    <p class="ftcopy" id="ftcopy" data-nl></p>
+    <p class="ftnote" id="ftnote" data-nl></p>
+  </div>
+</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
