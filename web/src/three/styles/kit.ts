@@ -1,0 +1,284 @@
+// Bộ dựng chung cho các kiểu cảnh 3D "đêm công nghệ": sân khấu tối có hậu kỳ phát sáng (bloom), camera bay mượt,
+// nhãn kính, biểu tượng, đường sáng có hạt dữ liệu chạy, hạt bụi sáng.
+import * as T from 'three'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
+import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js'
+import { BRANDS, LUCIDE } from '../../lib/icons.generated'
+import { dpr, meter, onQuality } from '../quality'
+
+export const RM = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+export const PAL = { cyan: 0x27D3FF, blue: 0x3B6BFF, violet: 0x8A5BFF, orange: 0xFF7A3C, mint: 0x2EE6A6, pink: 0xFF4D8D, gold: 0xFFC24D, white: 0xEAF2FF, deep: 0x07102B, panel: 0x0C1B45 }
+export const FONT = '"Nunito",system-ui,sans-serif'
+export const lin = (h: number) => new T.Color(h).convertSRGBToLinear()
+
+export interface Key { pos: [number, number, number]; look: [number, number, number]; fov?: number }
+export interface Stage {
+  scene: T.Scene
+  camera: T.PerspectiveCamera
+  /** Gọi mỗi khung hình với thời gian (giây). */
+  onTick(fn: (t: number, dt: number) => void): void
+  /** Bay camera tới khoá hình. */
+  fly(key: Key, fast?: boolean): void
+  /** Toạ độ màn hình (px, theo kích thước canvas) của một điểm trong cảnh. */
+  project(p: T.Vector3): { x: number; y: number; behind: boolean }
+  visible(): boolean
+  dispose(): void
+}
+
+/** Texture nền gradient dọc, dùng làm trời của cảnh. */
+function skyTex(top: string, mid: string, bot: string) {
+  const c = document.createElement('canvas'); c.width = 4; c.height = 256
+  const x = c.getContext('2d') as CanvasRenderingContext2D
+  const g = x.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, top); g.addColorStop(0.55, mid); g.addColorStop(1, bot)
+  x.fillStyle = g; x.fillRect(0, 0, 4, 256)
+  const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; return t
+}
+
+export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: [number, number]; sky?: [string, string, string]; bloom?: number; offsetX?: number }): Stage {
+  const R = new T.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' })
+  R.outputEncoding = T.sRGBEncoding
+  const scene = new T.Scene()
+  const sky = o.sky || ['#040A1C', '#0A1B45', '#0E2A63']
+  scene.background = skyTex(sky[0], sky[1], sky[2])
+  const fogN = o.fog || [40, 130]
+  scene.fog = new T.Fog(lin(0x0A1B45), fogN[0], fogN[1])
+  const camera = new T.PerspectiveCamera(o.fov || 30, 1, 0.5, 400)
+
+  let W = 1, H = 1
+  let rt = new T.WebGLMultisampleRenderTarget(2, 2, { format: T.RGBAFormat }); rt.samples = 4
+  const composer = new EffectComposer(R, rt)
+  composer.addPass(new RenderPass(scene, camera))
+  const bloom = new UnrealBloomPass(new T.Vector2(2, 2), o.bloom == null ? 0.85 : o.bloom, 0.65, 0.22)
+  composer.addPass(bloom)
+  composer.addPass(new ShaderPass(GammaCorrectionShader))
+  let bloomOn = true
+
+  const ticks: ((t: number, dt: number) => void)[] = []
+  const clock = new T.Clock()
+  const cur = { pos: new T.Vector3(0, 10, 40), look: new T.Vector3(), fov: o.fov || 30 }
+  const tgt = { pos: new T.Vector3(0, 10, 40), look: new T.Vector3(), fov: o.fov || 30 }
+  let vis = true, raf = 0, last = 0, flying = 0
+  const mt = meter()
+
+  function size() {
+    const r = canvas.getBoundingClientRect()
+    W = Math.max(1, r.width); H = Math.max(1, r.height)
+    const pr = dpr()
+    R.setPixelRatio(pr); R.setSize(W, H, false)
+    composer.setPixelRatio(pr); composer.setSize(W, H)
+    camera.aspect = W / H
+    if (W > 900 && o.offsetX !== 0) camera.setViewOffset(W, H, -W * (o.offsetX == null ? 0.17 : o.offsetX), 0, W, H); else camera.clearViewOffset()
+    camera.updateProjectionMatrix()
+  }
+  size()
+
+  const offQ = onQuality(() => { size(); if (!RM) bloomOn = true })
+  const ro = new ResizeObserver(size); ro.observe(canvas)
+  const io = new IntersectionObserver((e) => { vis = e[0].isIntersecting }); io.observe(canvas)
+  let slow = 0
+
+  function frame() {
+    raf = requestAnimationFrame(frame)
+    if (!vis) return
+    const now = performance.now()
+    if (now - last < 15) return
+    const dt = Math.min(0.05, (now - last) / 1000); mt(now - last); last = now
+    const t = clock.getElapsedTime()
+    const k = RM ? 1 : Math.min(1, dt * (flying > 0 ? 3.2 : 2.4))
+    cur.pos.lerp(tgt.pos, k); cur.look.lerp(tgt.look, k); cur.fov += (tgt.fov - cur.fov) * k
+    if (flying > 0) flying -= dt
+    const sway = RM ? 0 : 1
+    camera.position.set(cur.pos.x + Math.sin(t * 0.21) * 0.9 * sway, cur.pos.y + Math.sin(t * 0.17) * 0.4 * sway, cur.pos.z)
+    camera.lookAt(cur.look)
+    if (Math.abs(camera.fov - cur.fov) > 0.01) { camera.fov = cur.fov; camera.updateProjectionMatrix() }
+    for (const f of ticks) f(t, dt)
+    if (bloomOn) composer.render(dt); else R.render(scene, camera)
+    // máy quá chậm: tắt bloom (giữ cảnh mượt), mức giảm độ nét đã do quality.ts lo
+    if (dt * 1000 > 40) slow++; else slow = Math.max(0, slow - 1)
+    if (slow > 40 && bloomOn) { bloomOn = false; R.setPixelRatio(Math.min(R.getPixelRatio(), 1)) }
+  }
+  frame()
+
+  return {
+    scene, camera,
+    onTick(fn) { ticks.push(fn) },
+    fly(key, fast) {
+      tgt.pos.set(...key.pos); tgt.look.set(...key.look); tgt.fov = key.fov || o.fov || 30; flying = 2.5
+      if (fast || RM) { cur.pos.copy(tgt.pos); cur.look.copy(tgt.look); cur.fov = tgt.fov }
+    },
+    project(p) {
+      const v = p.clone().project(camera)
+      return { x: (v.x * 0.5 + 0.5) * W, y: (-v.y * 0.5 + 0.5) * H, behind: v.z > 1 }
+    },
+    visible: () => vis,
+    dispose() { cancelAnimationFrame(raf); offQ(); ro.disconnect(); io.disconnect(); rt.dispose(); R.dispose(); scene.traverse((m: any) => { if (m.geometry) m.geometry.dispose() }) },
+  }
+}
+
+/* ---------------- biểu tượng và nhãn ---------------- */
+const iconCache: Record<string, T.CanvasTexture> = {}
+/** Biểu tượng (lucide hoặc logo thương hiệu) vẽ lên canvas, trắng/nhuộm màu, nền trong suốt. */
+export function iconTex(name: string, color = '#EAF2FF', size = 256): T.CanvasTexture {
+  const key = name + color + size
+  if (iconCache[key]) return iconCache[key]
+  const c = document.createElement('canvas'); c.width = c.height = size
+  const x = c.getContext('2d') as CanvasRenderingContext2D
+  const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; t.anisotropy = 4
+  iconCache[key] = t
+  if (name.startsWith('brand:')) {
+    const b = BRANDS[name.slice(6)]
+    if (b) { x.save(); x.scale(size / 24, size / 24); x.fillStyle = color; x.fill(new Path2D(b.p)); x.restore(); t.needsUpdate = true }
+  } else if (LUCIDE[name]) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${LUCIDE[name]}</svg>`
+    const img = new Image()
+    img.onload = () => { x.clearRect(0, 0, size, size); x.drawImage(img, size * 0.08, size * 0.08, size * 0.84, size * 0.84); t.needsUpdate = true }
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
+  }
+  return t
+}
+
+function rrect(x: CanvasRenderingContext2D, a: number, b: number, w: number, h: number, r: number) {
+  x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath()
+}
+
+/** Nhãn kính có viền neon, luôn quay mặt về camera. `h` là chiều cao thế giới. */
+export function label(text: string, color: number, h = 1.5, sub = ''): T.Sprite {
+  const c = document.createElement('canvas'); const x = c.getContext('2d') as CanvasRenderingContext2D
+  x.font = `900 52px ${FONT}`; const tw = Math.ceil(x.measureText(text).width)
+  x.font = `700 30px ${FONT}`; const sw = sub ? Math.ceil(x.measureText(sub).width) : 0
+  const W = Math.max(tw, sw) + 96, H = sub ? 148 : 100
+  c.width = W; c.height = H
+  const col = '#' + new T.Color(color).getHexString()
+  x.fillStyle = 'rgba(7,16,43,.78)'; rrect(x, 4, 4, W - 8, H - 8, 30); x.fill()
+  x.strokeStyle = col; x.lineWidth = 5; rrect(x, 4, 4, W - 8, H - 8, 30); x.stroke()
+  x.textAlign = 'center'; x.textBaseline = 'middle'
+  x.fillStyle = '#FFFFFF'; x.font = `900 52px ${FONT}`; x.fillText(text, W / 2, sub ? 52 : H / 2 + 3)
+  if (sub) { x.fillStyle = col; x.font = `700 30px ${FONT}`; x.fillText(sub, W / 2, 108) }
+  const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding
+  const sp = new T.Sprite(new T.SpriteMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false, fog: false }))
+  sp.scale.set(h * W / H, h, 1); sp.renderOrder = 10
+  return sp
+}
+
+/* ---------------- vật liệu phát sáng ---------------- */
+export const neon = (c: number, k = 1) => new T.MeshBasicMaterial({ color: lin(c).multiplyScalar(k), toneMapped: false })
+export function glass(c = PAL.panel, emissive = 0x0B2A6F, ei = 0.5) {
+  return new T.MeshStandardMaterial({ color: lin(c), roughness: 0.28, metalness: 0.55, emissive: lin(emissive), emissiveIntensity: ei, envMapIntensity: 1 })
+}
+export function metal(c = 0x1B2A55, r = 0.35) { return new T.MeshStandardMaterial({ color: lin(c), roughness: r, metalness: 0.7 }) }
+
+export function rbox(w: number, h: number, d: number, r = 0.2, seg = 3): T.BufferGeometry {
+  r = Math.min(r, w / 2 - 0.01, d / 2 - 0.01, h / 2 - 0.01)
+  const s = new T.Shape(), x = -w / 2 + r, y = -d / 2 + r, W = w - 2 * r, D = d - 2 * r
+  s.moveTo(x, y - r); s.lineTo(x + W, y - r); s.quadraticCurveTo(x + W + r, y - r, x + W + r, y); s.lineTo(x + W + r, y + D); s.quadraticCurveTo(x + W + r, y + D + r, x + W, y + D + r); s.lineTo(x, y + D + r); s.quadraticCurveTo(x - r, y + D + r, x - r, y + D); s.lineTo(x - r, y); s.quadraticCurveTo(x - r, y - r, x, y - r)
+  const g = new T.ExtrudeGeometry(s, { depth: Math.max(0.01, h - 2 * r * 0.4), bevelEnabled: true, bevelThickness: r * 0.4, bevelSize: r * 0.4, bevelSegments: seg, curveSegments: 6 })
+  g.rotateX(-Math.PI / 2); g.translate(0, r * 0.4, 0)
+  return g
+}
+
+/** Khung cạnh sáng bao quanh một hình hộp (tạo cảm giác kính phát sáng khi có bloom). */
+export function edges(geo: T.BufferGeometry, color: number, k = 1.2): T.LineSegments {
+  return new T.LineSegments(new T.EdgesGeometry(geo, 25), new T.LineBasicMaterial({ color: lin(color).multiplyScalar(k), toneMapped: false }))
+}
+
+/** Ống sáng đi qua các điểm. Trả về đường cong để thả hạt dữ liệu. */
+export function beam(parent: T.Object3D, pts: T.Vector3[], color: number, r = 0.07, closed = false) {
+  const curve = new T.CatmullRomCurve3(pts, closed, 'catmullrom', 0.3)
+  const m = new T.Mesh(new T.TubeGeometry(curve, Math.max(24, pts.length * 14), r, 8, closed), neon(color, 0.9))
+  parent.add(m)
+  return curve
+}
+
+/** Các hạt dữ liệu chạy dọc đường cong; trả về hàm cập nhật. */
+export function packets(parent: T.Object3D, curve: T.Curve<T.Vector3>, n: number, color: number, size = 0.28, speed = 0.08, geo?: T.BufferGeometry) {
+  const items: T.Mesh[] = []
+  for (let i = 0; i < n; i++) { const m = new T.Mesh(geo || new T.SphereGeometry(size, 10, 8), neon(color, 1.6)); parent.add(m); items.push(m) }
+  return (t: number) => items.forEach((m, i) => { const u = (t * speed + i / n) % 1; m.position.copy(curve.getPointAt(u)); const e = Math.min(1, u * 10, (1 - u) * 10); m.scale.setScalar(Math.max(0.001, e)) })
+}
+
+/** Sàn lưới neon mờ dần ra xa. */
+export function grid(parent: T.Object3D, size: number, color: number, y = 0, step = 2) {
+  const c = document.createElement('canvas'); c.width = c.height = 512
+  const x = c.getContext('2d') as CanvasRenderingContext2D
+  x.fillStyle = 'rgba(0,0,0,0)'; x.fillRect(0, 0, 512, 512)
+  const col = '#' + new T.Color(color).getHexString()
+  x.strokeStyle = col; x.lineWidth = 2; x.globalAlpha = 0.55
+  const n = Math.round(size / step)
+  for (let i = 0; i <= 8; i++) { x.beginPath(); x.moveTo(i * 64, 0); x.lineTo(i * 64, 512); x.moveTo(0, i * 64); x.lineTo(512, i * 64); x.stroke() }
+  const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(n / 8, n / 8); t.anisotropy = 4; t.encoding = T.sRGBEncoding
+  const fade = document.createElement('canvas'); fade.width = fade.height = 256
+  const fx = fade.getContext('2d') as CanvasRenderingContext2D
+  const g = fx.createRadialGradient(128, 128, 20, 128, 128, 128); g.addColorStop(0, '#fff'); g.addColorStop(1, '#000'); fx.fillStyle = g; fx.fillRect(0, 0, 256, 256)
+  const a = new T.CanvasTexture(fade)
+  const m = new T.Mesh(new T.PlaneGeometry(size, size), new T.MeshBasicMaterial({ map: t, alphaMap: a, transparent: true, depthWrite: false, toneMapped: false, opacity: 0.9, fog: false }))
+  m.rotation.x = -Math.PI / 2; m.position.y = y; parent.add(m)
+  return m
+}
+
+/** Bụi sáng lơ lửng; trả về hàm cập nhật. */
+export function dust(parent: T.Object3D, n: number, spread: [number, number, number], center: [number, number, number], color = 0x8FB4FF, size = 5) {
+  const pos = new Float32Array(n * 3); let s = 5
+  const rnd = () => ((s = (s * 9301 + 49297) % 233280) / 233280)
+  for (let i = 0; i < n; i++) { pos[i * 3] = center[0] + (rnd() - 0.5) * spread[0]; pos[i * 3 + 1] = center[1] + (rnd() - 0.5) * spread[1]; pos[i * 3 + 2] = center[2] + (rnd() - 0.5) * spread[2] }
+  const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3))
+  const c = document.createElement('canvas'); c.width = c.height = 32
+  const x = c.getContext('2d') as CanvasRenderingContext2D
+  const g = x.createRadialGradient(16, 16, 0, 16, 16, 16); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 32, 32)
+  const mat = new T.PointsMaterial({ map: new T.CanvasTexture(c), color: lin(color), size, sizeAttenuation: false, transparent: true, depthWrite: false, blending: T.AdditiveBlending, toneMapped: false, opacity: 0.8, fog: false })
+  const pts = new T.Points(geo, mat); parent.add(pts)
+  return (t: number) => { pts.rotation.y = t * 0.012; mat.opacity = 0.6 + 0.2 * Math.sin(t * 1.3) }
+}
+
+/** Ánh sáng chung: trời xanh đêm + đèn viền cam / xanh lơ. */
+export function nightLights(scene: T.Scene) {
+  scene.add(new T.HemisphereLight(0x5E7CFF, 0x0A1030, 0.9))
+  const key = new T.DirectionalLight(0xBFD4FF, 1.1); key.position.set(-20, 40, 25); scene.add(key)
+  const a = new T.DirectionalLight(0xFF7A3C, 1.3); a.position.set(-30, 12, -26); scene.add(a)
+  const b = new T.DirectionalLight(0x27D3FF, 1.4); b.position.set(34, 14, -30); scene.add(b)
+  return { key, a, b }
+}
+
+/** Môi trường phản chiếu tối có dải sáng cyan / cam để kim loại và kính có viền sáng. */
+export function nightEnv(): T.CubeTexture {
+  const F: HTMLCanvasElement[] = []
+  for (let i = 0; i < 6; i++) {
+    const c = document.createElement('canvas'); c.width = c.height = 128
+    const x = c.getContext('2d') as CanvasRenderingContext2D
+    const g = x.createLinearGradient(0, 0, 0, 128); g.addColorStop(0, '#1B2A66'); g.addColorStop(1, '#070D26'); x.fillStyle = g; x.fillRect(0, 0, 128, 128)
+    const box = (a: number, b: number, w: number, h: number, col: string, bl: number) => { x.save(); x.shadowColor = col; x.shadowBlur = bl; x.fillStyle = col; x.fillRect(a, b, w, h); x.restore() }
+    if (i === 0) box(52, 10, 24, 100, '#27D3FF', 20)
+    if (i === 1) box(52, 10, 24, 100, '#FF7A3C', 20)
+    if (i === 2) box(30, 30, 68, 68, '#7C8CFF', 26)
+    if (i === 4) box(20, 30, 88, 24, '#9AB4FF', 18)
+    if (i === 5) box(20, 60, 88, 20, '#27D3FF', 18)
+    F.push(c)
+  }
+  const t = new T.CubeTexture(F as any); t.encoding = T.sRGBEncoding; t.needsUpdate = true
+  return t
+}
+
+/** Texture cửa sổ sáng đèn (toà nhà, tủ máy chủ). */
+export function winTex(seed = 3, cols = 4, rows = 16, warm = 0.3) {
+  const c = document.createElement('canvas'); c.width = cols * 16; c.height = rows * 8
+  const x = c.getContext('2d') as CanvasRenderingContext2D
+  x.fillStyle = '#05102C'; x.fillRect(0, 0, c.width, c.height)
+  let s = seed; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280)
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) if (r() < 0.5) { x.fillStyle = r() < warm ? '#FF9A5C' : '#4FD8FF'; x.fillRect(i * 16 + 3, j * 8 + 2, 10, 4) }
+  const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; t.magFilter = T.NearestFilter; return t
+}
+
+/** Vật liệu thân toà nhà phát sáng cửa sổ. */
+export function winMat(seed = 3, cols = 4, rows = 16, base = 0x0B1740, warm = 0.3) {
+  const t = winTex(seed, cols, rows, warm)
+  return new T.MeshStandardMaterial({ map: t, emissiveMap: t, emissive: new T.Color(0xFFFFFF), emissiveIntensity: 1.1, color: lin(base), roughness: 0.5, metalness: 0.3 })
+}
+
+/** Biểu tượng phát sáng lơ lửng (sprite). */
+export function iconSprite(name: string, size = 1.8, color = '#FFFFFF') {
+  const sp = new T.Sprite(new T.SpriteMaterial({ map: iconTex(name, color), transparent: true, depthWrite: false, toneMapped: false, fog: false }))
+  sp.scale.set(size, size, 1); sp.renderOrder = 9
+  return sp
+}

@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import * as si from 'simple-icons'
 
 const LUCIDE = ['blocks', 'building', 'building-2', 'credit-card', 'file-check', 'flask-conical', 'globe', 'hand-coins', 'key-round', 'landmark', 'link', 'mail', 'megaphone',
-  'mouse-pointer-click', 'network', 'package', 'phone', 'rocket', 'scroll-text', 'send', 'server', 'shield-check', 'users', 'wallet']
+  'mouse-pointer-click', 'network', 'brain-circuit', 'cpu', 'database', 'banknote', 'radar', 'workflow', 'chart-column', 'bot', 'scan-line', 'layers', 'box', 'factory', 'cog', 'handshake', 'target', 'smartphone', 'coins', 'badge-check', 'package', 'phone', 'rocket', 'scroll-text', 'send', 'server', 'shield-check', 'users', 'wallet']
 const BRANDS = ['docker', 'facebook', 'go', 'nginx', 'nuxt', 'pinia', 'postgresql', 'redis', 'tailwindcss', 'tiktok', 'typescript', 'vite', 'vuedotjs', 'zalo', 'youtube', 'instagram']
 
 const all = Object.values(si).filter((v) => v && typeof v === 'object' && 'slug' in v)
