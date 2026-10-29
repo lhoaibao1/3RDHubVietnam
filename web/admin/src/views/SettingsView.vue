@@ -7,8 +7,10 @@ const a = useAdmin()
 type Field = { key: string; label: string; hint: string; type?: string; big?: boolean; wide?: boolean }
 const company: Field[] = [
   { key: 'company_name', label: 'Tên công ty', hint: 'Dùng trong dòng bản quyền ở chân trang' },
+  { key: 'company_name_en', label: 'Company name (English)', hint: 'Hiện khi khách chọn tiếng Anh. Để trống thì dùng bản mặc định' },
   { key: 'tax_id', label: 'Mã số thuế', hint: '' },
   { key: 'address', label: 'Địa chỉ', hint: 'Chưa điền thì chân trang không hiện dòng này' },
+  { key: 'address_en', label: 'Address (English)', hint: 'Hiện khi khách chọn tiếng Anh. Để trống thì dùng bản mặc định' },
   { key: 'working_hours', label: 'Giờ làm việc (Tiếng Việt)', hint: 'Ví dụ: 8:30 - 17:30, Thứ 2 đến Thứ 6' },
   { key: 'working_hours_en', label: 'Working hours (English)', hint: 'Để trống thì dùng bản tiếng Việt' },
   { key: 'email', label: 'Email hỗ trợ', hint: 'Hiện ở chân trang, trang Liên hệ, nút Gửi email', type: 'email' },

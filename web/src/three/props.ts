@@ -72,7 +72,7 @@ export function hub(parent: any, s: number, x: number, y: number, z: number, acc
   const glass = new T.MeshPhysicalMaterial({ color: C(0xBFD6FF), roughness: 0.05, metalness: 0, transparent: true, opacity: 0.38, clearcoat: 1, clearcoatRoughness: 0.03, envMapIntensity: 2 })
   const dome = new T.Mesh(new T.SphereGeometry(1.7, 48, 24, 0, Math.PI * 2, 0, Math.PI / 2), glass); dome.position.y = 2.9; g.add(dome)
   const orb = new T.Mesh(new T.SphereGeometry(0.85, 32, 20), new T.MeshBasicMaterial({ color: C(accent), toneMapped: false })); orb.position.y = 3.55; g.add(orb)
-  glow(g, accent, 4.2, 0, 3.6, 0, 0.7)
+  glow(g, accent, 3.4, 0, 3.6, 0, 0.6)
   const sign = ctex(512, 160, (x2: any, w: number, h: number) => { x2.fillStyle = '#0B2A6F'; rr(x2, 0, 0, w, h, 40); x2.fill(); x2.fillStyle = '#fff'; x2.font = '900 82px ' + FONT; x2.textAlign = 'center'; x2.textBaseline = 'middle'; x2.fillText('3RDHub', w / 2, h / 2 + 4) })
   for (const a of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) {
     const p = screen(g, 2.2, 0.69, sign, Math.sin(a) * 1.76, 1.6, Math.cos(a) * 1.76, a)
@@ -84,7 +84,7 @@ export function hub(parent: any, s: number, x: number, y: number, z: number, acc
   const bmesh = new T.Mesh(new T.CylinderGeometry(0.75, 1.5, 6, 40, 1, true), bm); bmesh.position.y = 6; bmesh.renderOrder = 2; g.add(bmesh)
   onMode((k: Mode) => { bm.blending = k === 'dark' ? T.AdditiveBlending : T.NormalBlending; bm.opacity = k === 'dark' ? 0.7 : 0.32; bm.needsUpdate = true; ac.emissiveIntensity = k === 'dark' ? 0.7 : 0.25 })
   bm.blending = getMode() === 'dark' ? T.AdditiveBlending : T.NormalBlending; bm.opacity = getMode() === 'dark' ? 0.7 : 0.32
-  glow(g, accent, 7, 0, 3.2, 0, 0.45)
+  glow(g, accent, 5, 0, 3.2, 0, 0.4)
   void core
   return { g, tick(t: number) { orb.scale.setScalar(1 + 0.06 * Math.sin(t * 2.4)); orb.position.y = 3.55 + 0.08 * Math.sin(t * 1.6); bands.forEach((b, i) => { b.scale.setScalar(1 + 0.012 * Math.sin(t * 3 + i)); (b.material as any).opacity = 1 }); bmesh.rotation.y = t * 0.4 } }
 }

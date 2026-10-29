@@ -37,7 +37,7 @@ usePageFx(root)
       <div class="g3">
         <article class="cd ch"><span class="ic"><Icon name="mail" /></span><small>Email</small><b>{{ site.S('email') }}</b><div class="acts sm"><a class="btn gh" :href="'mailto:' + site.S('email')">Gửi email</a><CopyButton class="btn gh" :value="site.S('email')" /></div></article>
         <article class="cd ch"><span class="ic"><Icon name="phone" /></span><small>Hotline</small><b>{{ site.S('hotline') }}</b><div class="acts sm"><a class="btn gh" :href="'tel:' + site.S('hotline_tel')">Gọi ngay</a><CopyButton class="btn gh" :value="site.S('hotline_tel')" /></div></article>
-        <article class="cd ch"><span class="ic"><Icon name="building" /></span><small>Đơn vị vận hành</small><b>{{ site.S('company_name') }}</b><span class="sub"><span>Mã số thuế</span> <span>{{ site.S('tax_id') }}</span></span></article>
+        <article class="cd ch"><span class="ic"><Icon name="building" /></span><small>Đơn vị vận hành</small><b>{{ site.SL('company_name') }}</b><span class="sub"><span>Mã số thuế</span> <span>{{ site.S('tax_id') }}</span></span></article>
       </div>
     </div>
   </section>

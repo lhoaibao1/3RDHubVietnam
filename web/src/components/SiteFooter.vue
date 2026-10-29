@@ -10,8 +10,8 @@ const SOCIAL: [string, string][] = [['facebook', 'Facebook'], ['zalo', 'Zalo'], 
 const socials = computed(() => SOCIAL.filter(([k]) => /^https?:\/\//i.test(site.S(k))).map(([k, label]) => ({ k, label, url: okUrl(site.S(k)), path: BRANDS[k].p })))
 const hours = computed(() => (site.lang === 'en' && site.S('working_hours_en')) || site.S('working_hours'))
 const year = new Date().getFullYear()
-const copy = computed(() => site.t('© {year} {name}. Bảo lưu mọi quyền.').replace('{year}', String(year)).replace('{name}', site.S('company_name')))
-const note = computed(() => site.t('Nội dung, thương hiệu và hình ảnh trên website thuộc quyền sở hữu của {name} và các chủ sở hữu tương ứng. Không sao chép khi chưa có sự đồng ý bằng văn bản.').replace('{name}', site.S('company_name')))
+const copy = computed(() => site.t('© {year} {name}. Bảo lưu mọi quyền.').replace('{year}', String(year)).replace('{name}', site.SL('company_name')))
+const note = computed(() => site.t('Nội dung, thương hiệu và hình ảnh trên website thuộc quyền sở hữu của {name} và các chủ sở hữu tương ứng. Không sao chép khi chưa có sự đồng ý bằng văn bản.').replace('{name}', site.SL('company_name')))
 const legal = Object.keys(LEGAL_SLUGS)
 </script>
 
@@ -37,9 +37,9 @@ const legal = Object.keys(LEGAL_SLUGS)
       <div class="ftc ftco">
         <h3>Thông tin công ty</h3>
         <ul>
-          <li class="coname"><b>{{ site.S('company_name') }}</b></li>
+          <li class="coname"><b>{{ site.SL('company_name') }}</b></li>
           <li><span>Mã số thuế</span><b>{{ site.S('tax_id') }}</b></li>
-          <li v-if="site.S('address')"><span>Địa chỉ</span><b>{{ site.S('address') }}</b></li>
+          <li v-if="site.SL('address')"><span>Địa chỉ</span><b>{{ site.SL('address') }}</b></li>
           <li><span>Website công ty</span><a :href="site.S('parent_url')" target="_blank" rel="noopener">{{ site.S('parent_url').replace(/^https?:\/\//, '').replace(/\/$/, '') }}</a></li>
           <li><span>Email</span><a :href="'mailto:' + site.S('email')">{{ site.S('email') }}</a></li>
           <li><span>Hotline</span><a :href="'tel:' + site.S('hotline_tel')">{{ site.S('hotline') }}</a></li>

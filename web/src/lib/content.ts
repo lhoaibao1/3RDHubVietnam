@@ -26,7 +26,9 @@ export const DEF_SETTINGS: Record<string, string> = {
   company_name: 'Công ty TNHH Công nghệ 3RDVN',
   tax_id: '4001342613',
   address: 'Tổ 10 Tỉnh Thủy, Phường Quảng Phú, Thành phố Đà Nẵng',
-  parent_url: 'https://3rdvn.io.vn', working_hours: '', working_hours_en: '',
+  parent_url: 'https://3rdvn.io.vn',
+  company_name_en: '3RDVN Technology Co., Ltd',
+  address_en: 'Group 10 Tinh Thuy, Quang Phu Ward, Da Nang City, Vietnam', working_hours: '', working_hours_en: '',
   facebook: '', zalo: '', tiktok: '', youtube: '', instagram: '',
   site_title: '', meta_description: '', analytics_id: '',
 }

@@ -9,7 +9,10 @@ export const RM = typeof matchMedia === 'function' && matchMedia('(prefers-reduc
 
 /* ---------- 3D helpers ---------- */
 export function C(h?:any){return new T.Color(h).convertSRGBToLinear()}
-export function M(h?:any,o?:any){o=o||{} as any;return new T.MeshPhysicalMaterial({color:C(h),roughness:o.r==null?.46:o.r,metalness:o.m||0,emissive:o.e?C(o.e):new T.Color(0),emissiveIntensity:o.ei==null?1:o.ei,map:o.map||null,clearcoat:(o.e||o.m)?0:(o.cc==null?.28:o.cc),clearcoatRoughness:.34,envMapIntensity:o.env==null?1:o.env})}
+export function M(h?:any,o?:any){o=o||{} as any;
+  var p:any={color:C(h),roughness:o.r==null?.64:o.r,metalness:o.m||0,emissive:o.e?C(o.e):new T.Color(0),emissiveIntensity:o.ei==null?1:o.ei,map:o.map||null,envMapIntensity:o.env==null?.75:o.env};
+  /* chỉ vật nào cần bóng kính (quả cầu, kính) mới dùng lớp phủ; còn lại là vật liệu mờ kiểu đất sét/sứ nhám cho đỡ "nhựa" và nhẹ GPU */
+  return o.cc>0?new T.MeshPhysicalMaterial(Object.assign(p,{clearcoat:o.cc,clearcoatRoughness:.35})):new T.MeshStandardMaterial(p)}
 /* môi trường phản chiếu: cubemap vẽ bằng canvas (vòm trời + hộp đèn studio), chạy được trên mọi thiết bị.
    Bản sáng: studio trắng ấm/lạnh. Bản tối: nền xanh đêm với dải đèn cam và xanh lơ để viền bóng lên. */
 var envCache:any={};
@@ -50,7 +53,7 @@ export function ctex(w?:any,h?:any,fn?:any){var c=document.createElement('canvas
 export function rr(x?:any,a?:any,b?:any,w?:any,h?:any,r?:any){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
 export function screen(p?:any,w?:any,h?:any,tex?:any,x?:any,y?:any,z?:any,ry?:any){var o=new T.Mesh(new T.PlaneGeometry(w,h),new T.MeshBasicMaterial({map:tex,toneMapped:false}));o.position.set(x,y,z);o.rotation.y=ry||0;p.add(o);return o}
 
-export const MAT={white:M(0xFFFFFF,{r:.5}),cream:M(0xF4EFE6,{r:.7}),side:M(0xE9E2D5,{r:.8}),orange:M(0xFF6A2B,{r:.4}),orangeD:M(0xE2531A,{r:.45}),navy:M(0x0B2A6F,{r:.36}),navyL:M(0x1C3E8F,{r:.4}),glass:M(0xBFD6FF,{r:.12,m:.1,env:1.4}),gold:M(0xFFB238,{r:.28,m:.4}),green:M(0x3CC48B,{r:.6}),leaf:M(0x2BAE73,{r:.7}),wood:M(0xC99567,{r:.7}),dark:M(0x1A2340,{r:.45})};
+export const MAT={white:M(0xFFFFFF,{r:.66}),cream:M(0xF4EFE6,{r:.78}),side:M(0xE9E2D5,{r:.85}),orange:M(0xFF6A2B,{r:.55}),orangeD:M(0xE2531A,{r:.58}),navy:M(0x0B2A6F,{r:.52}),navyL:M(0x1C3E8F,{r:.55}),glass:M(0xBFD6FF,{r:.12,m:.1,env:1.4}),gold:M(0xFFB238,{r:.28,m:.4}),green:M(0x3CC48B,{r:.6}),leaf:M(0x2BAE73,{r:.7}),wood:M(0xC99567,{r:.7}),dark:M(0x1A2340,{r:.45})};
 /* màu theo chế độ: bản tối đổi các vật liệu sáng thành xanh đêm để cảnh không bị chói trên nền tối */
 var PAL:any={light:{white:0xFFFFFF,cream:0xF4EFE6,side:0xE9E2D5,navy:0x0B2A6F,navyL:0x1C3E8F,wood:0xC99567,dark:0x1A2340,glass:0xBFD6FF},
   dark:{white:0x39467A,cream:0x2E3A6E,side:0x2A3566,navy:0x3A56B8,navyL:0x4C6BD0,wood:0x8D6A4A,dark:0x0E1430,glass:0x6C8CFF}};
@@ -93,44 +96,42 @@ export function sparkles(parent?:any,n?:any,spread?:any,cy?:any,col?:any){
 export const FACE=ctex(256,180,function(x,w,h){x.fillStyle='#fff';x.fillRect(0,0,w,h);x.strokeStyle='#0B2A6F';x.lineWidth=12;rr(x,16,16,w-32,h-32,46);x.stroke();x.fillStyle='#0B2A6F';rr(x,70,58,22,58,11);x.fill();x.lineWidth=14;x.lineCap='round';x.beginPath();x.arc(178,104,26,Math.PI*1.12,Math.PI*1.88);x.stroke()});
 export function rrect(w?:any,h?:any,r?:any,d?:any){var s=new T.Shape(),x=-w/2,y=-h/2;s.moveTo(x+r,y);s.lineTo(x+w-r,y);s.quadraticCurveTo(x+w,y,x+w,y+r);s.lineTo(x+w,y+h-r);s.quadraticCurveTo(x+w,y+h,x+w-r,y+h);s.lineTo(x+r,y+h);s.quadraticCurveTo(x,y+h,x,y+h-r);s.lineTo(x,y+r);s.quadraticCurveTo(x,y,x+r,y);
   return new T.ExtrudeGeometry(s,{depth:d,bevelEnabled:true,bevelThickness:.03,bevelSize:.03,bevelSegments:3,curveSegments:10})}
-export const RBM={visor:new T.MeshPhysicalMaterial({color:C(0x0B1230),roughness:.08,metalness:.2,clearcoat:1,clearcoatRoughness:.05,envMapIntensity:1.6}),eye:new T.MeshBasicMaterial({color:C(0x7AF4FF),toneMapped:false}),glow:new T.MeshBasicMaterial({color:C(0xFF8A4C),toneMapped:false}),joint:M(0x2A3557,{r:.4,m:.3}),
-  shell:M(0xFFFFFF,{r:.28,cc:.6}),trim:M(0xFF6A2B,{r:.3,cc:.5})};
-/* robot mascot: thân và đầu hình trứng nhẵn như sứ, mặt kính đen bóng, mắt phát sáng, tai và ăng-ten cam */
+export const RBM={eye:new T.MeshBasicMaterial({color:C(0x7AF4FF),toneMapped:false}),glow:new T.MeshBasicMaterial({color:C(0xFF8A4C),toneMapped:false}),joint:M(0x2A3557,{r:.5,m:.2}),
+  shell:new T.MeshStandardMaterial({color:C(0xFFFFFF),roughness:.5,metalness:0,envMapIntensity:.7}),
+  trim:M(0xFF6A2B,{r:.5}),eyeB:new T.MeshStandardMaterial({color:C(0x0A1026),roughness:.12,metalness:.1,envMapIntensity:1.6}),
+  white:new T.MeshBasicMaterial({color:0xFFFFFF,toneMapped:false}),blush:new T.MeshBasicMaterial({color:C(0xFF7A9C),transparent:true,opacity:.5,toneMapped:false,depthWrite:false}),
+  mouth:new T.MeshBasicMaterial({color:C(0x0A1026),toneMapped:false})};
+/* robot mascot dễ thương: đầu to tròn như trứng, mắt đen bóng có điểm sáng, má hồng, miệng cười, tai và ăng-ten cam, thân nhỏ, tay vẫy */
 export function robot(parent?:any,s?:any,x?:any,z?:any,ry?:any,o?:any){
   o=o||{};var g=new T.Group();
-  function ell(rx:number,ry2:number,rz:number,m:any,px:number,py:number,pz:number,seg?:number){var e=mesh(new T.SphereGeometry(1,seg||36,26),m,px,py,pz);e.scale.set(rx,ry2,rz);g.add(e);return e}
-  /* chân + bàn chân */
-  [-1,1].forEach(function(k){
-    RB(g,.5,.24,.7,.12,RBM.joint,k*.3,0,.08);
-    var leg=cyl(g,.12,.36,MAT.white,k*.3,.2,0,20);leg.material=RBM.shell;
-  });
-  /* thân trứng + vòng eo cam + đèn ngực */
-  var body=ell(.64,.58,.5,RBM.shell,0,1.28,0);body.rotation.x=.04;
-  var belt=mesh(new T.TorusGeometry(.55,.035,10,48),RBM.trim,0,.96,0,true);belt.rotation.x=Math.PI/2;belt.scale.set(1,.82,1);g.add(belt);
-  var chest=mesh(new T.CylinderGeometry(.17,.17,.05,36),RBM.glow,0,1.34,.46,true);chest.rotation.x=Math.PI/2;g.add(chest);
-  var ringc=mesh(new T.TorusGeometry(.2,.04,12,36),RBM.joint,0,1.34,.46,true);g.add(ringc);
-  glow(g,0xFF8A4C,.9,0,1.34,.62,.5);
-  /* cổ */
-  cyl(g,.2,.22,RBM.joint,0,1.74,0,20);
-  /* đầu trứng, mặt kính, mắt, miệng */
-  var hy=1.92,hc=hy+.64;
-  ell(.92,.68,.76,RBM.shell,0,hc,0,44);
-  var vis=ell(.76,.5,.74,RBM.visor,0,hc+.02,.07,44);
-  var eyes:any[]=[];[-.3,.3].forEach(function(ex){var e=new T.Mesh(new T.SphereGeometry(.12,24,16),RBM.eye);e.scale.set(1,1.45,.4);e.position.set(ex,hc+.08,.745);g.add(e);eyes.push(e)});
-  var sm=new T.Mesh(new T.TorusGeometry(.13,.032,8,28,Math.PI),RBM.eye);sm.rotation.z=Math.PI;sm.position.set(0,hc-.15,.74);g.add(sm);
-  glow(g,0x7AF4FF,1.6,0,hc+.02,.9,.38);
-  /* tai nghe cam hai bên */
-  [-1,1].forEach(function(k){var ea=mesh(new T.CylinderGeometry(.25,.25,.2,32),RBM.trim,k*.93,hc,0);ea.rotation.z=Math.PI/2;g.add(ea);
-    var cap=mesh(new T.CylinderGeometry(.16,.16,.05,28),RBM.joint,k*1.04,hc,0,true);cap.rotation.z=Math.PI/2;g.add(cap)});
-  /* ăng-ten + đèn */
-  cyl(g,.035,.42,RBM.joint,0,hc+.62,0,10);var bulb=sph(g,.13,RBM.glow,0,hc+1.08,0);glow(g,0xFF8A4C,.8,0,hc+1.08,0,.7);
-  /* tay: vai tròn, tay trắng, bàn tay cam */
-  var la=capsule(g,.14,.4,RBM.shell);la.position.set(-.8,1.36,0);la.rotation.z=-.67;sph(g,.2,RBM.joint,-1,1.1,0);
-  var ra;if(o.wave){ra=new T.Group();ra.position.set(.62,1.6,0);ra.rotation.z=-2.3;g.add(ra);var ac=capsule(ra,.14,.4,RBM.shell);ac.position.set(-.38,0,0);ac.rotation.z=Math.PI/2;sph(ra,.2,RBM.joint,-.78,0,0)}
-  else{ra=capsule(g,.14,.4,RBM.shell);ra.position.set(.8,1.36,0);ra.rotation.z=.67;sph(g,.2,RBM.joint,1,1.1,0)}
+  function ell(rx:number,ry2:number,rz:number,m:any,px:number,py:number,pz:number,seg?:number,noShadow?:boolean){var e=mesh(new T.SphereGeometry(1,seg||28,20),m,px,py,pz,noShadow);e.scale.set(rx,ry2,rz);g.add(e);return e}
+  /* chân: giày xanh đêm hình bầu dục */
+  [-1,1].forEach(function(k){ell(.3,.2,.44,RBM.joint,k*.36,.2,.1,20)});
+  /* thân tròn + huy hiệu cam trước bụng */
+  ell(.74,.7,.62,RBM.shell,0,1.12,0,32);
+  var badge=mesh(new T.CylinderGeometry(.19,.19,.06,28),RBM.trim,0,1.1,.58,true);badge.rotation.x=Math.PI/2;g.add(badge);
+  var bring=mesh(new T.TorusGeometry(.21,.035,10,28),RBM.white,0,1.1,.585,true);g.add(bring);
+  glow(g,0xFF8A4C,.8,0,1.1,.72,.35);
+  /* đầu to */
+  var hc=2.28;
+  ell(1.04,.9,.9,RBM.shell,0,hc,0,40);
+  /* mắt đen bóng + điểm sáng */
+  var eyes:any[]=[];[-1,1].forEach(function(k){var e=new T.Mesh(new T.SphereGeometry(1,24,18),RBM.eyeB);e.scale.set(.16,.21,.1);e.position.set(k*.36,hc+.06,.84);e.rotation.y=k*.28;g.add(e);eyes.push(e);
+    var hl=new T.Mesh(new T.SphereGeometry(.045,10,8),RBM.white);hl.position.set(k*.36+.05,hc+.15,.935);g.add(hl);
+    var b=new T.Mesh(new T.CircleGeometry(.15,20),RBM.blush);b.position.set(k*.64,hc-.12,.74);b.rotation.y=k*.62;g.add(b)});
+  /* miệng cười */
+  var sm=new T.Mesh(new T.TorusGeometry(.12,.026,8,24,Math.PI),RBM.mouth);sm.rotation.z=Math.PI;sm.position.set(0,hc-.1,.88);g.add(sm);
+  /* tai cam hai bên */
+  [-1,1].forEach(function(k){ell(.12,.24,.24,RBM.trim,k*1.04,hc,0,18)});
+  /* ăng-ten */
+  cyl(g,.03,.34,RBM.joint,0,hc+.82,0,8);var bulb=sph(g,.12,RBM.glow,0,hc+1.22,0);glow(g,0xFF8A4C,.7,0,hc+1.22,0,.65);
+  /* tay: vai nhỏ, tay trắng, bàn tay tròn */
+  var la=capsule(g,.13,.34,RBM.shell);la.position.set(-.86,1.2,0);la.rotation.z=-.5;ell(.16,.16,.16,RBM.shell,-.98,.96,0,14);
+  var ra;if(o.wave){ra=new T.Group();ra.position.set(.7,1.45,0);ra.rotation.z=-2.3;g.add(ra);var ac=capsule(ra,.13,.34,RBM.shell);ac.position.set(-.34,0,0);ac.rotation.z=Math.PI/2;var hand=sph(ra,.17,RBM.shell,-.62,0,0);void hand}
+  else{ra=capsule(g,.13,.34,RBM.shell);ra.position.set(.86,1.2,0);ra.rotation.z=.5;ell(.16,.16,.16,RBM.shell,.98,.96,0,14)}
   ao(g,1.9,1.5,0,0,.1,.7);
-  g.scale.setScalar(s);g.position.set(x,0,z);g.rotation.y=ry||0;parent.add(g);
-  g.userData={wave:o.wave?ra:null,eyes:eyes,base:0,ph:Math.random()*6};
+  g.scale.setScalar(s*1.22);g.position.set(x,0,z);g.rotation.y=ry||0;parent.add(g);
+  g.userData={wave:o.wave?ra:null,eyes:eyes,eyeY:.21,base:0,ph:Math.random()*6};
   return g;
 }
-export function blinkEyes(r?:any,t?:any){var e=r.userData.eyes;if(!e)return;var k=((t+r.userData.ph)%3.6)<.12?.15:1;e[0].scale.y=e[1].scale.y=1.4*k}
+export function blinkEyes(r?:any,t?:any){var e=r.userData.eyes;if(!e)return;var k=((t+r.userData.ph)%3.6)<.12?.12:1;e[0].scale.y=e[1].scale.y=(r.userData.eyeY||1.4)*k}
