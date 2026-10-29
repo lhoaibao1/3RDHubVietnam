@@ -76,6 +76,11 @@ install_vhost() {
     die "Kiểm tra file trên. Nếu chắc chắn muốn thay, chạy lại với FORCE=1"
   fi
   local new; new="$(cat)"
+  if [ -f "$TARGET" ] && { [ -z "$LINK" ] || [ -e "$LINK" ]; } \
+     && [ "$(grep -v '^#' "$TARGET")" = "$(printf '%s\n' "$new" | grep -v '^#')" ]; then
+    ok "Không đổi: $name"; return 0
+  fi
+  backup_nginx
   [ -f "$TARGET" ] && cp -a "$TARGET" "$TARGET.bak-$STAMP"
   printf '%s\n' "$new" > "$TARGET"
   [ -n "$LINK" ] && ln -sf "$TARGET" "$LINK"
@@ -91,10 +96,31 @@ install_vhost() {
   rm -f "/tmp/nginx-test.$$"
 }
 
+trap 'rm -f "/tmp/.3rdhub-nginx-backup-$STAMP"' EXIT
 backup_nginx() {
+  local mark="/tmp/.3rdhub-nginx-backup-$STAMP"
+  [ -f "$mark" ] && return 0
+  : > "$mark"
   tar czf "/root/backup-nginx-$STAMP.tgz" -C "$(dirname "$ETC/nginx")" "$(basename "$ETC/nginx")" 2>/dev/null \
     && ok "Đã sao lưu cấu hình nginx: /root/backup-nginx-$STAMP.tgz" \
     || warn "Không sao lưu được thư mục nginx (tiếp tục vì chỉ thêm file mới)"
+}
+
+# giữ KEEP_BACKUPS (mặc định 10) bản sao lưu mới nhất mỗi loại, xoá bản cũ hơn
+prune_backups() {
+  local keep="${KEEP_BACKUPS:-10}" pat f d n
+  for pat in 'backup-nginx-*.tgz' "backup-site-$DOMAIN-*.tgz" 'backup-apache-*.tgz'; do
+    find /root -maxdepth 1 -type f -name "$pat" -printf '%T@ %p\n' 2>/dev/null | sort -rn | tail -n +"$((keep+1))" | cut -d' ' -f2- \
+      | while IFS= read -r f; do rm -f -- "$f"; done
+  done
+  for d in "$ETC/nginx/sites-available" /www/server/panel/vhost/nginx "$ETC/nginx/conf.d"; do
+    [ -d "$d" ] || continue
+    for n in "$DOMAIN" "$CMS_SUB"; do
+      find "$d" -maxdepth 1 -type f -name "$n.conf.bak-*" -printf '%T@ %p\n' 2>/dev/null | sort -rn | tail -n +6 | cut -d' ' -f2- \
+        | while IFS= read -r f; do rm -f -- "$f"; done
+    done
+  done
+  return 0
 }
 
 # ----------------------------------------------------------------- check
@@ -132,8 +158,15 @@ do_check() {
 }
 
 # ----------------------------------------------------------------- site tĩnh
+site_unchanged() {
+  [ -d "$WEBROOT" ] || return 1
+  local f
+  while IFS= read -r -d '' f; do cmp -s "$SITE/$f" "$WEBROOT/$f" || return 1; done < <(cd "$SITE" && find . -type f -print0)
+  return 0
+}
 install_files() {
   [ -f "$SITE/index.html" ] || die "Không thấy $SITE/index.html. Giải nén đủ gói rồi chạy lại."
+  if site_unchanged; then ok "Site không đổi, giữ nguyên $WEBROOT"; return 0; fi
   mkdir -p "$WEBROOT"
   if [ -n "$(ls -A "$WEBROOT" 2>/dev/null)" ]; then
     tar czf "/root/backup-site-$DOMAIN-$STAMP.tgz" -C "$WEBROOT" . && ok "Đã sao lưu thư mục web cũ: /root/backup-site-$DOMAIN-$STAMP.tgz"
@@ -211,7 +244,6 @@ CONF
 
 apply_nginx() {
   local CMS_BEFORE; CMS_BEFORE="$(http_code "$CMS_SUB")"
-  backup_nginx
   install_files
   main_vhost | install_vhost "$DOMAIN.conf" "$DOMAIN www.$DOMAIN"
   if [ "${SKIP_VERIFY:-0}" != 1 ]; then
@@ -249,6 +281,7 @@ do_apply() {
   if   [ -n "$NGINX" ];  then apply_nginx
   elif [ -n "$APACHE" ]; then apply_apache
   else die "Không thấy nginx hay apache. Chạy 'bash deploy.sh check' rồi gửi kết quả cho người hỗ trợ."; fi
+  prune_backups
   echo; ok "Hoàn tất. Mở: http://$DOMAIN"
   echo "Nếu dùng Cloudflare (đám mây cam): vào SSL/TLS và chọn 'Flexible' để chạy HTTPS ngay."
   echo "Muốn thêm CMS: bash deploy.sh cms"
@@ -274,7 +307,9 @@ do_cms() {
   python3 -c 'import sys,sqlite3; sys.exit(0 if sys.version_info>=(3,8) else 1)' || die "Cần python3 >= 3.8 có sqlite3."
 
   say "Cài mã nguồn CMS vào $CMS_DIR"
-  mkdir -p "$CMS_DIR"; rm -rf "$CMS_DIR/admin" "$CMS_DIR/seed"
+  local RESTART=0
+  cmp -s "$HERE/cms/server.py" "$CMS_DIR/server.py" 2>/dev/null || RESTART=1   # giao diện admin và dữ liệu mặc định đọc lại mỗi yêu cầu, chỉ server.py mới cần khởi động lại
+  mkdir -p "$CMS_DIR"
   cp -a "$HERE/cms/." "$CMS_DIR/"
   find "$CMS_DIR" -type d -exec chmod 755 {} +; find "$CMS_DIR" -type f -exec chmod 644 {} +
   mkdir -p "$CMS_DATA"
@@ -296,13 +331,14 @@ CMS_HOSTS=$CMS_SUB
 CMS_ADMIN_PASSWORD=$pass
 ENV
     umask 022
-    NEWPASS="$pass"
+    NEWPASS="$pass"; RESTART=1
     ok "Đã tạo $CMS_ENV (cổng $port)"
   fi
   local PORT; PORT="$(cms_port)"
 
   mkdir -p "$UNIT_DIR"
-  cat > "$UNIT_DIR/3rdhub-cms.service" <<UNIT
+  local UNITF="$UNIT_DIR/3rdhub-cms.service"
+  cat > "$UNITF.new" <<UNIT
 [Unit]
 Description=3RDHub CMS
 After=network.target
@@ -324,17 +360,25 @@ ReadWritePaths=$CMS_DATA
 [Install]
 WantedBy=multi-user.target
 UNIT
+  if ! cmp -s "$UNITF.new" "$UNITF" 2>/dev/null; then mv -f "$UNITF.new" "$UNITF"; RESTART=1; else rm -f "$UNITF.new"; fi
   if [ "${SKIP_SYSTEM:-0}" != 1 ]; then
-    systemctl daemon-reload && systemctl enable 3rdhub-cms >/dev/null 2>&1 && systemctl restart 3rdhub-cms
+    systemctl is-active --quiet 3rdhub-cms || RESTART=1
+    if [ "$RESTART" = 1 ]; then
+      systemctl daemon-reload && systemctl enable 3rdhub-cms >/dev/null 2>&1 && systemctl restart 3rdhub-cms
+      ok "Đã khởi động lại CMS (mã nguồn hoặc cấu hình dịch vụ có đổi)"
+    else
+      ok "CMS không đổi mã nguồn, giữ nguyên tiến trình đang chạy"
+    fi
     local i; for i in $(seq 1 30); do curl -fsS "http://127.0.0.1:$PORT/api/content" >/dev/null 2>&1 && break; sleep 0.5; done
     curl -fsS "http://127.0.0.1:$PORT/api/content" >/dev/null 2>&1 || { journalctl -u 3rdhub-cms -n 30 --no-pager >&2 || true; die "CMS không khởi động được. Xem log ở trên."; }
     ok "CMS đang chạy (dịch vụ 3rdhub-cms, cổng $PORT, chỉ nghe trên 127.0.0.1)"
     # mật khẩu ban đầu chỉ cần cho lần chạy đầu: gỡ khỏi file cấu hình
     sed -i '/^CMS_ADMIN_PASSWORD=/d' "$CMS_ENV"
+  else
+    [ "$RESTART" = 1 ] && ok "(thử) CMS sẽ được khởi động lại" || ok "(thử) CMS không cần khởi động lại"
   fi
 
   say "Cấu hình nginx cho $CMS_SUB và nối API vào $DOMAIN"
-  backup_nginx
   {
     cat <<CONF
 # 3RDHub CMS: trang quản trị. Tạo bởi deploy.sh $STAMP
@@ -359,6 +403,7 @@ CONF
     echo "$DOMAIN/api/admin/me -> HTTP $(http_code "$DOMAIN" /api/admin/me)  (mong đợi 404: quản trị không mở ở tên miền chính)"
     echo "$CMS_SUB/ -> HTTP $(http_code "$CMS_SUB" /)  (mong đợi 200)"
   fi
+  prune_backups
   echo
   ok "CMS đã cài xong."
   echo "  Trang quản trị: http://$CMS_SUB   (dùng https nếu Cloudflare đã bật)"

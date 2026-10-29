@@ -37,6 +37,10 @@ Cloudflare: thêm bản ghi DNS `cms` trỏ về IP VPS. SSL/TLS ở chế độ
 
 Quên mật khẩu quản trị: `bash deploy.sh cms-password`.
 
+`deploy.sh` chạy lại nhiều lần vẫn an toàn (phù hợp để cron/tự động gọi): nếu site, cấu hình nginx hay mã CMS không đổi thì
+không sao lưu, không nạp lại nginx, không khởi động lại CMS. CMS chỉ khởi động lại khi `cms/server.py` hoặc cấu hình dịch vụ đổi.
+Sao lưu trong `/root/` được tự dọn, giữ 10 bản mới nhất mỗi loại (đổi bằng `KEEP_BACKUPS=n`).
+
 ## CMS làm được gì
 
 - **Nội dung chữ**: sửa hơn 450 đoạn chữ (tiếng Việt và English) trên trang chủ và 6 trang chi tiết; "Về gốc" từng đoạn.
