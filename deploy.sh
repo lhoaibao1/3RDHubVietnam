@@ -249,7 +249,7 @@ server {
     add_header Referrer-Policy strict-origin-when-cross-origin always;
 $api
     location / {
-        try_files \$uri \$uri/ /index.html;
+        try_files \$uri \$uri.html \$uri/ /index.html;
         expires -1;
     }
     location ^~ /assets/ {

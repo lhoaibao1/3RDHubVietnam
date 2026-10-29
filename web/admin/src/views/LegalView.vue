@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
 import { useAdmin } from '../store'
-import { renderLegal } from '@/lib/markdown'
+import { fillTokens, renderLegal } from '@/lib/markdown'
+import { DEF_SETTINGS } from '@/lib/content'
 import type { LegalDoc } from '@/lib/content'
 import AutoTextarea from '../components/AutoTextarea.vue'
 
@@ -38,7 +39,7 @@ const docs = computed(() => LEGALS.map(([key, label, slug]) => ({ key, label, sl
     <p class="sub">Hai trang này nằm riêng trên website (không dùng chung với app). Sửa xong bấm "Lưu và đăng lên website".</p>
     <ul>
       <li><b>Định dạng</b>: dòng trống để tách đoạn; <b>## Tiêu đề</b> cho mục lớn, <b>### </b> cho mục nhỏ; <b>- </b> đầu dòng để tạo danh sách; <b>**chữ đậm**</b>; <b>[chữ hiển thị](https://...)</b> để chèn liên kết.</li>
-      <li>Thông tin liên hệ, mã số thuế hiển thị ở chân trang lấy từ mục Cài đặt.</li>
+      <li v-pre>Các mã như <b>{{company_name}}</b>, <b>{{tax_id}}</b>, <b>{{address}}</b>, <b>{{email}}</b>, <b>{{hotline}}</b>, <b>{{parent_url}}</b> tự thay bằng thông tin trong mục Cài đặt.</li>
       <li>Nội dung mặc định là bản mẫu để bạn chỉnh. Nên để luật sư hoặc bộ phận pháp chế xem lại trước khi dùng chính thức.</li>
     </ul>
   </div>
@@ -69,7 +70,7 @@ const docs = computed(() => LEGALS.map(([key, label, slug]) => ({ key, label, sl
         <h1>{{ g.d.title[view[g.key]] }}</h1>
         <p class="lupd">{{ view[g.key] === 'en' ? 'Last updated: ' : 'Cập nhật lần cuối: ' }}{{ g.d.updated[view[g.key]] }}</p>
         <!-- eslint-disable-next-line vue/no-v-html -->
-        <div class="lbody" v-html="renderLegal(g.d.body[view[g.key]] || '')" />
+        <div class="lbody" v-html="renderLegal(fillTokens(g.d.body[view[g.key]] || '', (k) => a.content!.settings[k] || DEF_SETTINGS[k] || ''))" />
       </div>
     </div>
   </div>

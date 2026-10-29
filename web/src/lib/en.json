@@ -457,5 +457,9 @@
 "Khởi tạo": "Init",
 "Viết API": "Write API",
 "Build": "Build",
-"Triển khai": "Deploy"
+"Triển khai": "Deploy",
+"Website công ty": "Company website",
+"Đổi ngôn ngữ": "Switch language",
+"Đổi giao diện sáng/tối": "Toggle light/dark theme",
+"Cuộn xuống": "Scroll down"
 }

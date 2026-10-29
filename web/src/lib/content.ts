@@ -23,9 +23,10 @@ export const DEF_SETTINGS: Record<string, string> = {
   email: 'admin_support@3rdvn.io.vn',
   hotline: '(+84) 398 192 414',
   hotline_tel: '+84398192414',
-  company_name: '3RDVN Technology',
+  company_name: 'Công ty TNHH Công nghệ 3RDVN',
   tax_id: '4001342613',
-  address: '', working_hours: '', working_hours_en: '',
+  address: 'Tổ 10 Tỉnh Thủy, Phường Quảng Phú, Thành phố Đà Nẵng',
+  parent_url: 'https://3rdvn.io.vn', working_hours: '', working_hours_en: '',
   facebook: '', zalo: '', tiktok: '', youtube: '', instagram: '',
   site_title: '', meta_description: '', analytics_id: '',
 }

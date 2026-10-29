@@ -304,7 +304,12 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			name = "index.html"
 		}
 		if st, err := os.Stat(filepath.Join(a.cfg.SiteDir, filepath.FromSlash(name))); (err != nil || !st.Mode().IsRegular()) && !strings.Contains(filepath.Base(name), ".") {
-			name = "index.html"
+			// như nginx try_files: /mo-hinh -> mo-hinh.html (trang dựng sẵn), còn lại về trang chủ
+			if st2, err2 := os.Stat(filepath.Join(a.cfg.SiteDir, filepath.FromSlash(name)+".html")); err2 == nil && st2.Mode().IsRegular() {
+				name += ".html"
+			} else {
+				name = "index.html"
+			}
 		}
 		a.serveFile(w, r, a.cfg.SiteDir, name, "no-cache", "")
 	default:

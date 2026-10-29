@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:admin": "vite -c vite.admin.config.ts",
     "typecheck": "vue-tsc --noEmit",
-    "build": "vue-tsc --noEmit && vite build && vite build -c vite.admin.config.ts",
+    "build": "vue-tsc --noEmit && vite build && node scripts/prerender.mjs && vite build -c vite.admin.config.ts",
     "icons": "node scripts/gen-icons.mjs",
     "check:strings": "node scripts/check-strings.mjs"
   },

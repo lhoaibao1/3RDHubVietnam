@@ -1,6 +1,6 @@
 // Cảnh 3D trang chủ: 5 trạm của mô hình affiliate trên một đường dẫn, camera trực giao bay qua từng bước.
 import * as T from 'three'
-import { ENV, MAT, M, RB, RM, FONT, blinkEyes, cyl, ctex, mesh, rr, robot, screen, sph } from './core'
+import { ENV, MAT, M, C, RB, RM, FONT, blinkEyes, cyl, ctex, getMode, glow, mesh, onMode, pool, robot, rr, screen, sparkles, sph, type Mode } from './core'
 
 export const HERO_LABELS = ['Advertiser', '3RDHub', 'Publisher', 'Khách hàng', 'Hoa hồng']
 
@@ -14,22 +14,38 @@ export interface Hero {
 export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { onTag(k: number, label: string): void }): Hero {
   var R: any, scene: any, cam: any, W = 1, H = 1, anim: any[] = [], stations: any[] = [], curve: any, progMesh: any, coin: any
   R=new T.WebGLRenderer({canvas:canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
-  R.setClearColor(0,0);R.outputEncoding=T.sRGBEncoding;R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=1.18;
+  R.setClearColor(0,0);R.outputEncoding=T.sRGBEncoding;R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=getMode()==='dark'?1.05:1.18;
   R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;
   scene=new T.Scene();
   cam=new T.OrthographicCamera(-10,10,10,-10,.1,400);
-  var hemi=new T.HemisphereLight(0xffffff,0xE9DFCF,.5);scene.add(hemi);scene.environment=ENV();
+  var hemi=new T.HemisphereLight(0xffffff,0xE9DFCF,.5);scene.add(hemi);scene.environment=ENV(getMode());
   var sun=new T.DirectionalLight(0xFFF4E6,1.6);sun.position.set(-30,60,30);sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);
   var sc=sun.shadow.camera;sc.left=-55;sc.right=55;sc.top=55;sc.bottom=-55;sc.near=1;sc.far=200;sun.shadow.bias=-.0004;sun.shadow.normalBias=.02;sun.shadow.radius=6;scene.add(sun);scene.add(sun.target);
   var fill=new T.DirectionalLight(0xDDE6FF,.35);fill.position.set(40,20,-20);scene.add(fill);
+  var rimA=new T.DirectionalLight(0xFF8A4C,0);rimA.position.set(-40,14,-30);scene.add(rimA);var rimB=new T.DirectionalLight(0x38D6FF,0);rimB.position.set(44,12,-34);scene.add(rimB);
   var floor=new T.Mesh(new T.PlaneGeometry(400,400),new T.ShadowMaterial({opacity:.16}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+  /* ánh sáng theo chế độ sáng/tối */
+  function lights(m:Mode){var d=m==='dark';hemi.color.set(d?0x6F7FD8:0xffffff);hemi.groundColor.set(d?0x141A3A:0xE9DFCF);hemi.intensity=d?.45:.5;
+    sun.color.set(d?0xC9D6FF:0xFFF4E6);sun.intensity=d?1.05:1.6;fill.intensity=d?.2:.35;rimA.intensity=d?1.5:0;rimB.intensity=d?1.4:0;
+    floor.material.opacity=d?.5:.16;scene.environment=ENV(m);R.toneMappingExposure=d?1.05:1.18}
+  var offMode=onMode(lights);lights(getMode());
 
-  function platform(x,z){var g=new T.Group();g.position.set(x,0,z);RB(g,13,.8,13,1.2,MAT.white,0,0,0);scene.add(g);return g}
+  var ACC=[0xFF6A2B,0x7B4DFF,0x12A06A,0x1BA6D9,0xFFB238];
+  var topTex=ctex(512,512,function(x:any,w:any,h:any){var g=x.createLinearGradient(0,0,w,h);g.addColorStop(0,'#FFFFFF');g.addColorStop(1,'#ECE7DD');x.fillStyle=g;x.fillRect(0,0,w,h);x.strokeStyle='rgba(110,100,85,.13)';x.lineWidth=2;for(var k=1;k<8;k++){x.beginPath();x.moveTo(k*w/8,0);x.lineTo(k*w/8,h);x.moveTo(0,k*h/8);x.lineTo(w,k*h/8);x.stroke()}
+    x.strokeStyle='rgba(110,100,85,.35)';x.lineWidth=6;x.lineCap='round';[[40,40,1,1],[w-40,40,-1,1],[40,h-40,1,-1],[w-40,h-40,-1,-1]].forEach(function(c:any){x.beginPath();x.moveTo(c[0],c[1]+c[3]*46);x.lineTo(c[0],c[1]);x.lineTo(c[0]+c[2]*46,c[1]);x.stroke()})});
+  function platform(x?:any,z?:any,acc?:any){var g=new T.Group();g.position.set(x,0,z);acc=acc||0xFF6A2B;
+    var edge=M(acc,{r:.3,e:acc,ei:0,cc:.4});RB(g,13.5,.5,13.5,1.2,edge,0,-.1,0);
+    RB(g,13,.7,13,1.2,MAT.white,0,.1,0);
+    var tp=new T.Mesh(new T.PlaneGeometry(12.2,12.2),new T.MeshStandardMaterial({map:topTex,roughness:.7}));tp.rotation.x=-Math.PI/2;tp.position.y=.805;tp.receiveShadow=true;g.add(tp);
+    var neon=new T.Mesh(new T.PlaneGeometry(12.4,12.4),new T.MeshBasicMaterial({color:C(acc),toneMapped:false,transparent:true,opacity:.0}));
+    onMode(function(m:Mode){edge.emissiveIntensity=m==='dark'?.7:0;edge.needsUpdate=true});edge.emissiveIntensity=getMode()==='dark'?.7:0;
+    pool(g,17,acc,.05,.45);
+    scene.add(g);return g}
   var SP=[[-24,-10],[0,-18],[24,-8],[14,16],[-14,14]];
   var LBL=['Advertiser','3RDHub','Publisher','Khách hàng','Hoa hồng'];
 
   /* S1 advertiser: ngân hàng + thẻ tín dụng */
-  (function(){var g=platform(SP[0][0],SP[0][1]);
+  (function(){var g=platform(SP[0][0],SP[0][1],ACC[0]);
     RB(g,7.4,.5,5.6,.2,MAT.cream,-1.2,.8,-1.8);RB(g,6.8,.4,5,.2,MAT.cream,-1.2,1.3,-1.8);
     RB(g,6.2,4.2,4.2,.3,MAT.white,-1.2,1.7,-2.2);
     for(var k=0;k<4;k++){cyl(g,.32,3.6,MAT.white,-3.6+k*1.6,1.7,.35,20);RB(g,.9,.2,.9,.06,MAT.cream,-3.6+k*1.6,5.3,.35)}
@@ -43,7 +59,7 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
     robot(g,1.45,-3.6,4.0,.78,{wave:true});
     stations.push({g:g,h:6});})();
   /* S2 3RDHub */
-  (function(){var g=platform(SP[1][0],SP[1][1]);
+  (function(){var g=platform(SP[1][0],SP[1][1],ACC[1]);
     RB(g,6.4,3.4,6.4,.9,MAT.orange,0,.8,0);
     var lk=ctex(1024,320,function(x,w,h){x.fillStyle='#fff';rr(x,0,0,w,h,56);x.fill();x.fillStyle='#8890A6';x.font='800 40px '+FONT;x.textAlign='center';x.textBaseline='middle';x.fillText('Link của bạn',w/2,82);x.fillStyle='#0B2A6F';x.font='900 52px '+FONT;x.fillText('3rdvn.io.vn/aff/shb-finance',w/2,160);x.fillStyle='#FFE14D';rr(x,w/2-210,204,420,76,18);x.fill();x.fillStyle='#0B2A6F';x.fillText('?ref=RD260001',w/2,244)});
     screen(g,5.4,1.69,lk,0,2.5,3.22);
@@ -54,7 +70,7 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
     var cm2=mesh(new T.ExtrudeGeometry(cur,{depth:.35,bevelEnabled:true,bevelThickness:.08,bevelSize:.08,bevelSegments:3}),MAT.white);cm2.position.set(3.6,8.4,2.6);cm2.rotation.y=.78;cm2.rotation.z=.25;g.add(cm2);anim.push({bob:cm2,y0:8.4,ph:2.4});
     stations.push({g:g,h:7});})();
   /* S3 publisher */
-  (function(){var g=platform(SP[2][0],SP[2][1]);
+  (function(){var g=platform(SP[2][0],SP[2][1],ACC[2]);
     RB(g,6,.3,2.8,.12,MAT.wood,0,2.4,-1.8);
     [-2.6,2.6].forEach(function(xx){RB(g,.25,1.6,2.4,.08,MAT.white,xx,.8,-1.8)});
     var sc2=ctex(512,320,function(x,w,h){x.fillStyle='#F4F6FB';x.fillRect(0,0,w,h);var c=[['TikTok','#111'],['Facebook','#1877F2'],['Zalo','#0068FF']];c.forEach(function(q,i){x.fillStyle='#fff';rr(x,26,26+i*94,w-52,76,18);x.fill();x.fillStyle=q[1];x.beginPath();x.arc(72,64+i*94,22,0,7);x.fill();x.fillStyle='#0B2A6F';x.font='800 34px '+FONT;x.textBaseline='middle';x.fillText(q[0],110,66+i*94);x.fillStyle='#FF6A2B';x.font='900 30px '+FONT;x.textAlign='right';x.fillText('+'+(48-i*15)+' click',w-50,66+i*94);x.textAlign='left'})});
@@ -74,14 +90,14 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
     for(var k=0;k<3;k++){var sp=new T.Sprite(new T.SpriteMaterial({map:heart,transparent:true,toneMapped:false}));sp.scale.set(.9,.9,1);sp.position.set(-1.8+k*1.4,6,-2.6);g.add(sp);anim.push({float:sp,ph:k*1.3,y0:6})}
     stations.push({g:g,h:5});})();
   /* S4 khách hàng */
-  (function(){var g=platform(SP[3][0],SP[3][1]);
+  (function(){var g=platform(SP[3][0],SP[3][1],ACC[3]);
     var ph=ctex(300,600,function(x,w,h){x.fillStyle='#fff';x.fillRect(0,0,w,h);x.fillStyle='#0B2A6F';x.font='900 30px '+FONT;x.fillText('Mở thẻ tín dụng',26,70);x.fillStyle='#8890A6';x.font='600 20px '+FONT;x.fillText('SHB Finance',26,104);for(var i=0;i<4;i++){x.fillStyle='#EEF1F7';rr(x,26,140+i*80,w-52,56,14);x.fill()}x.fillStyle='#FF6A2B';rr(x,26,480,w-52,64,18);x.fill();x.fillStyle='#fff';x.font='900 26px '+FONT;x.textAlign='center';x.fillText('Đăng ký ngay',w/2,522)});
     var p=new T.Group();RB(p,3.2,6.2,.45,.4,MAT.navy,0,0,0);screen(p,2.85,5.75,ph,0,3.1,.24);p.position.set(1.6,.8,-1.6);p.rotation.y=-.35;p.rotation.x=-.08;g.add(p);
     robot(g,1.55,-2.4,2.4,.78,{wave:true});
     var hs=new T.Group();RB(hs,3,2.6,3,.3,MAT.cream,0,0,0);var roof=mesh(new T.ConeGeometry(2.5,1.6,4),MAT.orange,0,3.4,0);roof.rotation.y=Math.PI/4;hs.add(roof);RB(hs,.8,1.4,.1,.05,MAT.navy,0,0,1.52);hs.position.set(-3.4,.8,-3.6);g.add(hs);
     stations.push({g:g,h:5});})();
   /* S5 hoa hồng */
-  (function(){var g=platform(SP[4][0],SP[4][1]);
+  (function(){var g=platform(SP[4][0],SP[4][1],ACC[4]);
     RB(g,5,5,4.4,.6,MAT.navyL,-1.2,.8,-1.6);
     var door=mesh(new T.CylinderGeometry(1.5,1.5,.35,40),MAT.white,-1.2,3.3,.72);door.rotation.x=Math.PI/2;g.add(door);
     var ring=mesh(new T.TorusGeometry(1.05,.13,12,40),MAT.orange,-1.2,3.3,.95);g.add(ring);anim.push({spinZ:ring});
@@ -96,11 +112,12 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
     robot(g,1.55,1.2,4.2,.78,{wave:true});
     stations.push({g:g,h:5});})();
 
+  anim.push({fn:sparkles(scene,120,34,8,0xFFB238)});
   /* path */
   var pts=[[-24,-3],[-12,-4],[0,-10],[12,-12],[24,-1],[22,8],[14,9],[0,14],[-14,7]].map(function(p){return new T.Vector3(p[0],.08,p[1])});
   curve=new T.CatmullRomCurve3(pts,false,'catmullrom',.4);
   var base=new T.Mesh(new T.TubeGeometry(curve,400,.22,10,false),M(0xE2DCCF,{r:.9}));base.receiveShadow=true;scene.add(base);
-  progMesh=new T.Mesh(new T.TubeGeometry(curve,400,.32,12,false),M(0xFF6A2B,{r:.35,e:0xFF6A2B,ei:.25}));progMesh.castShadow=true;scene.add(progMesh);
+  progMesh=new T.Mesh(new T.TubeGeometry(curve,400,.32,12,false),M(0xFF6A2B,{r:.3,e:0xFF6A2B,ei:.6}));progMesh.castShadow=true;scene.add(progMesh);
   var cg=new T.Group();var cm=new T.Mesh(new T.CylinderGeometry(.9,.9,.26,40),[M(0xE2531A,{r:.3,m:.4}),M(0xFFB238,{r:.25,m:.45}),M(0xFFB238,{r:.25,m:.45})]);cm.rotation.x=Math.PI/2;cm.castShadow=true;cg.add(cm);scene.add(cg);coin=cg;
   /* station fractions along path */
   var FR=SP.map(function(s){var best=0,bd=1e9;for(var u=0;u<=1;u+=.002){var q=curve.getPointAt(u),d=Math.hypot(q.x-s[0],q.z-s[1]);if(d<bd){bd=d;best=u}}return best});
@@ -130,7 +147,7 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
     var u=P<=1?0:FR[Math.min(4,i-1>=0?i-1:0)]+(FR[Math.min(4,i)]-FR[Math.max(0,i-1)])*e;if(P>=5)u=1;
     if(i>=1){u=FR[i-1]+(FR[Math.min(4,i)]-FR[i-1])*e}else{u=0}
     setProg(u);coin.rotation.y=time*2.2;coin.position.y=2.2+Math.sin(time*3)*.25;
-    anim.forEach(function(o){if(o.bob){o.bob.position.y=o.y0+Math.sin(time*1.6+o.ph)*.35;if(o.spinY)o.bob.rotation.y=.78+Math.sin(time*.8)*.4}if(o.blink)o.blink.visible=Math.sin(time*4+o.ph)>-.3;if(o.float){o.float.position.y=o.y0+((time*.6+o.ph)%3);o.float.material.opacity=1-((time*.6+o.ph)%3)/3}if(o.spinZ){o.spinZ.rotation.z=time*.6;if(o.b2)o.b2.rotation.z=time*.6+Math.PI/2}});
+    anim.forEach(function(o){if(o.fn)o.fn(time);if(o.bob){o.bob.position.y=o.y0+Math.sin(time*1.6+o.ph)*.35;if(o.spinY)o.bob.rotation.y=.78+Math.sin(time*.8)*.4}if(o.blink)o.blink.visible=Math.sin(time*4+o.ph)>-.3;if(o.float){o.float.position.y=o.y0+((time*.6+o.ph)%3);o.float.material.opacity=1-((time*.6+o.ph)%3)/3}if(o.spinZ){o.spinZ.rotation.z=time*.6;if(o.b2)o.b2.rotation.z=time*.6+Math.PI/2}});
     scene.traverse(function(o){if(o.userData&&o.userData.eyes)blinkEyes(o,time);if(o.userData&&o.userData.wave){o.userData.wave.rotation.z=-2.3+Math.sin(time*5+o.userData.ph)*.35}});
     camUpd();R.render(scene,cam);
     /* tag */
@@ -143,6 +160,6 @@ export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { 
   return {
     go(k) { PT = k },
     visible() { return vis },
-    dispose() { cancelAnimationFrame(raf); io.disconnect(); ro.disconnect(); R.dispose(); scene.traverse(function (o) { if (o.geometry) o.geometry.dispose() }) },
+    dispose() { offMode(); cancelAnimationFrame(raf); io.disconnect(); ro.disconnect(); R.dispose(); scene.traverse(function (o) { if (o.geometry) o.geometry.dispose() }) },
   }
 }
