@@ -38,7 +38,8 @@ for c in "$(command -v nginx 2>/dev/null || true)" /www/server/nginx/sbin/nginx 
 done
 APACHE="$(command -v apache2ctl 2>/dev/null || command -v apachectl 2>/dev/null || true)"
 
-reload_nginx() { systemctl reload nginx 2>/dev/null || "$NGINX" -s reload; }
+# nạp lại nginx rồi chờ worker mới nhận cấu hình (tránh kiểm tra nhầm vào cấu hình cũ)
+reload_nginx() { systemctl reload nginx 2>/dev/null || "$NGINX" -s reload; sleep 2; }
 http_code() { curl -s -o /dev/null -m 8 -w '%{http_code}' -H "Host: $1" "http://127.0.0.1${2:-/}" 2>/dev/null || echo "---"; }
 cms_installed() { [ -f "$CMS_ENV" ]; }
 cms_port() { grep -E '^PORT=' "$CMS_ENV" 2>/dev/null | head -1 | cut -d= -f2; }
