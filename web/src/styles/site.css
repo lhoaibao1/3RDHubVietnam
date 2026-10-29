@@ -700,3 +700,22 @@ html.vt-theme::view-transition-new(root){z-index:2}
 :root[data-theme="dark"] .dtabs button[aria-selected="true"]{background:var(--or);color:#fff}
 :root[data-theme="dark"] .dnote{color:#9EA8C6}
 :root[data-theme="dark"] footer.ft2{box-shadow:0 -1px 0 var(--line)}
+
+/* ===== thông báo cookie ===== */
+.ck{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:90;width:min(960px,calc(100vw - 24px));display:flex;gap:18px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:22px;padding:18px 20px;box-shadow:0 24px 60px -20px rgba(8,16,48,.45)}
+.ckm{flex:1 1 380px;min-width:0}
+.ck h2{margin:0 0 4px;font-size:16px;font-weight:900}
+.ck p{margin:0;font-size:14px;line-height:1.55;color:var(--ink2)}
+.ck p a{color:var(--or-d);font-weight:800}
+.ckd{display:grid;gap:10px;margin-top:12px}
+.ckr{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
+.ckr input{margin-top:4px;width:18px;height:18px;accent-color:var(--or);flex:none}
+.ckr b{display:block;font-weight:800}.ckr small{display:block;color:var(--ink2);font-size:13px}
+.cka{display:flex;gap:8px;flex-wrap:wrap}
+.cka .btn{padding:10px 16px;font-size:14px}
+.ck-enter-active,.ck-leave-active{transition:opacity .35s,transform .35s}
+.ck-enter-from,.ck-leave-to{opacity:0;transform:translate(-50%,24px)}
+@media(max-width:640px){.cka{width:100%}.cka .btn{flex:1 1 auto}}
+.ftcookie{all:unset;cursor:pointer;color:inherit;text-decoration:underline;text-underline-offset:3px}
+.ftcookie:hover{color:var(--or-d)}
+.ftcookie:focus-visible{outline:3px solid var(--or);outline-offset:2px;border-radius:6px}

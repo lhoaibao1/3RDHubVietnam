@@ -2,6 +2,7 @@ import { watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSite } from '@/stores/site'
 import { LEGAL_SLUGS, NAV } from '@/lib/content'
+import { consent } from '@/composables/useConsent'
 
 const GA_RE = /^[A-Za-z]{1,3}-[A-Za-z0-9-]{4,20}$/
 let gaOn = false
@@ -34,7 +35,8 @@ export function useSeo() {
     const t = site.S('site_title')
     if (t) setMeta('meta[property="og:title"]', t)
     const ga = site.S('analytics_id')
-    if (ga && !gaOn && GA_RE.test(ga)) {
+    // Google Analytics chỉ nạp khi khách đã đồng ý cookie phân tích
+    if (ga && !gaOn && GA_RE.test(ga) && consent.saved?.analytics) {
       gaOn = true
       const sc = document.createElement('script')
       sc.async = true

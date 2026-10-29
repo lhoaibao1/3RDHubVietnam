@@ -42,6 +42,10 @@ const scenes = [
   { id: 'isometric', name: '3D đẳng cự (Isometric)', desc: 'Hòn đảo nổi nhìn góc isometric: mỗi module là một công trình, nối bằng đường dữ liệu có hạt chạy.' },
   { id: 'factory', name: 'Nhà máy tự động', desc: 'Băng chuyền đưa dữ liệu qua các trạm: cánh tay robot, máy dập, cổng quét, đèn trạng thái.' },
   { id: 'ecosystem', name: 'Hệ sinh thái số', desc: '3RDHub phát sáng ở giữa, Advertiser, Publisher, Tracking, Finance, API, AI bay quanh và trao đổi dữ liệu.' },
+  { id: 'orbit', name: 'Trạm không gian (Orbit)', desc: 'Các trạm nổi giữa vũ trụ, hành tinh, sao và vệ tinh bay quanh. Nền tối, cảm giác công nghệ cao.' },
+  { id: 'voxel', name: 'Thành phố khối (Voxel)', desc: 'Phong cách đồ chơi khối, nền trời ban ngày, màu tươi và dễ thương. Cảnh luôn sáng.' },
+  { id: 'blueprint', name: 'Bản vẽ kỹ thuật (Blueprint)', desc: 'Nền xanh bản vẽ, các công trình dạng khung dây trong suốt, đường dữ liệu phát sáng.' },
+  { id: 'neon', name: 'Thành phố Neon', desc: 'Đêm cyberpunk: toà nhà sáng đèn, hoàng hôn tím hồng, viền neon rực.' },
 ]
 const sceneNow = () => a.content!.settings.scene_style || 'classic'
 function pickScene(id: string) { if (id === 'classic') delete a.content!.settings.scene_style; else a.content!.settings.scene_style = id }
@@ -81,7 +85,7 @@ async function changePassword() {
 <template>
   <div class="panel">
     <h2>Kiểu cảnh 3D</h2>
-    <p class="sub">Chọn kiểu 3D cho trang chủ và các trang con. Bấm "Xem thử" để mở website với kiểu đó (chỉ trên trình duyệt của bạn, chưa ai khác thấy), ưng ý thì chọn rồi bấm Lưu.</p>
+    <p class="sub">Chọn kiểu 3D cho trang chủ và các trang con. Mỗi trang con có cảnh riêng theo nội dung của trang. Bấm "Xem thử" để mở website với kiểu đó (chỉ trên trình duyệt của bạn, chưa ai khác thấy), ưng ý thì chọn rồi bấm Lưu.</p>
     <div class="scenes">
       <div v-for="sc in scenes" :key="sc.id" class="scene" :class="{ on: sceneNow() === sc.id }">
         <button type="button" class="pick" :aria-pressed="sceneNow() === sc.id" @click="pickScene(sc.id)">

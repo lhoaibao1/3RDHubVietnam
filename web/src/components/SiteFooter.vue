@@ -4,6 +4,7 @@ import { LEGAL_SLUGS, NAV, okUrl } from '@/lib/content'
 import { BRANDS } from '@/lib/icons.generated'
 import { useSite } from '@/stores/site'
 import BrandMark from './BrandMark.vue'
+import { openConsent } from '@/composables/useConsent'
 
 const site = useSite()
 const SOCIAL: [string, string][] = [['facebook', 'Facebook'], ['zalo', 'Zalo'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['instagram', 'Instagram']]
@@ -33,6 +34,7 @@ const legal = Object.keys(LEGAL_SLUGS)
         <h3>Pháp lý</h3>
         <RouterLink :to="'/' + legal[0]">Điều khoản sử dụng</RouterLink>
         <RouterLink :to="'/' + legal[1]">Chính sách bảo mật</RouterLink>
+        <button type="button" class="ftcookie" @click="openConsent">Cài đặt cookie</button>
       </nav>
       <div class="ftc ftco">
         <h3>Thông tin công ty</h3>

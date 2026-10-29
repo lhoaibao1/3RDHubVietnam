@@ -28,6 +28,7 @@ PostgreSQL và Go, và `deploy.sh` tự cài cả hai.
 
 - **Ngôn ngữ tự động**: lần đầu vào site theo ngôn ngữ trình duyệt (tiếng Việt thì hiện tiếng Việt, còn lại hiện tiếng Anh), nhớ lựa chọn sau đó. Nút cờ ở menu đổi ngôn ngữ bằng một chạm, có hiệu ứng chuyển mượt.
 - **Sáng / tối**: theo hệ thống lúc đầu, nút mặt trời / mặt trăng đổi bằng hiệu ứng loang tròn; các cảnh 3D đổi ánh sáng và màu theo chế độ.
+- **Cookie**: lần đầu vào site hiện thông báo (Chấp nhận tất cả / Chỉ cần thiết / Tuỳ chọn), lựa chọn lưu ở trình duyệt; Google Analytics chỉ được nạp sau khi khách đồng ý cookie phân tích; nút "Cài đặt cookie" ở chân trang để đổi lại.
 - **Cuộn trang**: thanh tiến độ, nội dung hiện dần theo nhiều hướng, mỗi khu vực một nền và hoạ tiết riêng (`web/src/styles/backgrounds.css`).
 - **SEO / chia sẻ link**: `npm run build` dựng sẵn trang HTML riêng cho từng đường dẫn (tiêu đề, mô tả, ảnh chia sẻ, JSON-LD), kèm `sitemap.xml` và `robots.txt`
   (nội dung ở `web/scripts/seo.json`, địa chỉ gốc đặt bằng `SITE_URL`). Ảnh chia sẻ `web/public/og/*.png` tạo từ cảnh 3D thật bằng `node tools/make-og.js`.
@@ -97,12 +98,12 @@ Thử `deploy.sh` mà không đụng hệ thống thật: `PGHOST=<thư mục so
 - **Đối tác**: thêm, sửa, xoá, sắp xếp, tải logo.
 - **Trang pháp lý**: sửa Điều khoản sử dụng và Chính sách bảo mật (VI/EN, có xem trước). Hai trang nằm riêng trên website: `/dieu-khoan`, `/bao-mat`.
 - **Yêu cầu khách**: form liên hệ lưu vào CMS (trạng thái, ghi chú, xuất CSV).
-- **Kiểu cảnh 3D** (trong Cài đặt): chọn một trong 4 kiểu cho trang chủ và các trang con (Cổ điển, 3D đẳng cự, Nhà máy tự động, Hệ sinh thái số), có ảnh xem trước và nút "Xem thử" (mở website với `?scene=<kiểu>`, chỉ trên trình duyệt của bạn).
+- **Kiểu cảnh 3D** (trong Cài đặt): chọn một trong 8 kiểu cho trang chủ và các trang con (Cổ điển, 3D đẳng cự, Nhà máy tự động, Hệ sinh thái số, Trạm không gian, Thành phố khối, Bản vẽ kỹ thuật, Thành phố Neon), có ảnh xem trước và nút "Xem thử" (mở website với `?scene=<kiểu>`, chỉ trên trình duyệt của bạn).
 - **Cài đặt**: thông tin công ty (tên, mã số thuế, địa chỉ, giờ làm việc, email, hotline), link đăng ký, mạng xã hội, tiêu đề/mô tả SEO,
   mã Google Analytics, đổi mật khẩu.
 - **Lịch sử**: mỗi lần lưu là một phiên bản (giữ 60 bản gần nhất), khôi phục bằng một cú bấm.
 
-Hình ảnh, nội dung cảnh 3D và bố cục là phần thiết kế (nằm trong `web/`), CMS chỉ chọn *kiểu* cảnh 3D. Mã các kiểu mới ở `web/src/three/styles/`.
+Hình ảnh, nội dung cảnh 3D và bố cục là phần thiết kế (nằm trong `web/`), CMS chỉ chọn *kiểu* cảnh 3D. Mã các kiểu mới ở `web/src/three/styles/`: `skin.ts` (phong cách: ánh sáng, nền, vật liệu), `parts.ts` (các chi tiết 3D), `concepts.ts` (cảnh riêng cho từng trang: trang chủ, Mô hình, Advertiser, Công nghệ, Đối tác, Hỏi đáp, Liên hệ), `host.ts` (ghép cảnh với skin). Thêm một kiểu mới = thêm một hàm skin và một dòng trong `sceneTypes.ts` + danh sách kiểu của backend (`sceneStyles` trong `server/content.go`).
 
 ## Bảo mật (tóm tắt)
 

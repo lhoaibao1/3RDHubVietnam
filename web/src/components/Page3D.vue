@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DAY_STYLES } from '@/three/sceneTypes'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { hidePage3D, showPage3D } from '@/three/pages3d'
 import { hideStyledPage, showStyledPage } from '@/three/scenes'
@@ -25,5 +26,5 @@ onBeforeUnmount(() => { hidePage3D(); hideStyledPage() })
 </script>
 
 <template>
-  <div ref="slot" class="p3d" :class="{ night: site.sceneStyle !== 'classic' }" :style="{ '--tint': tint }"><slot /></div>
+  <div ref="slot" class="p3d" :class="{ night: site.sceneStyle !== 'classic' && !DAY_STYLES.includes(site.sceneStyle), solid: site.sceneStyle !== 'classic', day: DAY_STYLES.includes(site.sceneStyle) }" :style="{ '--tint': tint }"><slot /></div>
 </template>

@@ -37,14 +37,14 @@ function skyTex(top: string, mid: string, bot: string) {
   const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; return t
 }
 
-export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: [number, number]; sky?: [string, string, string]; bloom?: number; offsetX?: number }): Stage {
-  const R = new T.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' })
+export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: [number, number]; sky?: [string, string, string]; bloom?: number; offsetX?: number; fogColor?: number }): Stage {
+  const R = new T.WebGLRenderer({ canvas, antialias: o.bloom === 0, alpha: false, powerPreference: 'high-performance' })
   R.outputEncoding = T.sRGBEncoding
   const scene = new T.Scene()
   const sky = o.sky || ['#040A1C', '#0A1B45', '#0E2A63']
   scene.background = skyTex(sky[0], sky[1], sky[2])
   const fogN = o.fog || [40, 130]
-  scene.fog = new T.Fog(lin(0x0A1B45), fogN[0], fogN[1])
+  scene.fog = new T.Fog(lin(o.fogColor == null ? 0x0A1B45 : o.fogColor), fogN[0], fogN[1])
   const camera = new T.PerspectiveCamera(o.fov || 30, 1, 0.5, 400)
 
   let W = 1, H = 1
@@ -54,7 +54,8 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
   const bloom = new UnrealBloomPass(new T.Vector2(2, 2), o.bloom == null ? 0.85 : o.bloom, 0.65, 0.22)
   composer.addPass(bloom)
   composer.addPass(new ShaderPass(GammaCorrectionShader))
-  let bloomOn = true
+  scene.userData.sky = true
+  let bloomOn = o.bloom !== 0
 
   const ticks: ((t: number, dt: number) => void)[] = []
   const clock = new T.Clock()
@@ -75,7 +76,7 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
   }
   size()
 
-  const offQ = onQuality(() => { size(); if (!RM) bloomOn = true })
+  const offQ = onQuality(() => { size(); if (!RM && o.bloom !== 0) bloomOn = true })
   const ro = new ResizeObserver(size); ro.observe(canvas)
   const io = new IntersectionObserver((e) => { vis = e[0].isIntersecting }); io.observe(canvas)
   let slow = 0

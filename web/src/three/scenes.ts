@@ -1,20 +1,27 @@
 // Chọn kiểu cảnh 3D: kiểu cũ (classic) hoặc ba kiểu "đêm công nghệ". Mỗi kiểu nạp riêng (code-splitting) nên không tải thừa.
 import type { Hero } from './hero'
-import { HERO_KEYS, PAGE_KEYS, type World } from './styles/world'
+import { HERO_KEYS, type World } from './styles/world'
 
 import type { SceneStyle } from './sceneTypes'
+import type { Host } from './styles/host'
+import type { SkinId } from './styles/skin'
 
 const HERO_LABELS = ['Advertiser', '3RDHub', 'Publisher', 'Khách hàng', 'Hoa hồng']
 
-async function loadWorld(style: SceneStyle, canvas: HTMLCanvasElement): Promise<World> {
+/** Cảnh trang chủ của ba kiểu đầu được dựng riêng; các kiểu còn lại dùng cảnh `flow` với skin tương ứng. */
+async function loadHero(style: SceneStyle, canvas: HTMLCanvasElement): Promise<World> {
   if (style === 'ecosystem') return (await import('./styles/ecosystem')).createEcosystem(canvas)
   if (style === 'isometric') return (await import('./styles/isometric')).createIsometric(canvas)
-  return (await import('./styles/factory')).createFactory(canvas)
+  if (style === 'factory') return (await import('./styles/factory')).createFactory(canvas)
+  const h = (await import('./styles/host')).createHost(canvas, style as SkinId); h.show('flow'); return h
+}
+async function loadHost(style: SceneStyle, canvas: HTMLCanvasElement): Promise<Host> {
+  return (await import('./styles/host')).createHost(canvas, style as SkinId)
 }
 
 /** Cảnh trang chủ cho các kiểu mới: cùng giao diện với `Hero` của kiểu cũ. */
 export async function createStyledHero(style: SceneStyle, canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { onTag(k: number, label: string): void }): Promise<Hero> {
-  const world = await loadWorld(style, canvas)
+  const world = await loadHero(style, canvas)
   let step = 0, lastK = -1, raf = 0
   const loop = () => {
     raf = requestAnimationFrame(loop)
@@ -35,24 +42,27 @@ export async function createStyledHero(style: SceneStyle, canvas: HTMLCanvasElem
   }
 }
 
-/* ---- trang chi tiết: mỗi kiểu giữ một canvas riêng, chuyển trang chỉ bay camera ---- */
-let cur: null | { style: SceneStyle; canvas: HTMLCanvasElement; world: World | null; pending: string } = null
+/* ---- trang chi tiết: mỗi trang một cảnh riêng, canvas dùng chung và được dựng lại nội dung khi chuyển trang ---- */
+let cur: null | { style: SceneStyle; canvas: HTMLCanvasElement; host: Host | null; pending: string } = null
+
+function apply(h: Host, id: string) { h.show(id); h.tour(true) }
 
 export async function showStyledPage(style: SceneStyle, slot: HTMLElement, id: string): Promise<void> {
-  if (cur && cur.style !== style) { cur.world?.dispose(); cur.canvas.remove(); cur = null }
+  if (cur && cur.style !== style) { cur.host?.dispose(); cur.canvas.remove(); cur = null }
   if (!cur) {
     const canvas = document.createElement('canvas'); canvas.className = 'glp'; canvas.setAttribute('aria-hidden', 'true')
-    cur = { style, canvas, world: null, pending: id }
+    cur = { style, canvas, host: null, pending: id }
     slot.insertBefore(canvas, slot.firstChild)
     const mine = cur
-    loadWorld(style, canvas).then((w) => { if (cur === mine) { mine.world = w; w.focus(PAGE_KEYS[mine.pending] || 'overview', true) } else w.dispose() })
+    loadHost(style, canvas).then((h) => { if (cur === mine) { mine.host = h; apply(h, mine.pending) } else h.dispose() })
     return
   }
   slot.insertBefore(cur.canvas, slot.firstChild)
   cur.pending = id
-  cur.world?.focus(PAGE_KEYS[id] || 'overview')
+  if (cur.host) apply(cur.host, id)
 }
 
 export function hideStyledPage(): void {
+  if (cur) cur.host?.tour(false)
   if (cur && cur.canvas.parentNode) cur.canvas.parentNode.removeChild(cur.canvas)
 }
