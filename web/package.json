@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "dev:admin": "vite -c vite.admin.config.ts",
     "typecheck": "vue-tsc --noEmit",
-    "icons": "node scripts/gen-icons.mjs"
+    "build": "vue-tsc --noEmit && vite build && vite build -c vite.admin.config.ts",
+    "icons": "node scripts/gen-icons.mjs",
+    "check:strings": "node scripts/check-strings.mjs"
   },
   "dependencies": {
     "gsap": "3.12.5",
