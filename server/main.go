@@ -27,7 +27,7 @@ func newApp(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	a := &App{cfg: cfg, pool: pool, defaults: d, rl: newLimiter(), tr: newTranslator()}
+	a := &App{cfg: cfg, pool: pool, defaults: d, rl: newLimiter(), tr: newTranslator(), hub: newHubClient(cfg)}
 	if err := a.initData(ctx); err != nil {
 		return nil, err
 	}

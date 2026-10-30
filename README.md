@@ -107,6 +107,21 @@ Mọi chỗ chỉ cần viết tiếng Việt, bản tiếng Anh tự dịch khi
 - **Thông báo khi có người đăng ký** (CMS, mục *Email & Zalo báo tin*): email chuyển tiếp cho đội ngũ (nhiều địa chỉ, bấm Trả lời là email thẳng cho khách), email xác nhận giao diện đẹp gửi khách (theo ngôn ngữ khách dùng, có xem mẫu), tin nhắn **Zalo Bot** cho đội ngũ (token từ bot.zaloplatforms.com, nút tìm chat ID) và tin **Zalo OA ZNS** gửi tới số điện thoại khách (App ID, Secret key, Refresh token, mẫu ZNS đã duyệt; hệ thống tự làm mới token). Mọi khoá được mã hoá bằng `secret.key`, có nhật ký 40 lần gửi gần nhất.
 - **Email SMTP**: tab *Email (SMTP)* trong CMS (mặc định điền sẵn `mail.3rdhubvietnam.tech`, cổng 465 SSL, tài khoản `hello@3rdhubvietnam.tech`). Mật khẩu chỉ nhập trong CMS, được mã hoá AES-256-GCM bằng khoá `secret.key` nằm trong thư mục dữ liệu của máy chủ, không có trong repo, không có trong `/api/content` và không hiện lại. Có nút gửi thử và tuỳ chọn báo email khi có yêu cầu mới (tắt mặc định).
 
+## Đăng ký sản phẩm cho khách (/dang-ky) qua 3RDHub
+
+Trang `/dang-ky` (không nằm trên menu, dùng làm link gửi khách, ví dụ `/dang-ky?product=FE&ref=RD260001&utm_source=fb`).
+Khách điền form, backend Go chuyển tiếp sang 3RDHub rồi trả về mã `KH-xxxx`. Khách bấm **Mở Zalo OA**, bấm Quan tâm, gửi mã vào khung chat. **3RDHub là nơi duy nhất kết nối Zalo OA**: trang này không gọi API Zalo và không giữ token Zalo.
+
+- Trình duyệt chỉ gọi `GET /api/products` và `POST /api/register` của trang. Backend thêm khoá, gọi `GET/POST {HUB_API_BASE}/api/v1/public/customer-products|customer-leads` và chỉ trả lại `code`, `zalo_url`, `expires_at`, tên sản phẩm.
+- Biến môi trường (đặt trong `/etc/3rdhub-cms.env`, **không commit giá trị**), rồi `systemctl restart 3rdhub-cms`:
+  - `HUB_API_BASE`: `https://uat-app.3rdvn.io.vn` khi thử, `https://app.3rdvn.io.vn` khi chạy thật.
+  - `HUB_SITE_KEY`: khoá lấy trong 3RDHub. Chỉ nằm ở backend.
+  - Chưa đặt hai biến này thì trang hiện "Chưa mở đăng ký trực tuyến".
+- **Bản giả (mock)** khi 3RDHub chưa có endpoint: `HUB_MOCK=1` (không cần `HUB_API_BASE`). Sản phẩm giả có chữ `[Thử]`. Số điện thoại thử lỗi: `0900000400` (400), `0900000401` (401), `0900000409` (trùng), `0900000429` (429), `0900000500` (500), `0900000000` (mất kết nối).
+- Chống spam: ô ẩn honeypot (bot nhận thành công giả, không gửi đi), giới hạn 5 lần / 10 phút / IP (và 200 / 10 phút toàn trang).
+- Không ghi họ tên, số điện thoại vào log hay analytics. Chỉ ghi sự kiện `lead_submitted` kèm mã sản phẩm, và chỉ khi khách đã đồng ý cookie phân tích.
+- Kiểm thử: `go test` (`hub_test.go`) và `HUB_MOCK=1 HUB_SITE_KEY=<chuỗi bất kỳ>` chạy backend, rồi `HUB_SITE_KEY=<chuỗi đó> node tools/e2e/register.js`.
+
 ## Bảo mật (tóm tắt)
 
 - Trang quản trị chỉ mở ở host `cms.*` (hoặc danh sách `CMS_HOSTS`); ở tên miền chính `/api/admin/*` trả 404.

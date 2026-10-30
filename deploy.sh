@@ -214,12 +214,20 @@ main_vhost() {
   if cms_installed; then
     local port; port="$(cms_port)"
     api="
-    # Backend Go: chỉ mở 3 đường dẫn công khai. Trang quản trị nằm ở $CMS_SUB
+    # Backend Go: chỉ mở các đường dẫn công khai dưới đây. Trang quản trị nằm ở $CMS_SUB
     location = /api/content {
 $(proxy_block "$port")
     }
     location = /api/lead {
         client_max_body_size 64k;
+$(proxy_block "$port")
+    }
+    # Đăng ký sản phẩm của khách: backend chuyển tiếp sang 3RDHub (khoá HUB_SITE_KEY chỉ nằm ở backend)
+    location = /api/products {
+$(proxy_block "$port")
+    }
+    location = /api/register {
+        client_max_body_size 16k;
 $(proxy_block "$port")
     }
     location ^~ /uploads/ {

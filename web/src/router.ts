@@ -9,6 +9,7 @@ export const router = createRouter({
     { path: '/', name: 'home', component: () => import('./pages/HomePage.vue') },
     { path: `/:slug(${SLUG_RE})`, name: 'module', component: () => import('./pages/ModulePage.vue'), props: true },
     { path: '/baogia', name: 'quote', component: () => import('./pages/QuotePage.vue') },
+    { path: '/dang-ky', name: 'register', component: () => import('./pages/RegisterPage.vue') },
     { path: '/dieu-khoan', name: 'terms', component: () => import('./pages/LegalPage.vue'), props: { doc: 'terms' } },
     { path: '/bao-mat', name: 'privacy', component: () => import('./pages/LegalPage.vue'), props: { doc: 'privacy' } },
     { path: '/terms', redirect: '/dieu-khoan' },
