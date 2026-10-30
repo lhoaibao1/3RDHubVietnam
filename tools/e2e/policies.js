@@ -18,8 +18,8 @@ const ok = (m) => console.log('✔', m);
   await p.screenshot({ path: OUT + '/cs_list.png', fullPage: true });
   let [dl] = await Promise.all([p.waitForEvent('download'), p.click('text=Tải tất cả (1 file PDF)')]);
   let t = await text(dl);
-  for (const s of ['Chính sách bảo mật', 'Chính sách tiếp nhận và giải quyết khiếu nại', 'Chính sách giá', 'Chính sách thanh toán', 'Điều kiện và hạn chế cung cấp dịch vụ', 'Chính sách cung cấp, chấm dứt dịch vụ và hoàn tiền', 'Hỗ trợ trực tuyến', 'Điều khoản sử dụng', '4001342613'])
-    assert(t.includes(s), 'thiếu trong PDF tổng hợp: ' + s);
+  for (const s of ['Chính sách bảo mật', 'Phương thức tiếp nhận và giải quyết phản ánh, yêu cầu, khiếu nại', 'Chính sách giá', 'Chính sách thanh toán', 'Điều kiện và hạn chế trong việc cung cấp dịch vụ', 'Phương thức cung cấp dịch vụ, chính sách chấm dứt dịch vụ và hoàn tiền', 'Hỗ trợ trực tuyến', 'Điều khoản sử dụng', '4001342613'])
+    assert(t.replace(/\s+/g, ' ').includes(s), 'thiếu trong PDF tổng hợp: ' + s);
   ok('tải tất cả: ' + dl.suggestedFilename() + ' có đủ 8 chính sách');
 
   for (const [slug, must] of [['bao-mat', 'Đơn vị kiểm soát dữ liệu'], ['khieu-nai', '07 ngày làm việc'], ['chinh-sach-gia', '15.000.000 VNĐ'], ['chinh-sach-thanh-toan', 'Chuyển khoản ngân hàng'], ['dieu-kien-dich-vu', 'Hạn chế và từ chối'], ['cung-cap-va-hoan-tien', 'Hoàn tiền'], ['ho-tro', 'Thời gian hỗ trợ'], ['dieu-khoan', 'Đơn vị vận hành']]) {

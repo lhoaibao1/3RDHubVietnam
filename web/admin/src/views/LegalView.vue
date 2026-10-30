@@ -8,7 +8,7 @@ import AutoTextarea from '../components/AutoTextarea.vue'
 
 const a = useAdmin()
 // Thứ tự theo hồ sơ thông báo website với Bộ Công Thương (dùng chung với website)
-const LABEL: Record<string, string> = { privacy: 'Chính sách bảo mật', complaints: 'Tiếp nhận, giải quyết khiếu nại', pricing: 'Chính sách giá', payment: 'Chính sách thanh toán', service: 'Điều kiện, hạn chế cung cấp dịch vụ', refund: 'Cung cấp, chấm dứt dịch vụ và hoàn tiền', support: 'Hỗ trợ trực tuyến', terms: 'Điều khoản sử dụng' }
+const LABEL: Record<string, string> = { privacy: 'Chính sách bảo mật', complaints: 'Tiếp nhận, giải quyết phản ánh, yêu cầu, khiếu nại', pricing: 'Chính sách giá', payment: 'Chính sách thanh toán', service: 'Điều kiện, hạn chế cung cấp dịch vụ', refund: 'Phương thức cung cấp, chấm dứt dịch vụ và hoàn tiền', support: 'Hỗ trợ trực tuyến', terms: 'Điều khoản sử dụng' }
 const LEGALS = LEGAL_DOCS.map((d) => [d.key, LABEL[d.key], d.slug] as const)
 const siteUrl = location.origin.replace('//cms.', '//')
 const view = reactive<Record<string, 'vi' | 'en'>>(Object.fromEntries(LEGAL_DOCS.map((d) => [d.key, 'vi'])))
