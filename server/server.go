@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"mime"
@@ -378,7 +377,8 @@ func (a *App) apiLead(w http.ResponseWriter, r *http.Request) {
 		a.sendJSON(w, r, 200, map[string]any{"ok": true}, nil)
 		return
 	}
-	var phone, company, need, msg string
+	var phone, company, need, msg, email string
+	var leadID int64
 	lang := "vi"
 	name, err := strip(d["name"], 120, "Họ tên")
 	if err == nil {
@@ -399,6 +399,12 @@ func (a *App) apiLead(w http.ResponseWriter, r *http.Request) {
 			msg, err = strip(d["message"], 4000, "giá trị")
 		}
 		if err == nil {
+			email, err = strip(d["email"], 200, "Email")
+			if err == nil && email != "" && (!emailRe.MatchString(email) || !noCRLF(email)) {
+				err = bad("Email không hợp lệ.")
+			}
+		}
+		if err == nil {
 			if d["lang"] == "en" {
 				lang = "en"
 			}
@@ -406,15 +412,19 @@ func (a *App) apiLead(w http.ResponseWriter, r *http.Request) {
 			if len(ua) > 300 {
 				ua = strings.ToValidUTF8(ua[:300], "")
 			}
-			_, err = a.pool.Exec(r.Context(), `INSERT INTO leads(ts,name,phone,company,need,message,lang,ip,ua) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-				time.Now().Unix(), name, phone, company, need, msg, lang, ip, ua)
+			err = a.pool.QueryRow(r.Context(), `INSERT INTO leads(ts,name,phone,company,need,message,lang,ip,ua,email) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id`,
+				time.Now().Unix(), name, phone, company, need, msg, lang, ip, ua, email).Scan(&leadID)
 		}
 	}
 	if err != nil {
 		a.handleErr(w, r, err)
 		return
 	}
-	go a.notifyLead("[3RDHub] Yêu cầu mới từ website", fmt.Sprintf("Có yêu cầu mới trên website 3RDHub Vietnam.\n\nHọ tên: %s\nĐiện thoại: %s\nCông ty: %s\nNhu cầu: %s\nNgôn ngữ: %s\n\nNội dung:\n%s\n\nXem và xử lý trong trang quản trị CMS, mục Yêu cầu khách.\n", name, phone, company, need, lang, msg))
+	base := "http://" + r.Host
+	if secure(r) {
+		base = "https://" + r.Host
+	}
+	go a.dispatchLead(leadRow{ID: leadID, TS: time.Now().Unix(), Name: name, Phone: phone, Company: company, Need: need, Message: msg, Lang: lang, Email: email}, base)
 	a.sendJSON(w, r, 200, map[string]any{"ok": true}, nil)
 }
 

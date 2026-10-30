@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -116,16 +117,17 @@ type leadRow struct {
 	UA      string `json:"ua"`
 	Status  string `json:"status"`
 	Note    string `json:"note"`
+	Email   string `json:"email"`
 }
 
-const leadCols = `id,ts,name,phone,company,need,message,lang,ip,ua,status,note`
+const leadCols = `id,ts,name,phone,company,need,message,lang,ip,ua,status,note,email`
 
 func scanLeads(rows pgx.Rows) ([]leadRow, error) {
 	defer rows.Close()
 	out := []leadRow{}
 	for rows.Next() {
 		var l leadRow
-		if err := rows.Scan(&l.ID, &l.TS, &l.Name, &l.Phone, &l.Company, &l.Need, &l.Message, &l.Lang, &l.IP, &l.UA, &l.Status, &l.Note); err != nil {
+		if err := rows.Scan(&l.ID, &l.TS, &l.Name, &l.Phone, &l.Company, &l.Need, &l.Message, &l.Lang, &l.IP, &l.UA, &l.Status, &l.Note, &l.Email); err != nil {
 			return nil, err
 		}
 		out = append(out, l)
@@ -286,10 +288,133 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 		if !emailRe.MatchString(to) || !noCRLF(to) {
 			return bad("Email nhận thử không hợp lệ")
 		}
-		if err := a.sendMail(ctx, []string{to}, "[3RDHub CMS] Gửi thử email", "Đây là email gửi thử từ trang quản trị 3RDHub CMS.\nNếu bạn đọc được thư này thì cấu hình SMTP đã hoạt động.\n"); err != nil {
+		b := a.brandInfo(ctx, siteBase(r))
+		html := renderMail(mailData{B: b, Lang: "vi", Pre: "Cấu hình email của website đã hoạt động.", Kicker: "Gửi thử thành công", Title: "Email của website đã sẵn sàng",
+			Lead: "Đây là thư gửi thử từ trang quản trị 3RDHub CMS. Bạn đọc được thư này nghĩa là máy chủ gửi thư (SMTP) đã cấu hình đúng; khách hàng sẽ nhận thư với giao diện như thế này.",
+			Rows: []mailRow{{"Máy chủ", a.loadSMTP(ctx).Host}, {"Người gửi", a.loadSMTP(ctx).FromEmail}, {"Thời gian", time.Now().In(vnZone()).Format("15:04 · 02/01/2006")}}, CTA: "Mở website", URL: b.Site})
+		if err := a.sendMail(ctx, []string{to}, "✅ Gửi thử email từ 3RDHub CMS", "Đây là email gửi thử từ trang quản trị 3RDHub CMS.\nNếu bạn đọc được thư này thì cấu hình SMTP đã hoạt động.\n", html); err != nil {
 			return bad("%v", err)
 		}
 		return ok(map[string]any{"ok": true})
+
+	case sub == "zalo" && m == http.MethodGet:
+		return ok(publicZalo(a.loadZalo(ctx)))
+
+	case sub == "zalo" && m == http.MethodPut:
+		d, err := readJSON(r, 16384)
+		if err != nil {
+			return err
+		}
+		zaloMu.Lock()
+		c, err := cleanZalo(a, d, a.loadZalo(ctx))
+		if err == nil {
+			if truthy(d["clear_bot_token"]) {
+				c.BotToken = ""
+			}
+			if truthy(d["clear_oa"]) {
+				c.Secret, c.Refresh, c.Access, c.AccessExp = "", "", "", 0
+			}
+			err = kvSetPool(ctx, a.pool, "zalo", c)
+		}
+		zaloMu.Unlock()
+		if err != nil {
+			return err
+		}
+		return ok(publicZalo(c))
+
+	case sub == "zalo-bot-test" && m == http.MethodPost:
+		if !a.rl.ok("zalotest", clientIP(r), 10, 10*time.Minute) {
+			a.fail(w, r, 429, "Thử quá nhiều lần, đợi ít phút.")
+			return nil
+		}
+		if err := a.zaloBotSend(ctx, a.loadZalo(ctx), "✅ Zalo Bot của 3RDHub CMS đã kết nối. Khi có người đăng ký trên website, tin báo sẽ gửi vào đây."); err != nil {
+			return bad("%v", err)
+		}
+		return ok(map[string]any{"ok": true})
+
+	case sub == "zalo-bot-chats" && m == http.MethodPost:
+		tok, _ := a.unseal(a.loadZalo(ctx).BotToken)
+		if tok == "" {
+			return bad("Lưu token Zalo Bot trước")
+		}
+		res, err := a.zaloBotCall(ctx, tok, "getUpdates", map[string]any{"timeout": 1})
+		if err != nil {
+			return bad("%v (nếu bot đang dùng webhook thì không lấy được tin; hãy nhắn bot rồi thử lại)", err)
+		}
+		seen := map[string]string{}
+		var walk func(v any)
+		walk = func(v any) {
+			switch t := v.(type) {
+			case map[string]any:
+				if ch, ok := t["chat"].(map[string]any); ok {
+					id := fmt.Sprint(ch["id"])
+					name, _ := ch["display_name"].(string)
+					if name == "" {
+						if f, ok := t["from"].(map[string]any); ok {
+							name, _ = f["display_name"].(string)
+						}
+					}
+					seen[id] = name
+				}
+				for _, x := range t {
+					walk(x)
+				}
+			case []any:
+				for _, x := range t {
+					walk(x)
+				}
+			}
+		}
+		walk(res)
+		var list []map[string]string
+		for id, n := range seen {
+			list = append(list, map[string]string{"id": id, "name": n})
+		}
+		return ok(map[string]any{"chats": list})
+
+	case sub == "zns-test" && m == http.MethodPost:
+		if !a.rl.ok("zalotest", clientIP(r), 10, 10*time.Minute) {
+			a.fail(w, r, 429, "Thử quá nhiều lần, đợi ít phút.")
+			return nil
+		}
+		d, err := readJSON(r, 2048)
+		if err != nil {
+			return err
+		}
+		ph, _ := d["phone"].(string)
+		if len(digitsRe.ReplaceAllString(ph, "")) < 9 {
+			return bad("Nhập số điện thoại nhận thử")
+		}
+		l := sampleLead()
+		l.Phone = ph
+		if err := a.znsSend(ctx, l); err != nil {
+			return bad("%v", err)
+		}
+		return ok(map[string]any{"ok": true})
+
+	case sub == "notify-log" && m == http.MethodGet:
+		var list []notifyEntry
+		kvGet(ctx, a.pool, "notify_log", &list)
+		if list == nil {
+			list = []notifyEntry{}
+		}
+		return ok(list)
+
+	case sub == "email-preview" && m == http.MethodGet:
+		b := a.brandInfo(ctx, siteBase(r))
+		l := sampleLead()
+		var html string
+		switch r.URL.Query().Get("kind") {
+		case "staff":
+			_, _, html = staffMail(b, l, cmsURL(b.Site))
+		case "customer-en":
+			l.Lang = "en"
+			_, _, html = customerMail(b, l)
+		default:
+			_, _, html = customerMail(b, l)
+		}
+		a.send(w, r, 200, []byte(html), "text/html; charset=utf-8", map[string]string{"Cache-Control": "no-store", "Content-Security-Policy": "default-src 'none'; img-src * data:; style-src 'unsafe-inline'"})
+		return nil
 
 	case sub == "revisions" && m == http.MethodGet:
 		rows, err := a.pool.Query(ctx, `SELECT id,ts,note,snapshot FROM revisions ORDER BY id DESC LIMIT 60`)
@@ -345,7 +470,7 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 		if s := strings.TrimSpace(q.Get("q")); s != "" {
 			args = append(args, "%"+likeEscape(s)+"%")
 			n := strconv.Itoa(len(args))
-			where = append(where, "(name ILIKE $"+n+" OR phone ILIKE $"+n+" OR company ILIKE $"+n+" OR message ILIKE $"+n+")")
+			where = append(where, "(name ILIKE $"+n+" OR phone ILIKE $"+n+" OR email ILIKE $"+n+" OR company ILIKE $"+n+" OR message ILIKE $"+n+")")
 		}
 		sql := `SELECT ` + leadCols + ` FROM leads`
 		if len(where) > 0 {
@@ -373,9 +498,9 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 		var buf bytes.Buffer
 		buf.Write([]byte{0xEF, 0xBB, 0xBF})
 		cw := csv.NewWriter(&buf)
-		cw.Write([]string{"ID", "Thời gian", "Họ tên", "Số điện thoại", "Công ty", "Nhu cầu", "Nội dung", "Ngôn ngữ", "Trạng thái", "Ghi chú"})
+		cw.Write([]string{"ID", "Thời gian", "Họ tên", "Số điện thoại", "Email", "Công ty", "Nhu cầu", "Nội dung", "Ngôn ngữ", "Trạng thái", "Ghi chú"})
 		for _, l := range ls {
-			cw.Write([]string{strconv.FormatInt(l.ID, 10), time.Unix(l.TS, 0).Format("2006-01-02 15:04:05"), l.Name, l.Phone, l.Company, l.Need, l.Message, l.Lang, l.Status, l.Note})
+			cw.Write([]string{strconv.FormatInt(l.ID, 10), time.Unix(l.TS, 0).Format("2006-01-02 15:04:05"), l.Name, l.Phone, l.Email, l.Company, l.Need, l.Message, l.Lang, l.Status, l.Note})
 		}
 		cw.Flush()
 		a.send(w, r, 200, buf.Bytes(), "text/csv; charset=utf-8", map[string]string{"Content-Disposition": `attachment; filename="yeu-cau-khach-hang.csv"`, "Cache-Control": "no-store"})

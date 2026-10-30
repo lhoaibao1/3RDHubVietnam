@@ -2,8 +2,8 @@ package main
 
 import (
 	"bufio"
-	"encoding/base64"
 	"encoding/json"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 )
 
 // fakeTranslate giả lập điểm cuối dịch của Google: trả "EN: " + bản gốc.
@@ -220,16 +221,78 @@ func TestSMTPConfigAndSend(t *testing.T) {
 	if !strings.Contains(m, "To: a@b.vn") || !strings.Contains(m, "Subject: =?utf-8?q?") || !strings.Contains(m, "Content-Transfer-Encoding: base64") {
 		t.Fatalf("thư sai: %s", m)
 	}
-	// yêu cầu mới từ form → thư thông báo (đã bật)
-	lead := `{"name":"Nguyễn Văn A","phone":"0901234567","company":"Cty","need":"Báo giá","message":"Cần báo giá hệ thống"}`
+	// bật thư xác nhận cho khách; yêu cầu mới → thư báo đội ngũ (HTML) + thư xác nhận cho khách
+	body3 := map[string]any{"host": host, "port": port, "security": "none", "user": "", "from_email": "hello@3rdhubvietnam.tech", "notify_to": "ops@example.vn, sale@example.vn", "notify_leads": true, "confirm_customer": true}
+	if r := do(a, "PUT", cms, "/api/admin/smtp", []byte(mustJSON(body3)), h); r.code != 200 {
+		t.Fatalf("smtp 3: %d %s", r.code, r.body)
+	}
+	// Zalo Bot và ZNS giả lập
+	var botHits, znsHits []string
+	var zmu sync.Mutex
+	zsrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, _ := io.ReadAll(r.Body)
+		zmu.Lock()
+		defer zmu.Unlock()
+		switch {
+		case strings.Contains(r.URL.Path, "/sendMessage"):
+			botHits = append(botHits, r.URL.Path+" "+string(b))
+			w.Write([]byte(`{"ok":true,"result":{}}`))
+		case strings.Contains(r.URL.Path, "/oauth"):
+			if r.Header.Get("secret_key") != "bi-mat-oa" {
+				w.Write([]byte(`{"error":-14014,"message":"secret sai"}`))
+				return
+			}
+			w.Write([]byte(`{"access_token":"acc-1","refresh_token":"ref-2","expires_in":"90000"}`))
+		case strings.Contains(r.URL.Path, "/zns"):
+			znsHits = append(znsHits, r.Header.Get("access_token")+" "+string(b))
+			w.Write([]byte(`{"error":0,"message":"Success"}`))
+		}
+	}))
+	defer zsrv.Close()
+	zaloBotURL, zaloOAuth, zaloZNSURL = zsrv.URL, zsrv.URL+"/oauth", zsrv.URL+"/zns"
+	zb := map[string]any{"bot_on": true, "bot_token": "123:abc", "bot_chats": "chat-1, chat-2", "zns_on": true, "app_id": "4321", "secret": "bi-mat-oa", "refresh_token": "ref-1", "template_id": "tpl9", "params": `{"customer_name":"{name}","phone_number":"{phone}"}`}
+	zr := do(a, "PUT", cms, "/api/admin/zalo", []byte(mustJSON(zb)), h)
+	if zr.code != 200 || strings.Contains(string(zr.body), "123:abc") || strings.Contains(string(zr.body), "bi-mat-oa") || zr.json(t)["has_bot_token"] != true {
+		t.Fatalf("lưu zalo %d %s", zr.code, zr.body)
+	}
+	lead := `{"name":"Nguyễn Văn A","phone":"0901234567","email":"khach@example.vn","company":"Cty","need":"Báo giá","message":"Cần báo giá hệ thống"}`
 	if r := do(a, "POST", "example.vn", "/api/lead", []byte(lead), nil); r.code != 200 {
 		t.Fatalf("lead %d", r.code)
 	}
-	m = <-msgs
-	body64 := m[strings.Index(m, "\r\n\r\n")+4:]
-	dec, _ := base64.StdEncoding.DecodeString(strings.ReplaceAll(strings.TrimSpace(body64), "\r\n", ""))
-	if !strings.Contains(m, "To: ops@example.vn") || !strings.Contains(string(dec), "Nguyễn Văn A") {
-		t.Fatalf("thư thông báo: %s | %s", m, dec)
+	m1, m2 := <-msgs, <-msgs
+	if !strings.Contains(m1, "To: ops@example.vn, sale@example.vn") || !strings.Contains(m1, "multipart/alternative") || !strings.Contains(m1, "text/html") || !strings.Contains(m1, "Reply-To: khach@example.vn") {
+		t.Fatalf("thư báo đội ngũ: %s", m1)
+	}
+	if !strings.Contains(m2, "To: khach@example.vn") || !strings.Contains(m2, "text/html") {
+		t.Fatalf("thư xác nhận khách: %s", m2)
+	}
+	for i := 0; i < 50; i++ {
+		zmu.Lock()
+		n := len(botHits) + len(znsHits)
+		zmu.Unlock()
+		if n >= 3 {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	zmu.Lock()
+	if len(botHits) != 2 || !strings.Contains(botHits[0], "/bot123:abc/sendMessage") || !strings.Contains(botHits[0], "Nguyễn Văn A") {
+		t.Fatalf("zalo bot: %v", botHits)
+	}
+	if len(znsHits) != 1 || !strings.HasPrefix(znsHits[0], "acc-1 ") || !strings.Contains(znsHits[0], `"phone":"84901234567"`) || !strings.Contains(znsHits[0], `"customer_name":"Nguyễn Văn A"`) {
+		t.Fatalf("zns: %v", znsHits)
+	}
+	zmu.Unlock()
+	// refresh token mới phải được lưu (đã mã hoá)
+	if rt, _ := a.unseal(a.loadZalo(t.Context()).Refresh); rt != "ref-2" {
+		t.Fatalf("refresh token mới chưa lưu: %q", rt)
+	}
+	lg := do(a, "GET", cms, "/api/admin/notify-log", nil, h)
+	if !strings.Contains(string(lg.body), "Zalo Bot") || !strings.Contains(string(lg.body), "Email khách") {
+		t.Fatalf("nhật ký: %s", lg.body)
+	}
+	if pv := do(a, "GET", cms, "/api/admin/email-preview?kind=customer", nil, h); pv.code != 200 || !strings.Contains(string(pv.body), "Cảm ơn") {
+		t.Fatalf("xem trước thư: %d", pv.code)
 	}
 	// dữ liệu xấu
 	for name, bd := range map[string]map[string]any{

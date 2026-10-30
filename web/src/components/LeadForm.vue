@@ -14,7 +14,7 @@ const NEEDS: { n: string; home: string; page: string }[] = [
   { n: 'Đăng ký dùng thử', home: 'Dùng thử 3RDVN HUB', page: 'Dùng thử' },
 ]
 const need = ref(NEEDS.find((o) => o.n === props.need)?.n || NEEDS[0].n)
-const f = reactive({ name: '', phone: '', company: '', msg: '', website: '' })
+const f = reactive({ name: '', phone: '', email: '', company: '', msg: '', website: '' })
 watch(() => [props.prefill, props.need], () => { const v = props.prefill; if (props.need) need.value = props.need; if (v) { f.msg = site.t('Tôi quan tâm đến') + ' ' + v + '.' } })
 const busy = ref(false)
 const msg = ref('')
@@ -34,6 +34,7 @@ function mailFallback() {
 async function submit() {
   say('')
   if (f.name.trim().length < 2) { say(site.t('Nhập họ và tên.'), 'err2'); nameEl.value?.focus(); return }
+  if (f.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim())) { say(site.t('Email không hợp lệ.'), 'err2'); return }
   if (f.phone.replace(/\D/g, '').length < 9) { say(site.t('Số điện thoại cần ít nhất 9 chữ số.'), 'err2'); phoneEl.value?.focus(); return }
   if (location.protocol === 'file:' || !window.fetch) { mailFallback(); return }
   busy.value = true
@@ -42,12 +43,12 @@ async function submit() {
     const r = await fetch('/api/lead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: f.name.trim(), phone: f.phone.trim(), company: f.company.trim(), need: need.value, message: f.msg.trim(), website: f.website, lang: site.lang }),
+      body: JSON.stringify({ name: f.name.trim(), phone: f.phone.trim(), company: f.company.trim(), email: f.email.trim(), need: need.value, message: f.msg.trim(), website: f.website, lang: site.lang }),
     })
     const j = await r.json().catch(() => ({}))
     if (r.ok && j.ok) {
       say(site.t('Cảm ơn bạn! Yêu cầu đã được gửi, đội ngũ 3RDVN Technology sẽ liên hệ sớm.'), 'ok')
-      f.name = f.phone = f.company = f.msg = ''
+      f.name = f.phone = f.email = f.company = f.msg = ''
     } else if (r.status === 400 || r.status === 429) {
       say(j.error || site.t('Chưa gửi được, vui lòng thử lại.'), 'err2')
     } else mailFallback()
@@ -70,6 +71,7 @@ async function submit() {
       <label :for="pre + '1'">Họ và tên<input :id="pre + '1'" ref="nameEl" v-model="f.name" name="name" autocomplete="name"></label>
       <label :for="pre + '2'">Số điện thoại<input :id="pre + '2'" ref="phoneEl" v-model="f.phone" name="phone" type="tel" autocomplete="tel"></label>
     </div>
+    <label :for="pre + '5'">Email (để nhận xác nhận)<input :id="pre + '5'" v-model="f.email" name="email" type="email" autocomplete="email" placeholder="ban@congty.vn"></label>
     <label :for="pre + '3'">Công ty<input :id="pre + '3'" v-model="f.company" name="company" placeholder="Tên công ty, sản phẩm cần chạy"></label>
     <input v-model="f.website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
     <label :for="pre + '4'">Nội dung<textarea :id="pre + '4'" v-model="f.msg" name="msg" placeholder="Sản phẩm, số lượng publisher dự kiến, thời gian mong muốn" /></label>

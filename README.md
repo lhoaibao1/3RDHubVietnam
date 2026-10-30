@@ -104,6 +104,7 @@ Mọi chỗ chỉ cần viết tiếng Việt, bản tiếng Anh tự dịch khi
 ## Tự dịch và email
 
 - **Tự dịch Việt → Anh**: chỉ cần viết tiếng Việt trong CMS. Khi bấm Lưu, backend dịch những đoạn English còn trống hoặc đang là bản máy dịch mà tiếng Việt đã đổi (chữ trên trang, hỏi đáp, nhóm đối tác, trang pháp lý, báo giá). Ô English do bạn tự sửa thì được giữ nguyên. Kết quả được nhớ trong bảng `tr_cache`. Mặc định dùng điểm cuối dịch miễn phí không chính thức của Google; đặt `TRANSLATE_KEY` (Google Cloud Translation API) để dùng bản chính thức, hoặc `TRANSLATE=off` để tắt. Máy chủ phải ra được internet.
+- **Thông báo khi có người đăng ký** (CMS, mục *Email & Zalo báo tin*): email chuyển tiếp cho đội ngũ (nhiều địa chỉ, bấm Trả lời là email thẳng cho khách), email xác nhận giao diện đẹp gửi khách (theo ngôn ngữ khách dùng, có xem mẫu), tin nhắn **Zalo Bot** cho đội ngũ (token từ bot.zaloplatforms.com, nút tìm chat ID) và tin **Zalo OA ZNS** gửi tới số điện thoại khách (App ID, Secret key, Refresh token, mẫu ZNS đã duyệt; hệ thống tự làm mới token). Mọi khoá được mã hoá bằng `secret.key`, có nhật ký 40 lần gửi gần nhất.
 - **Email SMTP**: tab *Email (SMTP)* trong CMS (mặc định điền sẵn `mail.3rdhubvietnam.tech`, cổng 465 SSL, tài khoản `hello@3rdhubvietnam.tech`). Mật khẩu chỉ nhập trong CMS, được mã hoá AES-256-GCM bằng khoá `secret.key` nằm trong thư mục dữ liệu của máy chủ, không có trong repo, không có trong `/api/content` và không hiện lại. Có nút gửi thử và tuỳ chọn báo email khi có yêu cầu mới (tắt mặc định).
 
 ## Bảo mật (tóm tắt)

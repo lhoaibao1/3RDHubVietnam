@@ -4,7 +4,7 @@ export interface Defaults { faq: Faq[]; partners: Partner[]; settings: Record<st
 export interface Bootstrap { content: Content; defaults: Defaults; leads: Record<string, number>; updated: number }
 export interface Lead {
   id: number; ts: number; name: string; phone: string; company: string; need: string; message: string
-  lang: string; ip: string; ua: string; status: 'new' | 'contacted' | 'done' | 'spam'; note: string
+  lang: string; ip: string; ua: string; email?: string; status: 'new' | 'contacted' | 'done' | 'spam'; note: string
 }
 export interface Revision { id: number; ts: number; note: string; ov: number; faq: number; partners: number }
 export interface StringItem { k: string; g: string; en: string }
@@ -18,7 +18,7 @@ export const SECTIONS: { title: string; tabs: [TabKey, string][] }[] = [
   { title: 'Nội dung', tabs: [['live', 'Sửa trên trang'], ['text', 'Tìm chữ để sửa']] },
   { title: 'Danh sách', tabs: [['product', 'Sản phẩm (chức năng)'], ['quote', 'Báo giá, so sánh gói'], ['faq', 'Hỏi đáp'], ['partners', 'Đối tác (logo)'], ['clients', 'Khách hàng'], ['legal', 'Điều khoản, bảo mật']] },
   { title: 'Thông tin', tabs: [['company', 'Công ty, liên hệ, MXH'], ['seo', 'SEO, Google Analytics']] },
-  { title: 'Hệ thống', tabs: [['look', 'Giao diện 3D'], ['email', 'Email (SMTP)'], ['account', 'Mật khẩu']] },
+  { title: 'Hệ thống', tabs: [['look', 'Giao diện 3D'], ['email', 'Email & Zalo báo tin'], ['account', 'Mật khẩu']] },
   { title: 'Vận hành', tabs: [['leads', 'Yêu cầu khách'], ['history', 'Lịch sử']] },
 ]
 export const TABS: [TabKey, string][] = SECTIONS.flatMap((s) => s.tabs)

@@ -61,6 +61,7 @@ onMounted(() => { guard(Promise.all([load(), a.refreshCounts()])) })
     <div class="bd">
       <dl class="kv">
         <dt>Nhu cầu</dt><dd>{{ l.need || '—' }}</dd>
+        <dt>Email</dt><dd><a v-if="l.email" :href="'mailto:' + l.email">{{ l.email }}</a><span v-else>—</span></dd>
         <dt>Công ty</dt><dd>{{ l.company || '—' }}</dd>
         <dt>Ngôn ngữ</dt><dd>{{ l.lang === 'en' ? 'English' : 'Tiếng Việt' }}</dd>
         <dt>IP</dt><dd>{{ l.ip || '—' }}</dd>

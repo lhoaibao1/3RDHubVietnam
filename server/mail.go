@@ -10,7 +10,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"mime"
 	"net"
 	"net/smtp"
@@ -34,7 +33,10 @@ type smtpCfg struct {
 	FromName    string `json:"from_name"`
 	NotifyTo    string `json:"notify_to"`
 	NotifyLeads bool   `json:"notify_leads"`
-	PassEnc     string `json:"pass_enc,omitempty"`
+	// ConfirmCustomer: gửi thư xác nhận đẹp cho khách khi họ để lại email trong form
+	ConfirmCustomer bool   `json:"confirm_customer"`
+	PassEnc         string `json:"pass_enc,omitempty"`
+	replyTo         string // chỉ dùng khi gửi một thư, không lưu
 }
 
 var hostRe = regexp.MustCompile(`^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$`)
@@ -149,13 +151,22 @@ func cleanSMTP(d map[string]any, base smtpCfg) (smtpCfg, error) {
 	if !noCRLF(c.FromName) || !noCRLF(c.User) {
 		return c, bad("Tên hoặc tài khoản không được xuống dòng")
 	}
-	if c.NotifyTo, err = strip(d["notify_to"], 200, "Email nhận thông báo"); err != nil {
+	if c.NotifyTo, err = strip(d["notify_to"], 1000, "Email nhận thông báo"); err != nil {
 		return c, err
 	}
-	if c.NotifyTo != "" && (!emailRe.MatchString(c.NotifyTo) || !noCRLF(c.NotifyTo)) {
-		return c, bad("Email nhận thông báo không hợp lệ")
+	var tos []string
+	for _, t := range splitList(c.NotifyTo) {
+		if !emailRe.MatchString(t) || !noCRLF(t) {
+			return c, bad("Email nhận thông báo không hợp lệ: %s", t)
+		}
+		tos = append(tos, t)
 	}
+	if len(tos) > 10 {
+		return c, bad("Tối đa 10 email nhận thông báo")
+	}
+	c.NotifyTo = strings.Join(tos, ", ")
 	c.NotifyLeads = truthy(d["notify_leads"])
+	c.ConfirmCustomer = truthy(d["confirm_customer"])
 	return c, nil
 }
 
@@ -169,8 +180,20 @@ func chunk76(s string) string {
 	return b.String()
 }
 
-// buildMsg dựng thư văn bản UTF-8 (tiêu đề mã hoá RFC 2047, nội dung base64).
-func buildMsg(c smtpCfg, to []string, subject, body string) []byte {
+// splitList tách danh sách cách nhau bởi dấu phẩy, chấm phẩy hoặc xuống dòng.
+func splitList(s string) []string {
+	var out []string
+	for _, p := range strings.FieldsFunc(s, func(r rune) bool { return r == ',' || r == ';' || r == '\n' || r == ' ' }) {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// buildMsg dựng thư UTF-8 (tiêu đề mã hoá RFC 2047). Có htmlBody thì gửi cả hai bản (multipart/alternative):
+// ứng dụng thư hiện bản HTML, máy không hỗ trợ thì hiện bản chữ.
+func buildMsg(c smtpCfg, to []string, subject, body string, htmlBody ...string) []byte {
 	from := c.FromEmail
 	if c.FromName != "" {
 		from = mime.QEncoding.Encode("utf-8", c.FromName) + " <" + c.FromEmail + ">"
@@ -182,17 +205,34 @@ func buildMsg(c smtpCfg, to []string, subject, body string) []byte {
 	var b strings.Builder
 	b.WriteString("From: " + from + "\r\n")
 	b.WriteString("To: " + strings.Join(to, ", ") + "\r\n")
+	if c.replyTo != "" && emailRe.MatchString(c.replyTo) && noCRLF(c.replyTo) {
+		b.WriteString("Reply-To: " + c.replyTo + "\r\n")
+	}
 	b.WriteString("Subject: " + mime.QEncoding.Encode("utf-8", subject) + "\r\n")
 	b.WriteString("Date: " + time.Now().Format(time.RFC1123Z) + "\r\n")
 	b.WriteString("Message-ID: <" + randHex(12) + "@" + host + ">\r\n")
-	b.WriteString("MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n")
-	b.WriteString(chunk76(base64.StdEncoding.EncodeToString([]byte(strings.ReplaceAll(body, "\n", "\r\n")))))
-	b.WriteString("\r\n")
+	b.WriteString("MIME-Version: 1.0\r\n")
+	part := func(ctype, content string) {
+		b.WriteString("Content-Type: " + ctype + "; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n")
+		b.WriteString(chunk76(base64.StdEncoding.EncodeToString([]byte(strings.ReplaceAll(content, "\n", "\r\n")))))
+		b.WriteString("\r\n")
+	}
+	if len(htmlBody) == 0 || htmlBody[0] == "" {
+		part("text/plain", body)
+		return []byte(b.String())
+	}
+	bd := "=_3rdhub_" + randHex(10)
+	b.WriteString("Content-Type: multipart/alternative; boundary=\"" + bd + "\"\r\n\r\n")
+	b.WriteString("--" + bd + "\r\n")
+	part("text/plain", body)
+	b.WriteString("--" + bd + "\r\n")
+	part("text/html", htmlBody[0])
+	b.WriteString("--" + bd + "--\r\n")
 	return []byte(b.String())
 }
 
 // smtpSend gửi một thư qua SMTP (ssl = TLS ngay từ đầu, starttls = nâng cấp sau khi kết nối), có giới hạn thời gian.
-func smtpSend(c smtpCfg, pass string, to []string, subject, body string) error {
+func smtpSend(c smtpCfg, pass string, to []string, subject, body string, htmlBody ...string) error {
 	for _, t := range to {
 		if !emailRe.MatchString(t) || !noCRLF(t) {
 			return fmt.Errorf("địa chỉ nhận không hợp lệ: %q", t)
@@ -240,7 +280,7 @@ func smtpSend(c smtpCfg, pass string, to []string, subject, body string) error {
 	if err != nil {
 		return err
 	}
-	if _, err := w.Write(buildMsg(c, to, subject, body)); err != nil {
+	if _, err := w.Write(buildMsg(c, to, subject, body, htmlBody...)); err != nil {
 		return err
 	}
 	if err := w.Close(); err != nil {
@@ -250,8 +290,14 @@ func smtpSend(c smtpCfg, pass string, to []string, subject, body string) error {
 }
 
 // sendMail gửi thư bằng cấu hình đã lưu. Trả lỗi nếu chưa cấu hình mật khẩu.
-func (a *App) sendMail(ctx context.Context, to []string, subject, body string) error {
+func (a *App) sendMail(ctx context.Context, to []string, subject, body string, htmlBody ...string) error {
+	return a.sendMailReply(ctx, to, "", subject, body, htmlBody...)
+}
+
+// sendMailReply như sendMail, thêm Reply-To (bấm Trả lời sẽ gửi tới địa chỉ này).
+func (a *App) sendMailReply(ctx context.Context, to []string, replyTo, subject, body string, htmlBody ...string) error {
 	c := a.loadSMTP(ctx)
+	c.replyTo = replyTo
 	if c.PassEnc == "" && c.User != "" {
 		return errors.New("chưa nhập mật khẩu SMTP")
 	}
@@ -259,22 +305,5 @@ func (a *App) sendMail(ctx context.Context, to []string, subject, body string) e
 	if err != nil {
 		return fmt.Errorf("không đọc được mật khẩu SMTP đã lưu: %w", err)
 	}
-	return smtpSend(c, pass, to, subject, body)
-}
-
-// notifyLead báo cho đội ngũ khi có yêu cầu mới (chỉ khi bật trong CMS).
-func (a *App) notifyLead(subject, body string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
-	defer cancel()
-	c := a.loadSMTP(ctx)
-	if !c.NotifyLeads || c.PassEnc == "" {
-		return
-	}
-	to := c.NotifyTo
-	if to == "" {
-		to = c.FromEmail
-	}
-	if err := a.sendMail(ctx, []string{to}, subject, body); err != nil {
-		log.Printf("gửi email thông báo yêu cầu mới lỗi: %v", err)
-	}
+	return smtpSend(c, pass, to, subject, body, htmlBody...)
 }

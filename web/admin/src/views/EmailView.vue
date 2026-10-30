@@ -2,10 +2,11 @@
 import { onMounted, reactive, ref } from 'vue'
 import { api } from '../api'
 import { useAdmin } from '../store'
+import ZaloPanel from '../components/ZaloPanel.vue'
 
 // Cấu hình gửi email (SMTP). Lưu riêng, không đi kèm nội dung website; mật khẩu được mã hoá trên máy chủ và không bao giờ hiện lại.
 const a = useAdmin()
-const f = reactive({ host: '', port: 465, security: 'ssl', user: '', from_email: '', from_name: '', notify_to: '', notify_leads: false, password: '' })
+const f = reactive({ host: '', port: 465, security: 'ssl', user: '', from_email: '', from_name: '', notify_to: '', notify_leads: false, confirm_customer: false, password: '' })
 const hasPass = ref(false)
 const busy = ref(false)
 const testTo = ref('')
@@ -47,8 +48,8 @@ void a
 
 <template>
   <form class="panel" @submit.prevent="save">
-    <h2>Máy chủ gửi thư (SMTP)</h2>
-    <p class="sub">Dùng để website gửi email (ví dụ báo cho bạn khi có yêu cầu mới). Hiện đã tích hợp sẵn; bạn nhập mật khẩu hộp thư <b>hello@3rdhubvietnam.tech</b> rồi gửi thử để kiểm tra.</p>
+    <h2>Email</h2>
+    <p class="sub">Website gửi email qua hộp thư <b>hello@3rdhubvietnam.tech</b>: chuyển tiếp cho đội ngũ khi có người đăng ký và gửi thư xác nhận cho khách. Nhập mật khẩu hộp thư, bấm Lưu rồi Gửi thử.</p>
     <div class="grid g2">
       <label class="f">Máy chủ SMTP<input v-model="f.host" type="text" autocomplete="off"><small>Theo thông tin iNET: mail.3rdhubvietnam.tech</small></label>
       <label class="f">Cổng<input v-model.number="f.port" type="number" min="1" max="65535"><small>465 (SSL) hoặc 587 (STARTTLS)</small></label>
@@ -60,9 +61,11 @@ void a
       <label class="f">Mật khẩu<input v-model="f.password" type="password" autocomplete="new-password" :placeholder="hasPass ? 'Đã lưu (mã hoá). Để trống để giữ nguyên' : 'Nhập mật khẩu hộp thư'"><small>Chỉ nhập mật khẩu của hộp thư gửi thư. Không dùng mật khẩu quản trị tên miền.</small></label>
       <label class="f">Email người gửi<input v-model="f.from_email" type="email"></label>
       <label class="f">Tên người gửi<input v-model="f.from_name" type="text"></label>
-      <label class="f">Email nhận thông báo<input v-model="f.notify_to" type="email"><small>Để trống thì gửi về email người gửi</small></label>
+      <label class="f">Email nhận thông báo (chuyển tiếp)<input v-model="f.notify_to" type="text" placeholder="sale@congty.vn, giamdoc@gmail.com"><small>Nhiều email cách nhau bởi dấu phẩy (tối đa 10). Để trống thì gửi về email người gửi</small></label>
     </div>
-    <label style="display:flex;gap:10px;align-items:center;margin-top:14px;font-weight:800"><input v-model="f.notify_leads" type="checkbox">Gửi email báo cho tôi khi có yêu cầu mới từ website</label>
+    <label style="display:flex;gap:10px;align-items:center;margin-top:14px;font-weight:800"><input v-model="f.notify_leads" type="checkbox">Chuyển tiếp email cho đội ngũ khi có người đăng ký trên website</label>
+    <label style="display:flex;gap:10px;align-items:center;margin-top:8px;font-weight:800"><input v-model="f.confirm_customer" type="checkbox">Gửi email xác nhận (giao diện đẹp, theo ngôn ngữ khách dùng) cho khách đăng ký có để lại email</label>
+    <p class="sub" style="margin:10px 0 0">Xem mẫu thư: <a :href="'/api/admin/email-preview?kind=customer'" target="_blank" rel="noopener">thư gửi khách</a> · <a :href="'/api/admin/email-preview?kind=customer-en'" target="_blank" rel="noopener">bản tiếng Anh</a> · <a :href="'/api/admin/email-preview?kind=staff'" target="_blank" rel="noopener">thư báo đội ngũ</a></p>
     <div class="bar" style="margin-top:16px">
       <button class="btn" type="submit" :disabled="busy">Lưu cấu hình</button>
       <button v-if="hasPass" class="btn gh" type="button" :disabled="busy" @click="clearPass">Xoá mật khẩu đã lưu</button>
@@ -78,4 +81,5 @@ void a
       <button class="btn" type="button" :disabled="busy || !testTo" @click="test">Gửi thử</button>
     </div>
   </div>
+  <ZaloPanel />
 </template>
