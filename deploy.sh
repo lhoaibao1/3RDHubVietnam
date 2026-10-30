@@ -267,6 +267,9 @@ server {
     listen [::]:80;
     server_name $DOMAIN www.$DOMAIN;
 
+    # một địa chỉ duy nhất cho Google: www.<tên miền> chuyển hẳn (301) về <tên miền>
+    if (\$host = www.$DOMAIN) { return 301 https://$DOMAIN\$request_uri; }
+
     root $WEBROOT;
     index index.html;
     charset utf-8;
