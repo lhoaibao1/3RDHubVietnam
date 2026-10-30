@@ -48,7 +48,7 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
   const camera = new T.PerspectiveCamera(o.fov || 30, 1, 0.5, 400)
 
   let W = 1, H = 1
-  let rt = new T.WebGLMultisampleRenderTarget(2, 2, { format: T.RGBAFormat }); rt.samples = 4
+  let rt = new T.WebGLMultisampleRenderTarget(2, 2, { format: T.RGBAFormat }); rt.samples = dpr() >= 1.75 ? 2 : 4
   const composer = new EffectComposer(R, rt)
   composer.addPass(new RenderPass(scene, camera))
   const bloom = new UnrealBloomPass(new T.Vector2(2, 2), o.bloom == null ? 0.85 : o.bloom, 0.65, 0.22)
@@ -70,6 +70,7 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
     const pr = dpr()
     R.setPixelRatio(pr); R.setSize(W, H, false)
     composer.setPixelRatio(pr); composer.setSize(W, H)
+    bloom.setSize(Math.round(W * pr * 0.5), Math.round(H * pr * 0.5))
     camera.aspect = W / H
     if (W > 900 && o.offsetX !== 0) camera.setViewOffset(W, H, -W * (o.offsetX == null ? 0.17 : o.offsetX), 0, W, H); else camera.clearViewOffset()
     camera.updateProjectionMatrix()

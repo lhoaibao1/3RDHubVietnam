@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { okUrl } from '@/lib/content'
 import { useSite } from '@/stores/site'
 
 const site = useSite()
@@ -13,10 +12,9 @@ const site = useSite()
     <div class="plist">
       <div class="mq">
         <template v-for="copy in 2" :key="copy">
-          <a v-for="p in site.partners" :key="copy + p.name" :href="okUrl(p.url)" target="_blank" rel="noopener" :aria-label="p.name" :aria-hidden="copy === 2 ? 'true' : undefined" :tabindex="copy === 2 ? -1 : undefined">
+          <div v-for="p in site.partners" :key="copy + p.name" class="pt" :aria-hidden="copy === 2 ? 'true' : undefined">
             <span class="lg"><img v-if="p.logo" :src="p.logo" :alt="p.name"><b v-else>{{ p.name }}</b></span>
-            <small>{{ site.pick(p.group) }}</small>
-          </a>
+          </div>
         </template>
       </div>
     </div>

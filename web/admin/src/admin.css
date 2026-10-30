@@ -146,3 +146,7 @@ textarea.tall{min-height:420px;overflow:auto;line-height:1.55;font-size:14px}
 .scene b{font-weight:900;font-size:15px}.scene.on b::after{content:" ✓";color:var(--or-d)}
 .scene small{color:var(--ink2);font-weight:600;line-height:1.4}
 .scene .btn{align-self:flex-start;margin-top:auto}
+
+.side nav .sec{margin:14px 12px 4px;font-size:11.5px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);opacity:.8}
+.side nav{overflow:auto}
+.side nav button{padding:9px 12px}

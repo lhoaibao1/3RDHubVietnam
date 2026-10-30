@@ -5,7 +5,7 @@ import CountUp from '@/components/CountUp.vue'
 import Page3D from '@/components/Page3D.vue'
 import PageCta from '@/components/PageCta.vue'
 import { usePageFx } from '@/composables/usePageFx'
-import { okUrl, type Partner } from '@/lib/content'
+import type { Partner } from '@/lib/content'
 import { useSite } from '@/stores/site'
 
 const site = useSite()
@@ -49,9 +49,9 @@ const nOther = computed(() => partners.value.length - nBank.value - nFin.value)
       <div v-for="g in groups" :key="g.label.vi" class="pgrp">
         <h3>{{ site.pick(g.label) }}</h3>
         <div class="pg2">
-          <a v-for="p in g.items" :key="p.name" :href="okUrl(p.url)" target="_blank" rel="noopener">
-            <span class="lg"><img v-if="p.logo" :src="p.logo" alt=""></span><b>{{ p.name }}</b><small>{{ site.pick(p.group) }}</small>
-          </a>
+          <div v-for="p in g.items" :key="p.name" class="pt">
+            <span class="lg"><img v-if="p.logo" :src="p.logo" :alt="p.name"><b v-else>{{ p.name }}</b></span>
+          </div>
         </div>
       </div>
     </div>

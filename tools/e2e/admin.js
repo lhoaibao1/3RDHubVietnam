@@ -25,7 +25,7 @@ const assert = require('assert');
   await p.screenshot({ path: '' + (process.env.OUT || '/tmp') + '/adm_dash.png' });
 
   // sửa chữ
-  await p.click('button[data-tab=text]');
+  await p.click('button[data-tab=chrome]');
   await p.fill('input[type=search]', 'Đăng ký ngay');
   await p.waitForSelector('.trow');
   const first = p.locator('.trow').first();
@@ -50,15 +50,17 @@ const assert = require('assert');
   await p.click('.savebar .save'); await p.waitForSelector('.savebar:not(.on)', { state: 'attached' });
   ok('thêm hỏi đáp');
 
-  // cài đặt
-  await p.click('button[data-tab=settings]');
+  // liên hệ, giao diện 3D, cài đặt chung: mỗi việc một tab
   const F = (label) => p.locator('label.f', { hasText: label }).locator('input,textarea').first();
+  await p.click('button[data-tab=contact]');
   await F('Số hotline (hiển thị)').fill('(+84) 900 111 222');
   await F('Số hotline (để bấm gọi)').fill('+84900111222');
+  await p.click('button[data-tab=look]');
+  await p.click('.scene:has-text("Nhà máy tự động") .pick');
+  await p.click('button[data-tab=settings]');
   await F('Facebook').fill('https://facebook.com/3rdhub');
   await F('Tên công ty').fill('Công ty Thử Nghiệm');
   await F('Mã Google Analytics').fill('G-ABCDE12345');
-  await p.click('.scene:has-text("Nhà máy tự động") .pick');
   await p.click('.savebar .save'); await p.waitForSelector('.savebar:not(.on)', { state: 'attached' });
   ok('lưu cài đặt');
   await p.screenshot({ path: '' + (process.env.OUT || '/tmp') + '/adm_settings.png' });

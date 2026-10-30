@@ -15,13 +15,13 @@ export interface Hero {
 
 export function createHero(canvas: HTMLCanvasElement, tagEl: HTMLElement, cb: { onTag(k: number, label: string): void }): Hero {
   var R: any, scene: any, cam: any, W = 1, H = 1, anim: any[] = [], stations: any[] = [], curve: any, progMesh: any, coin: any
-  R=new T.WebGLRenderer({canvas:canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
+  R=new T.WebGLRenderer({canvas:canvas,antialias:dpr()<1.75,alpha:true,powerPreference:'high-performance'});
   R.setClearColor(0,0);R.outputEncoding=T.sRGBEncoding;R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=getMode()==='dark'?1.05:1.18;
   R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;R.shadowMap.autoUpdate=false;
   scene=new T.Scene();
   cam=new T.OrthographicCamera(-10,10,10,-10,.1,400);
   var hemi=new T.HemisphereLight(0xffffff,0xE9DFCF,.5);scene.add(hemi);scene.environment=ENV(getMode());
-  var sun=new T.DirectionalLight(0xFFF4E6,1.6);sun.position.set(-30,60,30);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+  var sun=new T.DirectionalLight(0xFFF4E6,1.6);sun.position.set(-30,60,30);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);
   var sc=sun.shadow.camera;sc.left=-55;sc.right=55;sc.top=55;sc.bottom=-55;sc.near=1;sc.far=200;sun.shadow.bias=-.0004;sun.shadow.normalBias=.02;sun.shadow.radius=6;scene.add(sun);scene.add(sun.target);
   var fill=new T.DirectionalLight(0xDDE6FF,.35);fill.position.set(40,20,-20);scene.add(fill);
   var rimA=new T.DirectionalLight(0xFF8A4C,0);rimA.position.set(-40,14,-30);scene.add(rimA);var rimB=new T.DirectionalLight(0x38D6FF,0);rimB.position.set(44,12,-34);scene.add(rimB);

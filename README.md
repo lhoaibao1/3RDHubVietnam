@@ -93,17 +93,13 @@ Thử `deploy.sh` mà không đụng hệ thống thật: `PGHOST=<thư mục so
 
 ## CMS làm được gì
 
-- **Nội dung chữ**: sửa hơn 450 đoạn chữ (tiếng Việt và English) trên trang chủ và 6 trang chi tiết; "Về gốc" từng đoạn.
-- **Hỏi đáp**: thêm, sửa, xoá, sắp xếp, chia nhóm; chọn câu nào hiện ở trang chủ.
-- **Đối tác**: thêm, sửa, xoá, sắp xếp, tải logo.
-- **Trang pháp lý**: sửa Điều khoản sử dụng và Chính sách bảo mật (VI/EN, có xem trước). Hai trang nằm riêng trên website: `/dieu-khoan`, `/bao-mat`.
-- **Yêu cầu khách**: form liên hệ lưu vào CMS (trạng thái, ghi chú, xuất CSV).
-- **Kiểu cảnh 3D** (trong Cài đặt): chọn một trong 8 kiểu cho trang chủ và các trang con (Cổ điển, 3D đẳng cự, Nhà máy tự động, Hệ sinh thái số, Trạm không gian, Thành phố khối, Bản vẽ kỹ thuật, Thành phố Neon), có ảnh xem trước và nút "Xem thử" (mở website với `?scene=<kiểu>`, chỉ trên trình duyệt của bạn).
-- **Cài đặt**: thông tin công ty (tên, mã số thuế, địa chỉ, giờ làm việc, email, hotline), link đăng ký, mạng xã hội, tiêu đề/mô tả SEO,
-  mã Google Analytics, đổi mật khẩu.
-- **Lịch sử**: mỗi lần lưu là một phiên bản (giữ 60 bản gần nhất), khôi phục bằng một cú bấm.
+Thanh bên chia theo từng trang của website, mỗi trang một tab có chữ và dữ liệu riêng của trang đó:
 
-Hình ảnh, nội dung cảnh 3D và bố cục là phần thiết kế (nằm trong `web/`), CMS chỉ chọn *kiểu* cảnh 3D. Mã các kiểu mới ở `web/src/three/styles/`: `skin.ts` (phong cách: ánh sáng, nền, vật liệu), `parts.ts` (các chi tiết 3D), `concepts.ts` (cảnh riêng cho từng trang: trang chủ, Mô hình, Advertiser, Công nghệ, Đối tác, Hỏi đáp, Liên hệ), `host.ts` (ghép cảnh với skin). Thêm một kiểu mới = thêm một hàm skin và một dòng trong `sceneTypes.ts` + danh sách kiểu của backend (`sceneStyles` trong `server/content.go`).
+- **Các trang website**: Trang chủ, Mô hình, Advertiser (đưa chiến dịch lên mạng lưới publisher), Sản phẩm (hệ thống affiliate riêng, bản quyền 3RDHub), Công nghệ, Đối tác, Hỏi đáp, Liên hệ, Pháp lý. Mỗi tab sửa hơn 450 đoạn chữ (Tiếng Việt và English, "Về gốc" từng đoạn); riêng Đối tác sửa danh sách logo (website chỉ hiện logo, không link), Hỏi đáp sửa câu hỏi và chọn câu hiện ở trang chủ, Liên hệ sửa email, hotline, giờ làm việc, Pháp lý sửa Điều khoản và Chính sách bảo mật (có xem trước; hai trang nằm riêng ở `/dieu-khoan`, `/bao-mat`).
+- **Toàn website**: *Menu và chân trang* (chữ dùng chung, thông báo cookie), *Giao diện 3D* (chọn một trong 8 kiểu cảnh, có ảnh xem trước và nút "Xem thử" mở website với `?scene=<kiểu>`, chỉ trên trình duyệt của bạn), *Cài đặt chung* (tên công ty, mã số thuế, địa chỉ, link đăng ký, mạng xã hội, SEO, mã Google Analytics, đổi mật khẩu).
+- **Vận hành**: *Yêu cầu khách* (form liên hệ: trạng thái, ghi chú, xuất CSV) và *Lịch sử* (mỗi lần lưu là một phiên bản, giữ 60 bản gần nhất, khôi phục bằng một cú bấm).
+
+Hình ảnh, nội dung cảnh 3D và bố cục là phần thiết kế (nằm trong `web/`), CMS chỉ chọn *kiểu* cảnh 3D. Mã các kiểu mới ở `web/src/three/styles/`: `skin.ts` (phong cách: ánh sáng, nền, vật liệu), `parts.ts` (các chi tiết 3D), `concepts.ts` (cảnh riêng cho từng trang: trang chủ, Mô hình, Advertiser, Sản phẩm, Công nghệ, Đối tác, Hỏi đáp, Liên hệ), `host.ts` (ghép cảnh với skin). Thêm một kiểu mới = thêm một hàm skin và một dòng trong `sceneTypes.ts` + danh sách kiểu của backend (`sceneStyles` trong `server/content.go`).
 
 ## Bảo mật (tóm tắt)
 

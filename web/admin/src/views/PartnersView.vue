@@ -11,7 +11,7 @@ const uid = () => 'p' + Math.random().toString(36).slice(2, 8)
 
 function add() {
   const last = ps.value[ps.value.length - 1]
-  ps.value.push({ id: uid(), name: '', url: '', logo: '', group: last ? a.cloneOf(last.group) : { vi: 'Công ty tài chính', en: 'Finance company' } })
+  ps.value.push({ id: uid(), name: '', logo: '', group: last ? a.cloneOf(last.group) : { vi: 'Công ty tài chính', en: 'Finance company' } })
 }
 function restore() {
   if (confirm('Khôi phục danh sách đối tác mặc định? (chưa lưu cho đến khi bạn bấm Lưu)')) a.content!.partners = a.cloneOf(a.defaults!.partners)
@@ -51,7 +51,7 @@ const en = (p: { vi: string; en?: string }) => p.en ?? ''
   <div class="bar">
     <button class="btn" type="button" @click="add">+ Thêm đối tác</button>
     <button class="btn gh" type="button" @click="restore">Khôi phục mặc định</button>
-    <span class="sub" style="margin:0">{{ ps.length }} đối tác. Thứ tự ở đây là thứ tự hiện trên website (trong từng nhóm).</span>
+    <span class="sub" style="margin:0">{{ ps.length }} đối tác. Website chỉ hiện logo (không có link). Thứ tự ở đây là thứ tự hiện trên website (trong từng nhóm).</span>
   </div>
   <datalist id="groups"><option v-for="g in groups" :key="g" :value="g" /></datalist>
   <div class="plist">
@@ -66,7 +66,6 @@ const en = (p: { vi: string; en?: string }) => p.en ?? ''
         <button class="ib" type="button" title="Xoá" @click="remove(i)">✕</button>
       </div>
       <label class="f">Tên đối tác<input v-model="p.name" type="text"></label>
-      <label class="f">Link website<input v-model="p.url" type="url" placeholder="https://"></label>
       <div class="row2">
         <label class="f">Nhóm (VI)<input v-model="p.group.vi" type="text" list="groups" @input="groupChanged(p)"></label>
         <label class="f">Nhóm (EN)<input :value="en(p.group)" type="text" @input="p.group.en = ($event.target as HTMLInputElement).value"></label>

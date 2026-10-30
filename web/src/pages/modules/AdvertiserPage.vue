@@ -15,41 +15,30 @@ usePageFx(root)
 <section ref="root" class="w pg" id="p-advertiser">
   <div class="pgh">
     <div>
-      <h1>Chạy chiến dịch, hoặc <span class="o">sở hữu cả hệ thống.</span></h1>
-      <p class="lead">3RDVN Technology có ba cách làm việc với Advertiser: đưa chiến dịch lên mạng lưới 3RDHub, xây nền tảng affiliate mang thương hiệu riêng, hoặc nhận bản quyền chính hệ thống 3RDHub.</p>
-      <div class="acts"><RouterLink class="btn or" to="/lien-he">Nhận tư vấn</RouterLink><RouterLink class="btn gh" to="/cong-nghe">Xem công nghệ</RouterLink></div></div>
+      <h1>Chạy chiến dịch, <span class="o">chỉ trả cho kết quả.</span></h1>
+      <p class="lead">Advertiser đưa sản phẩm lên 3RDHub, đặt mức hoa hồng và nhận hồ sơ từ mạng lưới publisher. Mỗi lượt bấm, hồ sơ và đơn đều được ghi nhận để hai bên đối soát minh bạch.</p>
+      <div class="acts"><RouterLink class="btn or" to="/lien-he">Gửi chiến dịch</RouterLink><RouterLink class="btn gh" to="/mo-hinh">Xem mô hình</RouterLink></div></div>
     <Page3D id="advertiser" tint="#7B4DFF"><div class="ft" style="left:18px;top:18px"><b>Mở thẻ tín dụng</b><span>CPL · Đang chạy</span></div><div class="ft" style="right:18px;bottom:18px"><b>Báo cáo theo kênh</b><span>Click, lead, đơn mỗi ngày</span></div></Page3D>
   </div>
 
-  <div class="ps"><div class="k2">Ba gói hợp tác</div><h2>Chọn cách phù hợp với bạn</h2>
+  <div class="ps"><div class="k2">Vì sao chọn 3RDHub</div><h2>Khách hàng đến từ mạng lưới publisher</h2>
     <div class="g3">
-      <article class="cd"><span class="ic"><Icon name="rocket" /></span><h3>Chạy chiến dịch trên 3RDHub</h3><p>Phù hợp khi bạn cần khách hàng ngay mà chưa muốn xây hệ thống.</p><ul class="ck"><li>Tiếp cận mạng lưới publisher sẵn có</li><li>Chỉ trả cho kết quả được duyệt</li><li>Báo cáo click, lead, đơn theo kênh</li></ul></article>
-      <article class="cd hl"><span class="ic"><Icon name="blocks" /></span><h3>Xây hệ thống affiliate riêng</h3><p>Phù hợp khi bạn muốn tự quản lý mạng lưới cộng tác viên dưới thương hiệu của mình.</p><ul class="ck"><li>Website publisher và trang quản trị riêng</li><li>Tính năng theo nghiệp vụ của bạn</li><li>Bàn giao, hướng dẫn vận hành</li></ul></article>
-      <article class="cd"><span class="ic"><Icon name="package" /></span><h3>Nhận bản quyền 3RDHub</h3><p>Phù hợp khi bạn muốn triển khai nhanh trên nền tảng đã chạy thực tế.</p><ul class="ck"><li>Dùng lại hệ thống 3RDHub đang vận hành</li><li>Đổi thương hiệu, cấu hình theo bạn</li><li>Lộ trình nâng cấp theo giai đoạn</li></ul></article>
+      <article class="cd"><span class="ic"><Icon name="rocket" /></span><h3>Mạng lưới sẵn có</h3><p>Tiếp cận ngay publisher trên TikTok, Facebook, Zalo và website.</p><ul class="ck"><li>Không cần tự tuyển cộng tác viên</li><li>Publisher đã được định danh</li><li>Mở rộng thêm kênh khi cần</li></ul></article>
+      <article class="cd hl"><span class="ic"><Icon name="target" /></span><h3>Chỉ trả cho kết quả</h3><p>Chi phí gắn với hồ sơ được duyệt, không phải lượt hiển thị.</p><ul class="ck"><li>Đặt hoa hồng theo CPL, CPS hoặc CPA</li><li>Hồ sơ không đạt thì không tính phí</li><li>Kiểm soát ngân sách theo chiến dịch</li></ul></article>
+      <article class="cd"><span class="ic"><Icon name="chart-column" /></span><h3>Số liệu minh bạch</h3><p>Dữ liệu theo từng kênh, từng Sub ID và từng hồ sơ.</p><ul class="ck"><li>Báo cáo click, lead, đơn mỗi ngày</li><li>Postback trạng thái về hệ thống của bạn</li><li>Đối soát cuối kỳ rõ ràng</li></ul></article>
     </div></div>
 
-  <div class="ps"><div class="k2">So sánh</div><h2>Khác nhau ở đâu</h2>
-    <div class="cmpw"><table class="cmp">
-      <thead><tr><th></th><th>Chạy chiến dịch</th><th>Hệ thống riêng</th><th>Bản quyền 3RDHub</th></tr></thead>
-      <tbody>
-        <tr><th>Mạng lưới publisher 3RDHub</th><td data-l="Chạy chiến dịch" class="y">Có</td><td data-l="Hệ thống riêng">Tự xây</td><td data-l="Bản quyền 3RDHub">Tự xây</td></tr>
-        <tr><th>Thương hiệu riêng</th><td data-l="Chạy chiến dịch">Không</td><td data-l="Hệ thống riêng" class="y">Có</td><td data-l="Bản quyền 3RDHub" class="y">Có</td></tr>
-        <tr><th>Website publisher và trang quản trị</th><td data-l="Chạy chiến dịch">Dùng của 3RDHub</td><td data-l="Hệ thống riêng" class="y">Riêng của bạn</td><td data-l="Bản quyền 3RDHub" class="y">Riêng của bạn</td></tr>
-        <tr><th>Postback, API cho đối tác</th><td data-l="Chạy chiến dịch" class="y">Có</td><td data-l="Hệ thống riêng" class="y">Có</td><td data-l="Bản quyền 3RDHub" class="y">Có</td></tr>
-        <tr><th>Tuỳ biến tính năng</th><td data-l="Chạy chiến dịch">Không</td><td data-l="Hệ thống riêng" class="y">Theo yêu cầu</td><td data-l="Bản quyền 3RDHub">Theo giai đoạn</td></tr>
-        <tr><th>Thời gian bắt đầu</th><td data-l="Chạy chiến dịch" class="y">Nhanh nhất</td><td data-l="Hệ thống riêng">Lâu nhất</td><td data-l="Bản quyền 3RDHub">Trung bình</td></tr>
-      </tbody></table></div>
-    <p class="note">Phạm vi và thời gian cụ thể được thống nhất khi tư vấn.</p></div>
-
-  <div class="ps"><div class="k2">Ba tầng hệ thống</div><h2>Bạn nhận được gì khi xây hệ thống</h2>
+  <div class="ps"><div class="k2">Hình thức hoa hồng</div><h2>Chọn cách tính phù hợp với sản phẩm</h2>
     <div class="g3">
-      <article class="cd"><span class="n">1</span><h3>Website cho cộng tác viên</h3><ul class="ck"><li>Trang danh sách chiến dịch</li><li>Đăng ký, định danh publisher</li><li>Tạo link, gắn Sub ID</li><li>Ví hoa hồng, yêu cầu rút</li><li>Báo mất đơn</li></ul></article>
-      <article class="cd"><span class="n">2</span><h3>Hệ thống quản trị</h3><ul class="ck"><li>Quản lý chiến dịch, mức hoa hồng</li><li>Báo cáo click, lead, đơn</li><li>Đối soát với đối tác</li><li>Chia hoa hồng, đội nhóm</li><li>Duyệt rút tiền, phân quyền</li></ul></article>
-      <article class="cd"><span class="n">3</span><h3>Kết nối đối tác</h3><ul class="ck"><li>Postback trạng thái đơn</li><li>API key riêng cho từng đối tác</li><li>Môi trường test tách biệt</li><li>Tài liệu API</li></ul></article>
+      <article class="cd"><span class="n t">CPL</span><h3>Theo hồ sơ hợp lệ</h3><p>Hợp với thẻ tín dụng và tài khoản số, nơi mỗi hồ sơ đạt điều kiện đã có giá trị.</p></article>
+      <article class="cd"><span class="n t">CPS</span><h3>Theo đơn thành công</h3><p>Hợp với khoản vay và bảo hiểm, tính khi giao dịch được duyệt.</p></article>
+      <article class="cd"><span class="n t">CPA</span><h3>Theo hành động thoả thuận</h3><p>Tính khi khách hoàn thành bước hai bên đã chốt, như kích hoạt thẻ hoặc giải ngân.</p></article>
     </div></div>
 
-  <div class="ps"><div class="k2">Quy trình</div><h2>Triển khai trong sáu bước</h2>
-    <ol class="steps6"><li><b>01</b><h3>Tư vấn</h3><p>Nghe sản phẩm, quy mô publisher và cách bạn muốn trả hoa hồng.</p></li><li><b>02</b><h3>Thiết kế</h3><p>Chốt luồng nghiệp vụ, giao diện và phạm vi tính năng.</p></li><li><b>03</b><h3>Lập trình</h3><p>Frontend Vue.js, backend Go, kết nối đối tác.</p></li><li><b>04</b><h3>Kiểm thử</h3><p>Chạy thử tracking và postback trên môi trường test.</p></li><li><b>05</b><h3>Bàn giao</h3><p>Tài liệu bàn giao, hướng dẫn đội vận hành.</p></li><li><b>06</b><h3>Nâng cấp</h3><p>Bổ sung tính năng theo từng giai đoạn.</p></li></ol></div>
+  <div class="ps"><div class="k2">Quy trình</div><h2>Từ chiến dịch đến hoa hồng</h2>
+    <ol class="steps6"><li><b>01</b><h3>Gửi chiến dịch</h3><p>Cung cấp sản phẩm, điều kiện duyệt hồ sơ và mức hoa hồng.</p></li><li><b>02</b><h3>Thiết lập</h3><p>Chúng tôi cấu hình chiến dịch, link và tracking.</p></li><li><b>03</b><h3>Chạy thử</h3><p>Kiểm tra click và postback trên môi trường test.</p></li><li><b>04</b><h3>Publisher chia sẻ</h3><p>Mạng lưới đưa sản phẩm tới khách hàng trên nhiều kênh.</p></li><li><b>05</b><h3>Duyệt hồ sơ</h3><p>Bạn duyệt hồ sơ, trạng thái cập nhật về 3RDHub.</p></li><li><b>06</b><h3>Đối soát</h3><p>Chốt số liệu và chia hoa hồng cho publisher.</p></li></ol></div>
+
+  <div class="ps"><div class="cta xs"><div><h2>Muốn tự vận hành mạng lưới affiliate?</h2><p>3RDVN Technology cũng xây hệ thống riêng và cấp bản quyền chính hệ thống 3RDHub.</p></div><RouterLink class="btn or" to="/san-pham">Xem sản phẩm</RouterLink></div></div>
 
   <PageCta />
 </section>

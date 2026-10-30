@@ -2,14 +2,85 @@
   "site": "https://3rdhubvietnam.tech",
   "name": "3RDHub Vietnam",
   "pages": {
-    "": { "title": "3RDHub Vietnam | Tiếp thị liên kết minh bạch từng đồng", "desc": "3RDHub Vietnam, nền tảng tiếp thị liên kết thuộc 3RDVN Technology. Mỗi lượt bấm, mỗi hồ sơ và mỗi đồng hoa hồng đều được ghi nhận.", "head": "Tiếp thị liên kết, minh bạch từng đồng.", "sub": "Nền tảng kết nối Advertiser tài chính với mạng lưới publisher.", "tint": "#FF6A2B", "shot": "/" },
-    "mo-hinh": { "title": "Mô hình hoạt động | 3RDHub Vietnam", "desc": "Một hồ sơ đi qua 3RDHub như thế nào: Advertiser, 3RDHub và publisher, hành trình năm bước, hình thức hoa hồng CPL, CPS, CPA và trạng thái đơn.", "head": "Một hồ sơ đi qua 3RDHub như thế nào.", "sub": "Advertiser, 3RDHub và publisher: mỗi bước đều có dữ liệu ghi lại.", "tint": "#FF6A2B", "shot": "/mo-hinh" },
-    "advertiser": { "title": "Dành cho Advertiser | 3RDHub Vietnam", "desc": "Chạy chiến dịch trên mạng lưới 3RDHub, xây nền tảng affiliate mang thương hiệu riêng hoặc nhận bản quyền hệ thống 3RDHub. So sánh ba gói hợp tác và quy trình triển khai.", "head": "Chạy chiến dịch, hoặc sở hữu cả hệ thống.", "sub": "Ba cách hợp tác với 3RDVN Technology.", "tint": "#7B4DFF", "shot": "/advertiser" },
-    "cong-nghe": { "title": "Công nghệ | 3RDHub Vietnam", "desc": "Kiến trúc phía sau mỗi lượt bấm: frontend Vue.js, backend Go, PostgreSQL. Luồng tracking, postback cho đối tác, API key, môi trường test và nhật ký.", "head": "Kiến trúc phía sau mỗi lượt bấm.", "sub": "Vue.js, Go, PostgreSQL: nhanh, ổn định, dễ mở rộng.", "tint": "#00ADD8", "shot": "/cong-nghe" },
-    "doi-tac": { "title": "Đối tác | 3RDHub Vietnam", "desc": "Các ngân hàng, công ty tài chính và mạng affiliate đang hợp tác cùng 3RDVN Technology, cùng quy trình kết nối đối tác.", "head": "Advertiser và đối tác đồng hành.", "sub": "Ngân hàng, công ty tài chính và mạng affiliate.", "tint": "#12A06A", "shot": "/doi-tac" },
-    "hoi-dap": { "title": "Hỏi đáp | 3RDHub Vietnam", "desc": "Câu hỏi thường gặp về publisher, hoa hồng và rút tiền, tracking và báo cáo, và hợp tác Advertiser trên 3RDHub Vietnam.", "head": "Câu hỏi thường gặp.", "sub": "Publisher, hoa hồng, tracking và Advertiser.", "tint": "#FFB238", "shot": "/hoi-dap" },
-    "lien-he": { "title": "Liên hệ | 3RDHub Vietnam", "desc": "Publisher đăng ký trực tiếp trên app. Advertiser gửi yêu cầu tư vấn, đội ngũ 3RDVN Technology phản hồi trong giờ làm việc.", "head": "Bạn là publisher hay Advertiser?", "sub": "Đăng ký ngay hoặc để lại yêu cầu tư vấn.", "tint": "#FF4D8D", "shot": "/lien-he" },
-    "dieu-khoan": { "title": "Điều khoản sử dụng | 3RDHub Vietnam", "desc": "Điều khoản sử dụng website 3RDHub Vietnam do Công ty TNHH Công nghệ 3RDVN vận hành.", "head": "Điều khoản sử dụng.", "sub": "3RDHub Vietnam", "tint": "#5B6279", "shot": "/" },
-    "bao-mat": { "title": "Chính sách bảo mật | 3RDHub Vietnam", "desc": "Cách 3RDHub Vietnam thu thập, sử dụng và bảo vệ dữ liệu cá nhân, theo Luật Bảo vệ dữ liệu cá nhân.", "head": "Chính sách bảo mật.", "sub": "3RDHub Vietnam", "tint": "#5B6279", "shot": "/" }
+    "": {
+      "title": "3RDHub Vietnam | Tiếp thị liên kết minh bạch từng đồng",
+      "desc": "3RDHub Vietnam, nền tảng tiếp thị liên kết thuộc 3RDVN Technology. Mỗi lượt bấm, mỗi hồ sơ và mỗi đồng hoa hồng đều được ghi nhận.",
+      "head": "Tiếp thị liên kết, minh bạch từng đồng.",
+      "sub": "Nền tảng kết nối Advertiser tài chính với mạng lưới publisher.",
+      "tint": "#FF6A2B",
+      "shot": "/"
+    },
+    "mo-hinh": {
+      "title": "Mô hình hoạt động | 3RDHub Vietnam",
+      "desc": "Một hồ sơ đi qua 3RDHub như thế nào: Advertiser, 3RDHub và publisher, hành trình năm bước, hình thức hoa hồng CPL, CPS, CPA và trạng thái đơn.",
+      "head": "Một hồ sơ đi qua 3RDHub như thế nào.",
+      "sub": "Advertiser, 3RDHub và publisher: mỗi bước đều có dữ liệu ghi lại.",
+      "tint": "#FF6A2B",
+      "shot": "/mo-hinh"
+    },
+    "advertiser": {
+      "title": "Dành cho Advertiser | 3RDHub Vietnam",
+      "desc": "Đưa chiến dịch lên mạng lưới publisher 3RDHub: chỉ trả cho kết quả, hoa hồng CPL, CPS, CPA, số liệu click, lead, đơn minh bạch và quy trình từ chiến dịch đến đối soát.",
+      "head": "Chạy chiến dịch, chỉ trả cho kết quả.",
+      "sub": "Mạng lưới publisher sẵn có, số liệu minh bạch.",
+      "tint": "#7B4DFF",
+      "shot": "/advertiser"
+    },
+    "san-pham": {
+      "title": "Sản phẩm | 3RDHub Vietnam",
+      "desc": "Hệ thống affiliate riêng mang thương hiệu của bạn hoặc bản quyền hệ thống 3RDHub: website cho cộng tác viên, hệ thống quản trị, kết nối đối tác, triển khai trong sáu bước.",
+      "head": "Hệ thống affiliate riêng, mang thương hiệu của bạn.",
+      "sub": "Xây theo yêu cầu hoặc nhận bản quyền 3RDHub.",
+      "tint": "#1BA6D9",
+      "shot": "/san-pham"
+    },
+    "cong-nghe": {
+      "title": "Công nghệ | 3RDHub Vietnam",
+      "desc": "Kiến trúc phía sau mỗi lượt bấm: frontend Vue.js, backend Go, PostgreSQL. Luồng tracking, postback cho đối tác, API key, môi trường test và nhật ký.",
+      "head": "Kiến trúc phía sau mỗi lượt bấm.",
+      "sub": "Vue.js, Go, PostgreSQL: nhanh, ổn định, dễ mở rộng.",
+      "tint": "#00ADD8",
+      "shot": "/cong-nghe"
+    },
+    "doi-tac": {
+      "title": "Đối tác | 3RDHub Vietnam",
+      "desc": "Các ngân hàng, công ty tài chính và mạng affiliate đang hợp tác cùng 3RDVN Technology, cùng quy trình kết nối đối tác.",
+      "head": "Advertiser và đối tác đồng hành.",
+      "sub": "Ngân hàng, công ty tài chính và mạng affiliate.",
+      "tint": "#12A06A",
+      "shot": "/doi-tac"
+    },
+    "hoi-dap": {
+      "title": "Hỏi đáp | 3RDHub Vietnam",
+      "desc": "Câu hỏi thường gặp về publisher, hoa hồng và rút tiền, tracking và báo cáo, và hợp tác Advertiser trên 3RDHub Vietnam.",
+      "head": "Câu hỏi thường gặp.",
+      "sub": "Publisher, hoa hồng, tracking và Advertiser.",
+      "tint": "#FFB238",
+      "shot": "/hoi-dap"
+    },
+    "lien-he": {
+      "title": "Liên hệ | 3RDHub Vietnam",
+      "desc": "Publisher đăng ký trực tiếp trên app. Advertiser gửi yêu cầu tư vấn, đội ngũ 3RDVN Technology phản hồi trong giờ làm việc.",
+      "head": "Bạn là publisher hay Advertiser?",
+      "sub": "Đăng ký ngay hoặc để lại yêu cầu tư vấn.",
+      "tint": "#FF4D8D",
+      "shot": "/lien-he"
+    },
+    "dieu-khoan": {
+      "title": "Điều khoản sử dụng | 3RDHub Vietnam",
+      "desc": "Điều khoản sử dụng website 3RDHub Vietnam do Công ty TNHH Công nghệ 3RDVN vận hành.",
+      "head": "Điều khoản sử dụng.",
+      "sub": "3RDHub Vietnam",
+      "tint": "#5B6279",
+      "shot": "/"
+    },
+    "bao-mat": {
+      "title": "Chính sách bảo mật | 3RDHub Vietnam",
+      "desc": "Cách 3RDHub Vietnam thu thập, sử dụng và bảo vệ dữ liệu cá nhân, theo Luật Bảo vệ dữ liệu cá nhân.",
+      "head": "Chính sách bảo mật.",
+      "sub": "3RDHub Vietnam",
+      "tint": "#5B6279",
+      "shot": "/"
+    }
   }
 }

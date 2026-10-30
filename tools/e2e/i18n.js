@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
   p.on('pageerror', e => errs.push(String(e)));
   await p.goto(base + '/', { waitUntil: 'load' });
   await p.click('.langbtn'); await p.waitForTimeout(700);
-  for (const path of ['/', '/mo-hinh', '/advertiser', '/cong-nghe', '/doi-tac', '/hoi-dap', '/lien-he', '/dieu-khoan', '/bao-mat']) {
+  for (const path of ['/', '/mo-hinh', '/advertiser', '/san-pham', '/cong-nghe', '/doi-tac', '/hoi-dap', '/lien-he', '/dieu-khoan', '/bao-mat']) {
     await p.goto(base + path, { waitUntil: 'load' });
     await p.waitForTimeout(800);
     const left = await p.evaluate(() => {

@@ -37,7 +37,7 @@ p{margin:20px 0 0;font-size:27px;line-height:1.35;color:#5B6279;font-weight:700;
 (async () => {
   const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
-  await ctx.addInitScript(() => { localStorage.setItem('3rd-theme', 'light'); localStorage.setItem('3rd-lang', 'vi'); });
+  await ctx.addInitScript(() => { localStorage.setItem('3rd-theme', 'light'); localStorage.setItem('3rd-lang', 'vi'); localStorage.setItem('3rd-consent', JSON.stringify({ analytics: false, at: 1 })); });
   const shots = {};
   for (const [slug, p] of Object.entries(seo.pages)) {
     if (!shots[p.shot]) {

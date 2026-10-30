@@ -12,7 +12,7 @@ function boot() {
 
 /* ---------- 3D cho từng trang module: camera phối cảnh, một renderer dùng chung, canvas chuyển theo trang đang mở ---------- */
   var cv=document.createElement('canvas');cv.className='glp';cv.setAttribute('aria-hidden','true');
-  var R=new T.WebGLRenderer({canvas:cv,antialias:true,alpha:true});
+  var R=new T.WebGLRenderer({canvas:cv,antialias:dpr()<1.75,alpha:true});
   R.setClearColor(0,0);R.outputEncoding=T.sRGBEncoding;R.toneMapping=T.ACESFilmicToneMapping;R.toneMappingExposure=getMode()==='dark'?1.0:1.05;R.shadowMap.enabled=true;R.shadowMap.type=T.PCFSoftShadowMap;R.shadowMap.autoUpdate=false;
   var cam=new T.PerspectiveCamera(30,1,.5,400),W=1,H=1,vis=false,cur:any=null,SC:any={},clk=new T.Clock(),UPV=new T.Vector3(0,1,0),px=0,py=0,tx0=0,ty0=0;
   function V(x?:any,y?:any,z?:any){return new T.Vector3(x,y,z)}
@@ -27,7 +27,7 @@ function boot() {
     o.s.environment=ENV(m);o.s.fog.color.copy(bgCol())}
   function base(){var s=new T.Scene();s.fog=new T.Fog(bgCol(),30,90);
     var hemi=new T.HemisphereLight(0xffffff,0xE6DCCB,.38);s.add(hemi);
-    var l=new T.DirectionalLight(0xFFF1DC,1.75);l.position.set(-14,26,18);l.castShadow=true;l.shadow.mapSize.set(2048,2048);var c=l.shadow.camera;c.left=-22;c.right=22;c.top=22;c.bottom=-22;c.near=1;c.far=80;l.shadow.radius=7;l.shadow.bias=-.0005;l.shadow.normalBias=.03;s.add(l);
+    var l=new T.DirectionalLight(0xFFF1DC,1.75);l.position.set(-14,26,18);l.castShadow=true;l.shadow.mapSize.set(1024,1024);var c=l.shadow.camera;c.left=-22;c.right=22;c.top=22;c.bottom=-22;c.near=1;c.far=80;l.shadow.radius=7;l.shadow.bias=-.0005;l.shadow.normalBias=.03;s.add(l);
     var rim=new T.DirectionalLight(0xCFE0FF,.55);rim.position.set(18,10,-16);s.add(rim);
     var rim2=new T.DirectionalLight(0xFFE9D2,.25);rim2.position.set(-20,8,-14);s.add(rim2);
     var fl=new T.Mesh(new T.PlaneGeometry(300,300),new T.ShadowMaterial({opacity:.2}));fl.rotation.x=-Math.PI/2;fl.receiveShadow=true;s.add(fl);
@@ -200,7 +200,8 @@ function boot() {
     cam.aspect=asp;if(!mob)cam.setViewOffset(W,H,-W*.21,0,W,H);else cam.clearViewOffset();cam.near=Math.max(.5,dist-40);cam.far=dist+60;cam.updateProjectionMatrix();
     cur.s.fog.near=dist-2;cur.s.fog.far=dist+cur.R*3.2;
     R.render(cur.s,cam)})();
-  var TINT={'mo-hinh':0xFF6A2B,'advertiser':0x7B4DFF,'cong-nghe':0x00ADD8,'doi-tac':0x12A06A,'hoi-dap':0xFFB238,'lien-he':0xFF4D8D};
+  BUILD['san-pham']=BUILD['advertiser'];
+  var TINT={'san-pham':0x1BA6D9,'mo-hinh':0xFF6A2B,'advertiser':0x7B4DFF,'cong-nghe':0x00ADD8,'doi-tac':0x12A06A,'hoi-dap':0xFFB238,'lien-he':0xFF4D8D};
   function show(slot?:any,id?:any,partners?:any){if(!BUILD[id])return false;PARTNERS=partners;slot.insertBefore(cv,slot.firstChild);
     if(!SC[id]){var o=base();BUILD[id](o);decor(o,TINT[id]||0xFF6A2B);o.a.forEach(function(q){var f=q.bob||q.obj;if(f)f.traverse(function(n){n.castShadow=false})});SC[id]=o}
     cur=SC[id];cur.s.fog.color.copy(bgCol());cur.t0=clk.getElapsedTime();size();return true}

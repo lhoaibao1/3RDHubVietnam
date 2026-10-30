@@ -4,7 +4,7 @@ export type Lang = 'vi' | 'en'
 export interface Pair { vi: string; en?: string }
 export interface OvItem { vi?: string; en?: string }
 export interface Faq { id: string; cat: Pair; q: Pair; a: Pair; home?: boolean }
-export interface Partner { id?: string; name: string; url: string; logo: string; group: Pair }
+export interface Partner { id?: string; name: string; url?: string; logo: string; group: Pair }
 export interface LegalDoc { title: Pair; updated: Pair; body: Pair }
 export interface Content {
   v?: number
@@ -33,13 +33,14 @@ export const DEF_SETTINGS: Record<string, string> = {
   site_title: '', meta_description: '', analytics_id: '', scene_style: 'classic',
 }
 
-export const SLUGS = ['mo-hinh', 'advertiser', 'cong-nghe', 'doi-tac', 'hoi-dap', 'lien-he'] as const
+export const SLUGS = ['mo-hinh', 'advertiser', 'san-pham', 'cong-nghe', 'doi-tac', 'hoi-dap', 'lien-he'] as const
 export type Slug = (typeof SLUGS)[number]
 export const LEGAL_SLUGS: Record<string, 'terms' | 'privacy'> = { 'dieu-khoan': 'terms', 'bao-mat': 'privacy' }
 
 export const NAV: [Slug, string, string][] = [
   ['mo-hinh', 'Mô hình', 'Hành trình một hồ sơ, hình thức hoa hồng, trạng thái đơn'],
-  ['advertiser', 'Advertiser', 'Ba gói hợp tác và quy trình triển khai'],
+  ['advertiser', 'Advertiser', 'Đưa chiến dịch lên mạng lưới publisher'],
+  ['san-pham', 'Sản phẩm', 'Hệ thống affiliate riêng và bản quyền 3RDHub'],
   ['cong-nghe', 'Công nghệ', 'Stack, luồng tracking và postback'],
   ['doi-tac', 'Đối tác', 'Ngân hàng, công ty tài chính, mạng affiliate'],
   ['hoi-dap', 'Hỏi đáp', 'Câu hỏi thường gặp theo từng nhóm'],

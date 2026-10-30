@@ -11,10 +11,10 @@ export interface TermSource {
 }
 
 export function createDevScene(canvas: HTMLCanvasElement, term: TermSource): { dispose(): void } {
-  var c3=canvas,R3=new T.WebGLRenderer({canvas:c3,antialias:true,alpha:true});
+  var c3=canvas,R3=new T.WebGLRenderer({canvas:c3,antialias:dpr()<1.75,alpha:true});
   R3.setClearColor(0,0);R3.outputEncoding=T.sRGBEncoding;R3.toneMapping=T.ACESFilmicToneMapping;R3.toneMappingExposure=1.15;R3.shadowMap.enabled=true;R3.shadowMap.type=T.PCFSoftShadowMap;R3.shadowMap.autoUpdate=false;
   var s3=new T.Scene(),cm3=new T.OrthographicCamera(-10,10,10,-10,.1,200);
-  var hemi3=new T.HemisphereLight(0xffffff,0xE9DFCF,.5);s3.add(hemi3);s3.environment=ENV(getMode());var l3=new T.DirectionalLight(0xFFF4E6,1.5);l3.position.set(-18,34,22);l3.castShadow=true;l3.shadow.mapSize.set(2048,2048);var sc3=l3.shadow.camera;sc3.left=-20;sc3.right=20;sc3.top=20;sc3.bottom=-20;l3.shadow.radius=5;s3.add(l3);var rA=new T.DirectionalLight(0xFF8A4C,0);rA.position.set(-22,10,-18);s3.add(rA);var rB=new T.DirectionalLight(0x38D6FF,0);rB.position.set(24,10,-18);s3.add(rB);
+  var hemi3=new T.HemisphereLight(0xffffff,0xE9DFCF,.5);s3.add(hemi3);s3.environment=ENV(getMode());var l3=new T.DirectionalLight(0xFFF4E6,1.5);l3.position.set(-18,34,22);l3.castShadow=true;l3.shadow.mapSize.set(1024,1024);var sc3=l3.shadow.camera;sc3.left=-20;sc3.right=20;sc3.top=20;sc3.bottom=-20;l3.shadow.radius=5;s3.add(l3);var rA=new T.DirectionalLight(0xFF8A4C,0);rA.position.set(-22,10,-18);s3.add(rA);var rB=new T.DirectionalLight(0x38D6FF,0);rB.position.set(24,10,-18);s3.add(rB);
   var fl3=new T.Mesh(new T.PlaneGeometry(200,200),new T.ShadowMaterial({opacity:.14}));fl3.rotation.x=-Math.PI/2;fl3.receiveShadow=true;s3.add(fl3);
   function lights3(m:Mode){var d=m==='dark';hemi3.color.set(d?0x6F7FD8:0xffffff);hemi3.groundColor.set(d?0x141A3A:0xE9DFCF);hemi3.intensity=d?.45:.5;l3.color.set(d?0xC9D6FF:0xFFF4E6);l3.intensity=d?1.0:1.5;rA.intensity=d?1.4:0;rB.intensity=d?1.3:0;(fl3.material as any).opacity=d?.5:.14;s3.environment=ENV(m);R3.toneMappingExposure=d?1.05:1.15}
   var off3=onMode(lights3);lights3(getMode());

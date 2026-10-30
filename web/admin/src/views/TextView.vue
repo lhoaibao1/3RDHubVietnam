@@ -5,20 +5,23 @@ import type { StringItem, Strings } from '../types'
 import strings from '../strings.json'
 import AutoTextarea from '../components/AutoTextarea.vue'
 
-// Sửa từng đoạn chữ trên website. Khoá là chuỗi gốc tiếng Việt; chỉ lưu những đoạn khác bản gốc.
+// Sửa từng đoạn chữ của một trang (hoặc nhóm trang) trên website. Khoá là chuỗi gốc tiếng Việt; chỉ lưu những đoạn khác bản gốc.
 const PAGE = 30
+const props = defineProps<{ groups: string[] }>()
 const a = useAdmin()
 const S = strings as Strings
+const scope = computed(() => S.items.filter((it) => props.groups.includes(it.g)))
 const ov = computed(() => a.content!.ov)
 
 const q = ref('')
 const group = ref('*')
+watch(() => props.groups, () => { group.value = '*'; page.value = 0 })
 const only = ref(false)
 const page = ref(0)
 
 const list = computed(() => {
   const s = q.value.trim().toLowerCase()
-  return S.items.filter((it) => {
+  return scope.value.filter((it) => {
     if (group.value !== '*' && it.g !== group.value) return false
     if (only.value && !ov.value[it.k]) return false
     if (!s) return true
@@ -52,9 +55,9 @@ function turn(d: number) { page.value += d; window.scrollTo(0, 0) }
 <template>
   <div class="bar">
     <input v-model="q" type="search" class="grow" placeholder="Tìm chữ cần sửa…" aria-label="Tìm chữ">
-    <select v-model="group" aria-label="Lọc theo trang">
-      <option value="*">Tất cả các trang ({{ S.items.length }})</option>
-      <option v-for="g in S.groups" :key="g" :value="g">{{ g }}</option>
+    <select v-if="groups.length > 1" v-model="group" aria-label="Lọc theo khu vực">
+      <option value="*">Tất cả khu vực ({{ scope.length }})</option>
+      <option v-for="g in groups" :key="g" :value="g">{{ g }}</option>
     </select>
     <label style="display:flex;gap:8px;align-items:center;font-weight:800"><input v-model="only" type="checkbox">Chỉ đã sửa</label>
   </div>

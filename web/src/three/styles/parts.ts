@@ -253,6 +253,18 @@ export function cloud(c: Ctx, col: number): Part {
   return { g, top: 4.2 }
 }
 
+export function monitor(c: Ctx, col: number): Part {
+  const g = new T.Group()
+  const st = mk(c, cyl(0.25, 0.7, 1.4, 12), 'dark', col); st.position.y = 0.7; g.add(st)
+  const fr = mk(c, rbox(5.2, 0.3, 3.2, 0.3), 'dark', col); fr.rotation.x = Math.PI / 2; fr.position.y = 3; g.add(fr)
+  const scr = new T.Mesh(box(4.7, 2.7, 0.04), c.sk.mat('glass', col)); scr.position.set(0, 3, 0.18); g.add(scr)
+  const bars: T.Mesh[] = []
+  for (let i = 0; i < 5; i++) { const b = new T.Mesh(box(0.5, 1, 0.06), c.sk.mat('glow', i % 2 ? PAL.mint : col)); b.position.set(-1.6 + i * 0.8, 2, 0.24); g.add(b); bars.push(b) }
+  const top = new T.Mesh(box(3.6, 0.14, 0.06), c.sk.mat('glow', PAL.white)); top.position.set(-0.4, 4.05, 0.24); g.add(top)
+  c.tick((t) => bars.forEach((b, i) => { const h = 0.5 + (i + 1) * 0.28 + Math.sin(t * 1.4 + i) * 0.12; b.scale.y = h; b.position.y = 1.7 + h / 2 }))
+  return { g, top: 5 }
+}
+
 /* ---------------- đường dữ liệu ---------------- */
 export function link(c: Ctx, pts: [number, number, number][], col: number, n = 3, speed = 0.1, size = 0.28): void {
   const v = pts.map((p) => new T.Vector3(...p))

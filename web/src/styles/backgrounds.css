@@ -10,7 +10,7 @@
   -webkit-mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent);mask-image:linear-gradient(180deg,transparent,#000 22%,#000 78%,transparent)}
 /* lớp 2: hoạ tiết mờ dần ở mép trên/dưới, trôi rất chậm */
 .biz::after,.tech::after,.partners::after,.faq::after,#lien-he::after,.pg::after{top:0;bottom:0;opacity:.9;background:var(--pat);background-size:var(--patsz,auto);
-  -webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);animation:patdrift 40s linear infinite}
+  -webkit-mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent);}
 @keyframes patdrift{to{background-position:var(--patmv,60px 60px)}}
 @media(prefers-reduced-motion:reduce){.biz::after,.tech::after,.partners::after,.faq::after,#lien-he::after,.pg::after{animation:none}}
 
@@ -41,6 +41,7 @@
 /* trang chi tiết */
 #p-mo-hinh{--bt:#FF6A2B;--bt2:#7B4DFF;--pat:var(--polka);--patsz:42px 42px;--patmv:42px 42px,63px 63px}
 #p-advertiser{--bt:#7B4DFF;--bt2:#FF4D8D;--pat:var(--cubes);--patsz:56px 98px;--patmv:56px 98px,56px 98px,84px 147px,84px 147px,56px 98px,84px 147px;--bx1:90%}
+#p-san-pham{--bt:#1BA6D9;--bt2:#7B4DFF;--pat:var(--stripes);--patsz:16px 16px;--patmv:0 16px}
 #p-cong-nghe{--bt:#00ADD8;--bt2:#42B883;--pat:var(--vlines);--patsz:28px 56px,28px 56px;--patmv:28px 56px,28px 56px}
 #p-doi-tac{--bt:#12A06A;--bt2:#1BA6D9;--pat:var(--bokeh);--patsz:100% 100%;--patmv:0 0}
 #p-hoi-dap{--bt:#FFB238;--bt2:#FF6A2B;--pat:var(--zig);--patsz:28px 28px;--patmv:14px 0,14px 0,28px 0,28px 0}
@@ -81,5 +82,3 @@
 footer.ft2::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 18px),radial-gradient(circle at 12% 110%,rgba(123,77,255,.28),transparent 46%);-webkit-mask-image:linear-gradient(180deg,transparent,#000 40%);mask-image:linear-gradient(180deg,transparent,#000 40%)}
 .pnext .cta{position:relative;overflow:hidden;isolation:isolate}
 .pnext .cta::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle at 92% 14%,rgba(255,106,43,.35),transparent 42%),radial-gradient(circle at 6% 96%,rgba(0,173,216,.28),transparent 44%),radial-gradient(circle,rgba(255,255,255,.1) 1.6px,transparent 2px) 0 0/26px 26px}
-@media(prefers-reduced-motion:no-preference){.pnext .cta::before{animation:ctashift 18s ease-in-out infinite alternate}}
-@keyframes ctashift{to{background-position:-6% 4%,4% -6%,26px 26px}}
