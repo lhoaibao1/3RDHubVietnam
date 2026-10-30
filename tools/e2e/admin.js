@@ -127,7 +127,7 @@ const assert = require('assert');
   const foot = await s.textContent('footer');
   assert(foot.includes('(+84) 900 111 222') && foot.includes('Công ty Thử Nghiệm'), 'footer'); ok('website: chân trang lấy hotline và tên công ty mới');
   assert(await s.locator('footer .ftsoc a[href="https://facebook.com/3rdhub"]').count() === 1); ok('website: có icon Facebook ở chân trang');
-  assert(await s.locator('.story.night').count() === 1, 'kiểu 3D nhà máy'); ok('website: kiểu cảnh 3D chọn trong CMS được áp dụng');
+  assert(await s.locator('.story.solid').count() === 1, 'kiểu 3D nhà máy'); ok('website: kiểu cảnh 3D chọn trong CMS được áp dụng');
   await s.goto(SITE + '/baogia'); await s.waitForSelector('.plan'); assert.strictEqual(await s.locator('.plan').count(), 3); ok('website: trang /baogia hiện 3 gói');
   await s.goto(SITE + '/'); await s.waitForTimeout(1200);
   assert(await s.locator('a[href="tel:+84900111222"]').count() > 0); ok('website: link gọi dùng số mới');

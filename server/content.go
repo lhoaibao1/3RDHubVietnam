@@ -13,6 +13,19 @@ const maxJSON = 3 * 1024 * 1024
 
 var settingKeys = []string{"signup_url", "email", "hotline", "hotline_tel", "company_name", "tax_id", "address", "working_hours", "working_hours_en",
 	"facebook", "zalo", "tiktok", "youtube", "instagram", "site_title", "meta_description", "analytics_id", "parent_url", "company_name_en", "address_en", "scene_style", "demo_url", "linkedin", "bct_url", "dmca_id", "dmca_verify"}
+
+// Giao diện chọn trong CMS (khớp với web/src/lib/look.ts): hiệu ứng cuộn và nền từng khu vực ("hoạ tiết|#màu1|#màu2").
+var scrollFx = map[string]bool{"rise": true, "fade": true, "zoom": true, "pop": true, "slide": true, "flip": true, "tilt": true, "skew": true, "blur": true, "curtain": true, "swing": true, "none": true}
+var bgAreas = []string{"home-biz", "home-tech", "home-partners", "home-faq", "home-contact", "mo-hinh", "advertiser", "san-pham", "bao-gia", "cong-nghe", "doi-tac", "hoi-dap", "lien-he", "dang-ky", "chinh-sach"}
+var bgRe = regexp.MustCompile(`^(grid|dots|polka|sparkle|circuit|rings|waves|topo|diag|hatch|stripes|vlines|checker|zig|cubes|bokeh|aurora|none)(\|#[0-9a-fA-F]{6}){0,2}$`)
+
+func init() {
+	settingKeys = append(settingKeys, "scroll_fx")
+	for _, a := range bgAreas {
+		settingKeys = append(settingKeys, "bg_"+a)
+	}
+}
+
 var sceneStyles = map[string]bool{"classic": true, "isometric": true, "factory": true, "ecosystem": true, "orbit": true, "voxel": true, "blueprint": true, "neon": true}
 var urlSettings = map[string]bool{"signup_url": true, "facebook": true, "zalo": true, "tiktok": true, "youtube": true, "instagram": true, "parent_url": true, "demo_url": true, "linkedin": true, "bct_url": true}
 var settingMax = map[string]int{"meta_description": 400, "address": 300, "company_name": 120, "company_name_en": 120, "address_en": 300, "site_title": 120, "tax_id": 40, "analytics_id": 40}
@@ -493,6 +506,12 @@ func cleanContent(in any) (Content, error) {
 			if !telRe.MatchString(v) {
 				return out, bad("Số gọi (hotline_tel) chỉ gồm số, có thể bắt đầu bằng +")
 			}
+		}
+		if k == "scroll_fx" && !scrollFx[v] {
+			return out, bad("Hiệu ứng cuộn không hợp lệ")
+		}
+		if strings.HasPrefix(k, "bg_") && !bgRe.MatchString(v) {
+			return out, bad("Nền của khu vực '%s' không hợp lệ", strings.TrimPrefix(k, "bg_"))
 		}
 		if k == "scene_style" && !sceneStyles[v] {
 			return out, bad("Kiểu cảnh 3D không hợp lệ")

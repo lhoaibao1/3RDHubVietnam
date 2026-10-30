@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { DAY_STYLES } from '@/three/sceneTypes'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import gsap from 'gsap'
 import { createHero, type Hero } from '@/three/hero'
@@ -86,7 +85,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-<section class="story" id="mo-hinh" :class="{ night: style !== 'classic' && !DAY_STYLES.includes(style), solid: style !== 'classic', day: DAY_STYLES.includes(style) }">
+<section class="story" id="mo-hinh" :class="{ solid: style !== 'classic' }">
   <div ref="pin" class="pin">
     <canvas id="gl" :key="style" ref="canvas" aria-label="Cảnh 3D mô hình tiếp thị liên kết: doanh nghiệp, 3RDHub, publisher, khách hàng, hoa hồng"></canvas>
     <div class="glload" :class="{ on: loading }" aria-hidden="true"><i></i></div>

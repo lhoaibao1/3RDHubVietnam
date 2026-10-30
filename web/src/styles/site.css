@@ -530,7 +530,7 @@ form input:focus,form textarea:focus{outline:none;border-color:var(--or)}
 .p3d .ft{animation:ftin .8s .6s cubic-bezier(.2,.8,.2,1) both,fl 4s 1.4s ease-in-out infinite}
 @keyframes ftin{from{opacity:0;transform:translateY(16px) scale(.94)}}
 /* hiện dần khi cuộn */
-.rv{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .8s cubic-bezier(.2,.8,.2,1),box-shadow .3s;transition-delay:calc(var(--i,0)*85ms)}
+.rv{opacity:0;transform:translateY(28px)}
 .rv.in{opacity:1;transform:none}
 .cd,.steps6 li,.seq li,.pg2 .pt{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s,opacity .7s}
 .cd:hover,.steps6 li:hover,.seq li:hover{transform:translateY(-6px);box-shadow:0 24px 44px -28px rgba(20,20,50,.45)}
@@ -895,3 +895,25 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .ftbot .ftbct,.ftbot .ftdmca{display:inline-flex;line-height:0}
 .ftbot .ftbct img{height:44px;width:auto}
 .ftbot .ftdmca img{height:20px;width:auto}
+/* nhãn trong cảnh 3D ở chế độ sáng */
+:root[data-theme="light"] .gl-lb{background:rgba(255,255,255,.92);color:#0B2A6F;box-shadow:inset 0 0 0 1.5px var(--c),0 10px 22px -14px rgba(11,42,111,.45)}
+:root[data-theme="light"] .gl-lb span{filter:brightness(.8)}
+
+/* ===== tối ưu điện thoại ===== */
+a,button,summary,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+@media(max-width:640px){
+  /* banner cookie gọn: chữ nhỏ hơn, ba nút trên một hàng, chừa vùng an toàn dưới đáy (iPhone) */
+  .cbar{bottom:max(10px,env(safe-area-inset-bottom,0px));padding:14px 14px 12px;gap:10px;border-radius:18px;width:calc(100vw - 20px)}
+  .cbar h2{font-size:14.5px}
+  .cbar p{font-size:12.5px;line-height:1.45}
+  .cba{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .cba .btn{padding:9px 10px;font-size:13px;min-height:40px}
+  .cba .btn:last-child{grid-column:1/-1}
+  /* ô nhập 16px để iOS không tự phóng to khi chạm vào */
+  input,select,textarea{font-size:16px!important}
+  /* vùng chạm tối thiểu cho nút và liên kết dạng nút */
+  .btn{min-height:44px}
+  .faq summary,.fq2 summary{min-height:44px}
+  /* hiệu ứng cuộn nhanh hơn một chút trên màn hình nhỏ */
+  .rv{transition-duration:.55s,.65s,.55s,.7s,.3s}
+}

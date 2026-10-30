@@ -17,7 +17,7 @@ export interface Host extends World {
 export function createHost(canvas: HTMLCanvasElement, skinId: SkinId, opt: { side?: boolean } = {}): Host {
   const sk = makeSkin(skinId)
   const side = opt.side !== false
-  const st = createStage(canvas, side ? sk.stage : { ...sk.stage, offsetX: 0 })
+  const st = createStage(canvas, { ...sk.stage, day: sk.day, ...(side ? {} : { offsetX: 0 }) })
   const back = new T.Group(); st.scene.add(back)
   const bg = sk.setup(st, back)
   let content: T.Group | null = null
@@ -59,6 +59,7 @@ export function createHost(canvas: HTMLCanvasElement, skinId: SkinId, opt: { sid
       content = new T.Group(); st.scene.add(content)
       const ctx: Ctx = { sk, root: content, tick: (fn) => { ticks.push(fn) } }
       built = (CONCEPTS[id] || CONCEPTS.flow)(ctx)
+      st.regrade()
       ti = 0
       focus('overview', true)
       schedule()

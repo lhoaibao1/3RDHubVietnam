@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import en from '../lib/en.json'
 import { setMode } from '../three/mode'
+import { isScrollFx } from '../lib/look'
 import { isSceneStyle, type SceneStyle } from '../three/sceneTypes'
 import { transition } from '../lib/transition'
 import { DEFAULTS, DEF_SETTINGS, type Content, type Faq, type Lang, type LegalDoc, type OvItem, type Pair, type Partner, type QuotePlan, type Client, type Module, type QuoteRow, type Project, type Shot } from '../lib/content'
@@ -41,14 +42,30 @@ function readCache(): Content | null {
   try { const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); return c && typeof c === 'object' ? c : null } catch { return null }
 }
 
+/** ?fx=... để xem thử hiệu ứng cuộn trước khi lưu trong CMS (chỉ trên trình duyệt đang mở). */
+function readFxOverride(): string | null {
+  try {
+    const q = new URLSearchParams(location.search).get('fx')
+    if (q === 'off') sessionStorage.removeItem('3rd-fx')
+    else if (isScrollFx(q)) sessionStorage.setItem('3rd-fx', q)
+    const v = sessionStorage.getItem('3rd-fx')
+    return isScrollFx(v) ? v : null
+  } catch { return null }
+}
+
 export const useSite = defineStore('site', {
-  state: () => ({ lang: readLang() as Lang, theme: readTheme() as Theme, cms: readCache() as Content | null, sceneOverride: readSceneOverride() }),
+  state: () => ({ lang: readLang() as Lang, theme: readTheme() as Theme, cms: readCache() as Content | null, sceneOverride: readSceneOverride(), fxOverride: readFxOverride() }),
   getters: {
     /** Kiểu cảnh 3D: ?scene=... (xem thử) > cài đặt trong CMS > kiểu cũ. */
     sceneStyle(s): SceneStyle {
       if (s.sceneOverride) return s.sceneOverride
       const v = s.cms?.settings?.scene_style
       return isSceneStyle(v) ? v : 'classic'
+    },
+    /** Hiệu ứng cuộn: ?fx=... (xem thử) > cài đặt trong CMS > "trồi lên". */
+    scrollFx(s): string {
+      const v = s.fxOverride || s.cms?.settings?.scroll_fx
+      return isScrollFx(v) ? v : 'rise'
     },
     faqItems(s): Faq[] { return s.cms?.faq ?? DEFAULTS.faq },
     projects(s): Project[] { return s.cms?.product?.projects?.length ? s.cms.product.projects : DEFAULTS.product.projects || [] },

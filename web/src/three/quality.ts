@@ -8,7 +8,7 @@ export const MIN_SCALE = 0.5
 
 /** Tỉ lệ điểm ảnh nên dùng cho renderer (đã giới hạn theo màn hình và hiệu năng đo được). */
 export function dpr(): number {
-  const base = Math.min(window.devicePixelRatio || 1, innerWidth <= 900 ? 1.5 : 2)
+  const base = Math.min(window.devicePixelRatio || 1, innerWidth <= 640 ? 1.25 : innerWidth <= 900 ? 1.5 : 2)
   return Math.max(0.75, base * scale)
 }
 export function onQuality(f: () => void): () => void {

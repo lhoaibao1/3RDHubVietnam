@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, watchEffect } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import { router } from './router'
@@ -6,9 +6,12 @@ import { useSite } from './stores/site'
 import { setMode } from './three/mode'
 import './styles/fonts.css'
 import './styles/site.css'
+import './styles/patterns.css'
 import './styles/backgrounds.css'
+import './styles/fx.css'
 import { restoreScroll, trackScroll } from './lib/scrollRestore'
 import { editRequested, initEditMode } from './lib/editMode'
+import { bgCss } from './lib/look'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -22,6 +25,12 @@ document.documentElement.lang = site.lang
 document.documentElement.dataset.theme = site.theme
 document.documentElement.style.colorScheme = site.theme
 site.load()
+// Hiệu ứng cuộn và nền từng khu vực chọn trong CMS
+const bgStyle = document.createElement('style'); bgStyle.id = 'bgx'; document.head.appendChild(bgStyle)
+watchEffect(() => {
+  document.documentElement.dataset.fx = site.scrollFx
+  bgStyle.textContent = bgCss(site.cms?.settings)
+})
 
 // Chỉ dựng giao diện khi trang đầu tiên đã sẵn sàng (đã tải xong mã của trang), tránh cảnh chân trang hiện trước nội dung rồi bị đẩy xuống.
 // Có lối thoát: tải mã trang lỗi (vừa cập nhật website, mạng chập chờn) thì tự tải lại một lần; quá 8 giây vẫn dựng giao diện.

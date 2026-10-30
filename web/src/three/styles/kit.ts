@@ -8,6 +8,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { GammaCorrectionShader } from 'three/examples/jsm/shaders/GammaCorrectionShader.js'
 import { BRANDS, LUCIDE } from '../../lib/icons.generated'
 import { dpr, meter, onQuality } from '../quality'
+import { getMode, onMode, type Mode } from '../mode'
 
 export const RM = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
 export const PAL = { cyan: 0x27D3FF, blue: 0x3B6BFF, violet: 0x8A5BFF, orange: 0xFF7A3C, mint: 0x2EE6A6, pink: 0xFF4D8D, gold: 0xFFC24D, white: 0xEAF2FF, deep: 0x07102B, panel: 0x0C1B45 }
@@ -18,6 +19,8 @@ export interface Key { pos: [number, number, number]; look: [number, number, num
 export interface Stage {
   scene: T.Scene
   camera: T.PerspectiveCamera
+  /** Pha lại màu vật liệu theo chế độ sáng/tối (gọi sau khi thêm nội dung mới vào cảnh). */
+  regrade(): void
   /** Gọi mỗi khung hình với thời gian (giây). */
   onTick(fn: (t: number, dt: number) => void): void
   /** Bay camera tới khoá hình. */
@@ -37,25 +40,87 @@ function skyTex(top: string, mid: string, bot: string) {
   const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding; return t
 }
 
-export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: [number, number]; sky?: [string, string, string]; bloom?: number; offsetX?: number; fogColor?: number }): Stage {
-  const R = new T.WebGLRenderer({ canvas, antialias: o.bloom === 0, alpha: false, powerPreference: 'high-performance' })
+/* ---------- đổi cảnh theo chế độ sáng/tối của trang ----------
+   Mỗi kiểu cảnh được dựng theo một "bản gốc" (đêm hoặc ngày). Khi trang ở chế độ ngược lại, mọi vật liệu được pha lại
+   (sáng lên hoặc tối đi), trời, sương và đèn đổi theo; giá trị gốc được giữ trong userData nên đổi qua lại không bị lệch. */
+const WHITE = lin(0xF4F6FC), NIGHT = lin(0x101A40)
+const luma = (c: T.Color) => 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b
+type Grade = 'native' | 'light' | 'dark'
+function gradeMat(m: any, g: Grade) {
+  const u = m.userData
+  if (!u.o) u.o = { map: m.map, color: m.color ? m.color.clone() : null, ei: m.emissiveIntensity, bl: m.blending, op: m.opacity, tr: m.transparent, env: m.envMapIntensity, em: m.emissive ? m.emissive.clone() : null }
+  const o = u.o
+  if (o.color) m.color.copy(o.color)
+  if (o.ei != null) m.emissiveIntensity = o.ei
+  if (o.em) m.emissive.copy(o.em)
+  if (m.isMeshStandardMaterial) m.map = o.map
+  m.blending = o.bl; m.opacity = o.op; m.transparent = o.tr
+  if (o.env != null) m.envMapIntensity = o.env
+  if (g === 'light' && m.color) {
+    const std = m.isMeshStandardMaterial
+    if (std) {
+      /* toà nhà có cửa sổ sáng: bỏ lớp vân tối, chỉ giữ cửa sổ phát sáng nhẹ trên thân sáng */
+      if (m.map && m.emissiveMap) m.map = null
+      m.color.lerp(WHITE, luma(o.color) < 0.03 ? 0.74 : 0.58); m.emissiveIntensity = (o.ei || 0) * (m.emissiveMap ? 0.55 : 0.3); if (o.env != null) m.envMapIntensity = o.env * 0.6
+    } else {
+      if (m.blending === T.AdditiveBlending) m.blending = T.NormalBlending
+      const L = luma(o.color)
+      /* nền tối (sàn, tường, trời giả) chuyển sang sáng; màu neon giữ sắc nhưng bớt chói cho hợp nền sáng */
+      if (m.map && !o.tr && !m.isSpriteMaterial) { m.transparent = true; m.opacity = o.op * 0.3; m.color.lerp(WHITE, 0.5) }
+      else if (m.map && o.tr && m.isMeshBasicMaterial && o.op > 0.8) m.opacity = o.op * 0.7
+      else if (L < 0.08) m.color.lerp(WHITE, 0.86)
+      else if (L > 1) m.color.multiplyScalar(0.85 / L)
+      if (m.isPointsMaterial) m.color.lerp(lin(0x3B6BFF), 0.6)
+    }
+  } else if (g === 'dark' && m.color) {
+    if (m.isMeshStandardMaterial) { m.color.lerp(NIGHT, m.map ? 0.8 : 0.55); m.emissiveIntensity = Math.max(o.ei || 0, 0.12) * 1.6; if (o.em && luma(o.em) === 0) m.emissive.copy(m.color).multiplyScalar(0.25) }
+    else if (luma(o.color) > 0.5) m.color.lerp(NIGHT, 0.6)
+  }
+  m.needsUpdate = true
+}
+
+export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: [number, number]; sky?: [string, string, string]; bloom?: number; offsetX?: number; fogColor?: number; day?: boolean }): Stage {
+  /* điện thoại: tắt hậu kỳ phát sáng cho nhẹ máy, đỡ nóng và tốn pin (bù lại bật khử răng cưa) */
+  const phone = innerWidth <= 640
+  const R = new T.WebGLRenderer({ canvas, antialias: o.bloom === 0 || phone, alpha: false, powerPreference: 'high-performance' })
   R.outputEncoding = T.sRGBEncoding
   const scene = new T.Scene()
   const sky = o.sky || ['#040A1C', '#0A1B45', '#0E2A63']
-  scene.background = skyTex(sky[0], sky[1], sky[2])
   const fogN = o.fog || [40, 130]
-  scene.fog = new T.Fog(lin(o.fogColor == null ? 0x0A1B45 : o.fogColor), fogN[0], fogN[1])
+  const nativeSky = skyTex(sky[0], sky[1], sky[2])
+  const nativeFog = lin(o.fogColor == null ? 0x0A1B45 : o.fogColor)
+  scene.background = nativeSky
+  scene.fog = new T.Fog(nativeFog.clone(), fogN[0], fogN[1])
+  /* đèn phụ chỉ bật khi cảnh đang ở chế độ ngược với bản gốc */
+  const fill = new T.HemisphereLight(0xFFFFFF, 0xDCE3F2, 0); scene.add(fill)
+  const sun = new T.DirectionalLight(0xFFF4E6, 0); sun.position.set(-20, 40, 30); scene.add(sun)
+  let grade: Grade = 'native', gradeAt = 2, bloomK = 1
+  const lightSky = skyTex('#DDE7FA', '#EEF1F7', '#F3F1EC'), darkSky = skyTex('#060B22', '#0C1638', '#0E1426')
+  function setGrade(m: Mode) {
+    grade = m === 'dark' ? (o.day ? 'dark' : 'native') : (o.day ? 'native' : 'light')
+    scene.background = grade === 'light' ? lightSky : grade === 'dark' ? darkSky : nativeSky
+    ;(scene.fog as T.Fog).color.copy(grade === 'light' ? lin(0xEEF1F7) : grade === 'dark' ? lin(0x0E1426) : nativeFog)
+    fill.intensity = grade === 'light' ? 1.15 : grade === 'dark' ? 0.25 : 0
+    sun.intensity = grade === 'light' ? 0.9 : 0
+    bloomK = grade === 'light' ? 0.22 : 1
+    gradeAt = Math.max(gradeAt, 1)
+  }
+  function regrade() { const seen = new Set<any>(); scene.traverse((ob: any) => {
+    if (ob.isLight && ob !== fill && ob !== sun) { if (ob.userData.i0 == null) ob.userData.i0 = ob.intensity; ob.intensity = ob.userData.i0 * (grade === 'dark' ? 0.45 : grade === 'light' ? 0.75 : 1) } const ms = ob.material; if (!ms) return; (Array.isArray(ms) ? ms : [ms]).forEach((x: any) => { if (!seen.has(x)) { seen.add(x); gradeMat(x, grade) } }) }) }
+  setGrade(getMode())
+  const offMode = onMode(setGrade)
   const camera = new T.PerspectiveCamera(o.fov || 30, 1, 0.5, 400)
 
   let W = 1, H = 1
   let rt = new T.WebGLMultisampleRenderTarget(2, 2, { format: T.RGBAFormat }); rt.samples = dpr() >= 1.75 ? 2 : 4
   const composer = new EffectComposer(R, rt)
   composer.addPass(new RenderPass(scene, camera))
-  const bloom = new UnrealBloomPass(new T.Vector2(2, 2), o.bloom == null ? 0.85 : o.bloom, 0.65, 0.22)
+  const bloomS = o.bloom == null ? 0.85 : o.bloom
+  const bloom = new UnrealBloomPass(new T.Vector2(2, 2), bloomS, 0.65, 0.22)
   composer.addPass(bloom)
   composer.addPass(new ShaderPass(GammaCorrectionShader))
   scene.userData.sky = true
-  let bloomOn = o.bloom !== 0
+  let bloomOn = o.bloom !== 0 && !phone
 
   const ticks: ((t: number, dt: number) => void)[] = []
   const clock = new T.Clock()
@@ -124,7 +189,7 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
   }
   size()
 
-  const offQ = onQuality(() => { size(); if (!RM && o.bloom !== 0) bloomOn = true })
+  const offQ = onQuality(() => { size(); if (!RM && o.bloom !== 0 && !phone) bloomOn = true })
   const ro = new ResizeObserver(size); ro.observe(canvas)
   const io = new IntersectionObserver((e) => { vis = e[0].isIntersecting }); io.observe(canvas)
   let slow = 0
@@ -144,6 +209,8 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
     camera.lookAt(cur.look)
     if (Math.abs(camera.fov - cur.fov) > 0.01) { camera.fov = cur.fov; camera.updateProjectionMatrix() }
     for (const f of ticks) f(t, dt)
+    if (gradeAt > 0 && --gradeAt === 0) regrade()
+    bloom.strength = bloomS * bloomK
     if (bloomOn) composer.render(dt); else R.render(scene, camera)
     syncLabels()
     // máy quá chậm: tắt bloom (giữ cảnh mượt), mức giảm độ nét đã do quality.ts lo
@@ -154,6 +221,7 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
 
   return {
     scene, camera,
+    regrade() { gradeAt = 2 },
     onTick(fn) { ticks.push(fn) },
     fly(key, fast) {
       tgt.pos.set(...key.pos); tgt.look.set(...key.look); tgt.fov = key.fov || o.fov || 30; flying = 2.5
@@ -164,7 +232,7 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
       return { x: (v.x * 0.5 + 0.5) * W, y: (-v.y * 0.5 + 0.5) * H, behind: v.z > 1 }
     },
     visible: () => vis,
-    dispose() { overlay.remove(); cancelAnimationFrame(raf); offQ(); ro.disconnect(); io.disconnect(); rt.dispose(); R.dispose(); scene.traverse((m: any) => { if (m.geometry) m.geometry.dispose() }) },
+    dispose() { offMode(); overlay.remove(); cancelAnimationFrame(raf); offQ(); ro.disconnect(); io.disconnect(); rt.dispose(); R.dispose(); scene.traverse((m: any) => { if (m.geometry) m.geometry.dispose() }) },
   }
 }
 

@@ -1,0 +1,35 @@
+/* ===== hiệu ứng khi cuộn (chọn trong CMS, tab Giao diện; <html data-fx>) =====
+   .rv: phần tử có hiệu ứng; .in: đang trong màn hình; .up: đang nằm phía trên màn hình (cuộn lên thì hiện từ trên xuống);
+   .odd: phần tử thứ chẵn trong nhóm (dùng cho kiểu trượt hai bên). */
+.rv{--d:1;transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .85s cubic-bezier(.2,.8,.2,1),filter .7s ease,clip-path .9s cubic-bezier(.65,0,.35,1),box-shadow .3s;transition-delay:calc(var(--i,0)*80ms)}
+.rv.up{--d:-1}
+.rv.in{transition-delay:calc(var(--i,0)*80ms),calc(var(--i,0)*80ms),calc(var(--i,0)*80ms),calc(var(--i,0)*80ms),0s}
+/* trồi lên (mặc định) */
+.rv.up:not(.in){transform:translateY(-28px)}
+.rv-z.up:not(.in){transform:translateY(-34px) scale(.94)}
+:root[data-fx="fade"] .rv:not(.in){transform:none}
+:root[data-fx="zoom"] .rv:not(.in){transform:scale(.84) translateY(calc(var(--d)*14px))}
+:root[data-fx="pop"] .rv{transition-timing-function:ease,cubic-bezier(.34,1.56,.64,1),ease,ease,ease}
+:root[data-fx="pop"] .rv:not(.in){transform:scale(.62)}
+:root[data-fx="slide"] .rv:not(.in){transform:translateX(-70px)}
+:root[data-fx="slide"] .rv.odd:not(.in){transform:translateX(70px)}
+:root[data-fx="flip"] .rv{transform-origin:50% 0}
+:root[data-fx="flip"] .rv.up{transform-origin:50% 100%}
+:root[data-fx="flip"] .rv:not(.in){transform:perspective(900px) rotateX(calc(var(--d)*-52deg)) translateY(calc(var(--d)*24px))}
+:root[data-fx="tilt"] .rv:not(.in){transform:translateY(calc(var(--d)*46px)) rotate(calc(var(--d)*-5deg))}
+:root[data-fx="skew"] .rv:not(.in){transform:translateY(calc(var(--d)*40px)) skewY(calc(var(--d)*7deg))}
+:root[data-fx="blur"] .rv:not(.in){transform:translateY(calc(var(--d)*12px)) scale(1.04);filter:blur(14px)}
+:root[data-fx="curtain"] .rv:not(.in){transform:translateY(calc(var(--d)*16px));clip-path:inset(0 0 100% 0 round 18px);opacity:1}
+:root[data-fx="curtain"] .rv.up:not(.in){clip-path:inset(100% 0 0 0 round 18px)}
+:root[data-fx="curtain"] .rv.in{clip-path:inset(0 0 0 0 round 0)}
+:root[data-fx="swing"] .rv{transform-origin:0 50%}
+:root[data-fx="swing"] .rv:not(.in){transform:perspective(1000px) rotateY(48deg)}
+:root[data-fx="none"] .rv{opacity:1!important;transform:none!important;filter:none!important;clip-path:none!important;transition:box-shadow .3s}
+@media(prefers-reduced-motion:reduce){.rv{opacity:1!important;transform:none!important;filter:none!important;clip-path:none!important}}
+/* điện thoại: biên độ nhỏ hơn để không tràn ngang */
+@media(max-width:700px){
+  :root[data-fx="slide"] .rv:not(.in){transform:translateX(-28px)}
+  :root[data-fx="slide"] .rv.odd:not(.in){transform:translateX(28px)}
+  :root[data-fx="swing"] .rv:not(.in){transform:perspective(800px) rotateY(30deg)}
+  .rv-l:not(.in){transform:translateX(-24px)}.rv-r:not(.in){transform:translateX(24px)}
+}

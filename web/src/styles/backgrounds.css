@@ -14,24 +14,6 @@
 @keyframes patdrift{to{background-position:var(--patmv,60px 60px)}}
 @media(prefers-reduced-motion:reduce){.biz::after,.tech::after,.partners::after,.faq::after,#lien-he::after,.pg::after{animation:none}}
 
-/* hoạ tiết dùng chung (định nghĩa ngay trên từng khu vực để lấy đúng màu --bt của khu vực đó) */
-.biz,.tech,.partners,.faq,#lien-he,.pg{
-  --dots:radial-gradient(circle,color-mix(in srgb,var(--bt) 55%,transparent) 1.5px,transparent 1.7px);
-  --grid:linear-gradient(color-mix(in srgb,var(--bt) 22%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--bt) 22%,transparent) 1px,transparent 1px);
-  --rings:repeating-radial-gradient(circle at 82% 28%,color-mix(in srgb,var(--bt) 34%,transparent) 0 1.5px,transparent 1.5px 38px);
-  --diag:repeating-linear-gradient(135deg,color-mix(in srgb,var(--bt) 30%,transparent) 0 1.5px,transparent 1.5px 24px);
-  --waves:repeating-radial-gradient(ellipse 120% 80% at 15% 105%,color-mix(in srgb,var(--bt) 34%,transparent) 0 2px,transparent 2px 34px);
-  --polka:radial-gradient(circle,color-mix(in srgb,var(--bt) 50%,transparent) 2.4px,transparent 2.8px) 0 0,radial-gradient(circle,color-mix(in srgb,var(--bt2,var(--bt)) 40%,transparent) 2.4px,transparent 2.8px) 21px 21px;
-  --checker:conic-gradient(color-mix(in srgb,var(--bt) 13%,transparent) 25%,transparent 0 50%,color-mix(in srgb,var(--bt) 13%,transparent) 0 75%,transparent 0) 0 0;
-  --zig:linear-gradient(135deg,color-mix(in srgb,var(--bt) 15%,transparent) 25%,transparent 25%) -14px 0,linear-gradient(225deg,color-mix(in srgb,var(--bt) 15%,transparent) 25%,transparent 25%) -14px 0,linear-gradient(315deg,color-mix(in srgb,var(--bt) 15%,transparent) 25%,transparent 25%) 0 0,linear-gradient(45deg,color-mix(in srgb,var(--bt) 15%,transparent) 25%,transparent 25%) 0 0;
-  --stripes:repeating-linear-gradient(0deg,color-mix(in srgb,var(--bt) 26%,transparent) 0 2px,transparent 2px 16px);
-  --vlines:repeating-linear-gradient(90deg,color-mix(in srgb,var(--bt) 22%,transparent) 0 1.5px,transparent 1.5px 28px),repeating-linear-gradient(0deg,color-mix(in srgb,var(--bt2,var(--bt)) 16%,transparent) 0 8px,transparent 8px 56px);
-  --hatch:repeating-linear-gradient(45deg,color-mix(in srgb,var(--bt) 22%,transparent) 0 1.2px,transparent 1.2px 25.456px),repeating-linear-gradient(-45deg,color-mix(in srgb,var(--bt) 22%,transparent) 0 1.2px,transparent 1.2px 25.456px);
-  --topo:repeating-radial-gradient(ellipse 90% 60% at 20% 30%,color-mix(in srgb,var(--bt) 26%,transparent) 0 1.5px,transparent 1.5px 26px),repeating-radial-gradient(ellipse 70% 90% at 85% 80%,color-mix(in srgb,var(--bt2,var(--bt)) 24%,transparent) 0 1.5px,transparent 1.5px 30px);
-  --bokeh:radial-gradient(circle at 10% 25%,color-mix(in srgb,var(--bt) 22%,transparent) 0 46px,transparent 48px),radial-gradient(circle at 78% 18%,color-mix(in srgb,var(--bt2,var(--bt)) 20%,transparent) 0 70px,transparent 72px),radial-gradient(circle at 92% 72%,color-mix(in srgb,var(--bt) 11%,transparent) 0 38px,transparent 40px),radial-gradient(circle at 34% 82%,color-mix(in srgb,var(--bt2,var(--bt)) 18%,transparent) 0 56px,transparent 58px),radial-gradient(circle at 56% 46%,color-mix(in srgb,var(--bt) 12%,transparent) 0 28px,transparent 30px);
-  --cubes:linear-gradient(30deg,color-mix(in srgb,var(--bt) 11%,transparent) 12%,transparent 12.5%,transparent 87%,color-mix(in srgb,var(--bt) 11%,transparent) 87.5%) 0 0,linear-gradient(150deg,color-mix(in srgb,var(--bt) 11%,transparent) 12%,transparent 12.5%,transparent 87%,color-mix(in srgb,var(--bt) 11%,transparent) 87.5%) 0 0,linear-gradient(30deg,color-mix(in srgb,var(--bt) 11%,transparent) 12%,transparent 12.5%,transparent 87%,color-mix(in srgb,var(--bt) 11%,transparent) 87.5%) 28px 49px,linear-gradient(150deg,color-mix(in srgb,var(--bt) 11%,transparent) 12%,transparent 12.5%,transparent 87%,color-mix(in srgb,var(--bt) 11%,transparent) 87.5%) 28px 49px,linear-gradient(60deg,color-mix(in srgb,var(--bt2,var(--bt)) 9%,transparent) 25%,transparent 25.5%,transparent 75%,color-mix(in srgb,var(--bt2,var(--bt)) 9%,transparent) 75%) 0 0,linear-gradient(60deg,color-mix(in srgb,var(--bt2,var(--bt)) 9%,transparent) 25%,transparent 25.5%,transparent 75%,color-mix(in srgb,var(--bt2,var(--bt)) 9%,transparent) 75%) 28px 49px;
-  --circuit:linear-gradient(color-mix(in srgb,var(--bt) 22%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--bt) 22%,transparent) 1px,transparent 1px),radial-gradient(circle,color-mix(in srgb,var(--bt) 60%,transparent) 2.2px,transparent 2.6px);
-}
 /* trang chủ */
 .biz{--bt:#7B4DFF;--bt2:#FF4D8D;--pat:var(--grid);--patsz:44px 44px;--patmv:44px 44px;--bx1:6%;--by1:10%}
 .tech{--bt:#00ADD8;--bt2:#42B883;--pat:var(--circuit);--patsz:56px 56px,56px 56px,112px 112px;--patmv:56px 56px,56px 56px,112px 112px;--bx1:92%;--by1:14%;--bx2:8%;--by2:76%}
@@ -47,6 +29,7 @@
 #p-doi-tac{--bt:#12A06A;--bt2:#1BA6D9;--pat:var(--bokeh);--patsz:100% 100%;--patmv:0 0}
 #p-hoi-dap{--bt:#FFB238;--bt2:#FF6A2B;--pat:var(--zig);--patsz:28px 28px;--patmv:14px 0,14px 0,28px 0,28px 0}
 #p-lien-he{--bt:#FF4D8D;--bt2:#FFB238;--pat:var(--topo);--patsz:auto;--patmv:0 0}
+#p-dang-ky{--bt:#FF6A2B;--bt2:#1BA6D9;--pat:var(--sparkle);--patsz:46px 46px;--patmv:46px 46px,46px 46px}
 .legalpg{--bt:#5B6279;--bt2:#7B4DFF;--pat:var(--hatch);--patsz:36px 36px;--patmv:36px 36px,36px 36px}
 /* chế độ tối: vệt màu rực hơn một chút */
 :root[data-theme="dark"] .biz::before,:root[data-theme="dark"] .tech::before,:root[data-theme="dark"] .partners::before,:root[data-theme="dark"] .faq::before,:root[data-theme="dark"] #lien-he::before,:root[data-theme="dark"] .pg::before{filter:saturate(1.2) brightness(1.25)}
@@ -64,9 +47,7 @@
 @keyframes cue{0%{transform:translateY(0);opacity:1}70%{transform:translateY(12px);opacity:0}100%{opacity:0}}
 @media(max-width:900px){.cue{display:none}}
 
-/* ===== kiểu cảnh 3D "đêm công nghệ": khu vực chứa cảnh luôn tối (kể cả khi trang đang ở chế độ sáng) ===== */
-.story.night,.pgh:has(.p3d.night){--bg:#07102B;--card:#0F1B45;--ink:#EDF1FF;--ink2:#A9B6DA;--line:#25346B;--or-t:#3B2418;color:var(--ink)}
-.story.night .panel::before{display:none}
+/* ===== kiểu cảnh 3D: cảnh tự đổi theo chế độ sáng/tối của trang (kit.ts), khu vực chứa cảnh dùng chung màu của trang ===== */
 /* phủ nền của kiểu cảnh ra hết chiều ngang (mobile: chữ nằm dưới canvas, phải có nền tối/sáng tương ứng) */
 .story.solid,.pgh:has(.p3d.solid){background:var(--bg);box-shadow:0 0 0 100vmax var(--bg);clip-path:inset(0 -100vmax)}
 /* chữ đầu trang luôn đọc được: lớp nền mờ phía sau khối chữ, cảnh 3D vẫn lộ ra ở mép phải */
@@ -77,15 +58,10 @@
 }
 .p3d.solid{background:none}
 .p3d.solid::before,.p3d.solid::after{content:none}
-.p3d.night .ft{background:rgba(9,18,52,.82);color:#EDF1FF;box-shadow:inset 0 0 0 1px rgba(110,160,255,.35),0 12px 30px -12px rgba(0,0,0,.6);backdrop-filter:none}
-.p3d.night .ft span{color:#A9B6DA}
 /* mép dưới cảnh mờ dần vào nền trang */
 .story.solid #gl{-webkit-mask-image:linear-gradient(180deg,#000 82%,transparent);mask-image:linear-gradient(180deg,#000 82%,transparent)}
 .p3d.solid .glp{-webkit-mask-image:linear-gradient(180deg,#000 86%,transparent);mask-image:linear-gradient(180deg,#000 86%,transparent)}
 .story.solid .pin::before{display:none}
-/* kiểu cảnh ban ngày (voxel): khu vực chứa cảnh luôn sáng, kể cả khi trang đang ở chế độ tối */
-.story.day,.pgh:has(.p3d.day){--bg:#F3F1EC;--card:#FFFFFF;--ink:#0B2A6F;--ink2:#4B5470;--line:#E4E0D8;--or-t:#FFE9DE;color:var(--ink)}
-.p3d.day .ft{background:rgba(255,255,255,.88);color:#0B2A6F}
 
 /* hoạ tiết riêng cho chân trang và khối kêu gọi (CTA), không dùng chung với khu vực nào khác */
 footer.ft2::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 18px),radial-gradient(circle at 12% 110%,rgba(123,77,255,.28),transparent 46%);-webkit-mask-image:linear-gradient(180deg,transparent,#000 40%);mask-image:linear-gradient(180deg,transparent,#000 40%)}
