@@ -3,6 +3,9 @@ import { useRoute } from 'vue-router'
 import { useSite } from '@/stores/site'
 import { LEGAL_SLUGS, NAV } from '@/lib/content'
 import { consent } from '@/composables/useConsent'
+import seo from '../../scripts/seo.json'
+
+const PAGES = seo.pages as Record<string, { title: string; desc: string }>
 
 const GA_RE = /^[A-Za-z]{1,3}-[A-Za-z0-9-]{4,20}$/
 let gaOn = false
@@ -28,14 +31,17 @@ export function useSeo() {
       const n = NAV.find((x) => x[0] === slug)
       if (n) page = site.t(n[1])
     }
-    document.title = page ? `${page} · ${base}` : base
-    const d = site.S('meta_description')
-    if (d) {
-      setMeta('meta[name=description]', d)
-      setMeta('meta[property="og:description"]', d)
-    }
-    const t = site.S('site_title')
-    if (t) setMeta('meta[property="og:title"]', t)
+    // tiếng Việt: tiêu đề/mô tả riêng từng trang (sửa trong CMS, tab SEO; mặc định theo scripts/seo.json, giống bản dựng sẵn)
+    const key = slug || 'home'
+    const def = PAGES[slug] || PAGES['']
+    const known = slug in PAGES
+    const vi = site.lang === 'vi'
+    const title = (vi && known && site.S('seot_' + key)) || (vi && known ? def.title : page ? `${page} · ${base}` : base)
+    const desc = site.S('seod_' + key) || (key === 'home' ? site.S('meta_description') : '') || def.desc
+    document.title = title
+    setMeta('meta[name=description]', desc)
+    setMeta('meta[property="og:description"]', desc)
+    setMeta('meta[property="og:title"]', title)
     const ga = site.S('analytics_id')
     // Google Analytics chỉ nạp khi khách đã đồng ý cookie phân tích
     if (ga && !gaOn && GA_RE.test(ga) && consent.saved?.analytics) {

@@ -350,6 +350,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		a.send(w, r, 200, []byte(code), "text/html; charset=utf-8", noStore)
+	case strings.HasPrefix(p, "/api/seo/") && len(p) == len("/api/seo/t") && strings.Contains("tdvl", p[len(p)-1:]) && get && !a.isAdminHost(r):
+		a.apiSEO(w, r, p[len(p)-1:])
 	case legalPDFRe.MatchString(p) && get:
 		a.apiLegalPDF(w, r)
 	case p == "/healthz" && get:
@@ -379,6 +381,14 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				name += ".html"
 			} else {
 				name = "index.html"
+			}
+		}
+		if strings.HasSuffix(name, ".html") && !strings.ContainsAny(name, "/\\") {
+			// trang dựng sẵn: xử lý các khối SEO như nginx SSI ở máy chủ thật
+			if b, err := os.ReadFile(filepath.Join(a.cfg.SiteDir, name)); err == nil {
+				c, _, _ := a.currentContent(r.Context())
+				a.send(w, r, 200, applySSI(c, b), "text/html; charset=utf-8", map[string]string{"Cache-Control": "no-cache"})
+				return
 			}
 		}
 		a.serveFile(w, r, a.cfg.SiteDir, name, "no-cache", "")

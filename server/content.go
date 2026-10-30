@@ -507,6 +507,16 @@ func cleanContent(in any) (Content, error) {
 				return out, bad("Số gọi (hotline_tel) chỉ gồm số, có thể bắt đầu bằng +")
 			}
 		}
+		if strings.HasPrefix(k, "verify_") {
+			code, okv := cleanVerify(v)
+			if !okv {
+				return out, bad("Mã xác minh '%s' không hợp lệ (dán mã trong content=\"...\" hoặc nguyên thẻ <meta>)", strings.TrimPrefix(k, "verify_"))
+			}
+			v = code
+		}
+		if (strings.HasPrefix(k, "seot_") || strings.HasPrefix(k, "seod_")) && strings.ContainsAny(v, "<>\n") {
+			return out, bad("Tiêu đề/mô tả SEO không được chứa xuống dòng hoặc dấu < >")
+		}
 		if k == "scroll_fx" && !scrollFx[v] {
 			return out, bad("Hiệu ứng cuộn không hợp lệ")
 		}

@@ -4,6 +4,7 @@ import { api } from '../api'
 import FieldsPanel from '../components/FieldsPanel.vue'
 import type { Field } from '../types'
 import ContactFields from './ContactFields.vue'
+import SeoPanel from './SeoPanel.vue'
 
 // part: company = công ty, liên hệ, mạng xã hội; seo = SEO và theo dõi; account = mật khẩu
 defineProps<{ part: 'company' | 'seo' | 'account' }>()
@@ -65,7 +66,10 @@ async function changePassword() {
     <ContactFields />
     <FieldsPanel title="Liên kết và mạng xã hội" sub="Mạng xã hội chỉ hiện biểu tượng ở chân trang khi bạn điền link." :fields="links" />
   </template>
-  <FieldsPanel v-if="part === 'seo'" title="SEO và theo dõi" sub="Tiêu đề và mô tả được áp dụng khi trang tải xong (Google đọc được; Facebook, Zalo khi chia sẻ link vẫn dùng ảnh và mô tả mặc định của từng trang)." :fields="seo" />
+  <template v-if="part === 'seo'">
+    <SeoPanel />
+    <FieldsPanel title="Tên website và Google Analytics" sub="Tên website dùng cho tab trình duyệt khi khách xem bằng tiếng Anh. Mô tả website là mô tả mặc định của trang chủ (ô mô tả trang chủ ở trên được ưu tiên hơn)." :fields="seo" />
+  </template>
   <form v-if="part === 'account'" class="panel" @submit.prevent="changePassword">
     <h2>Đổi mật khẩu quản trị</h2>
     <p class="sub">Tối thiểu 10 ký tự. Nên dùng mật khẩu dài và không dùng lại ở nơi khác.</p>

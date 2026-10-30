@@ -30,6 +30,7 @@ grep -q '^DATABASE_URL=postgres://' "$T/etc/3rdhub-cms.env" || fail "env thiếu
 grep -q 'ExecStart=.*/server serve' "$T/etc/systemd/system/3rdhub-cms.service" || fail "unit sai"
 [ -f "$T/www/index.html" ] || fail "chưa chép website"
 grep -q 'location ^~ /assets/' "$T/etc/nginx/sites-available/test.local.conf" || fail "vhost thiếu /assets/"
+grep -q 'ssi on;' "$T/etc/nginx/sites-available/test.local.conf" && [ "$(grep -c 'location ^~ /api/seo/' "$T/etc/nginx/sites-available/test.local.conf")" = 1 ] || fail "vhost thiếu SSI/SEO hoặc trùng location /api/seo/"
 grep -q 'server_name cms.test.local' "$T/etc/nginx/sites-available/cms.test.local.conf" || fail "thiếu vhost cms"
 grep -q 'Mật khẩu quản trị lần đầu' "$T/out1" || fail "không in mật khẩu"
 echo "ok"

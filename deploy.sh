@@ -243,10 +243,21 @@ $(proxy_block "$port")
     location ^~ /api/legal/ {
 $(proxy_block "$port")
     }
+    # tiêu đề/mô tả SEO và mã xác minh Google/Bing... sửa trong CMS; chỉ dùng nội bộ qua SSI của trang HTML
+    location ^~ /api/seo/ {
+        internal;
+        proxy_connect_timeout 2s;
+$(proxy_block "$port")
+    }
     location ^~ /uploads/ {
 $(proxy_block "$port")
     }
     location ^~ /api/ { return 404; }
+"
+  else
+    # chưa cài backend: khối SEO trả rỗng, trang dùng tiêu đề/mô tả dựng sẵn
+    api="
+    location ^~ /api/seo/ { internal; return 204; }
 "
   fi
   cat <<CONF
@@ -269,9 +280,14 @@ server {
     add_header X-Content-Type-Options nosniff always;
     add_header Referrer-Policy strict-origin-when-cross-origin always;
 $api
+    # chưa cài backend: khối SEO trả rỗng, trang dùng tiêu đề/mô tả dựng sẵn
+    location ^~ /api/seo/ { internal; return 204; }
     location / {
         try_files \$uri \$uri.html \$uri/ /index.html;
         expires -1;
+        # chèn tiêu đề/mô tả SEO và mã xác minh từ CMS (backend lỗi thì giữ bản dựng sẵn trong trang)
+        ssi on;
+        ssi_silent_errors on;
     }
     location ^~ /assets/ {
         expires 1y;
