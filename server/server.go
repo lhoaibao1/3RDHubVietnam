@@ -28,7 +28,7 @@ var seedFS embed.FS
 
 const (
 	maxUpload = 2 * 1024 * 1024
-	adminCSP  = "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+	adminCSP  = "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
 	upCSP     = "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; sandbox"
 )
 

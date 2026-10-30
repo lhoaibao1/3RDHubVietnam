@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
+import '@/styles/fonts.css'
 import './admin.css'
 
 const app = createApp(App)

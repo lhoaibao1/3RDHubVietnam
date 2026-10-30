@@ -21,9 +21,6 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://3rdhubvietnam.tech/og-image.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap">
 <style>
 #boot{position:fixed;inset:0;z-index:300;display:grid;place-items:center;align-content:center;gap:22px;background:#F3F1EC;color:#0B2A6F;font:900 clamp(26px,5vw,38px) 'Nunito',system-ui,sans-serif;letter-spacing:-.01em;transition:opacity .45s ease,visibility .45s}
 html[data-theme=dark] #boot{background:#0E1426;color:#EDF1FF}
@@ -40,7 +37,7 @@ html[data-theme=dark] #boot{background:#0E1426;color:#EDF1FF}
 <body>
 <div id="boot" role="status" aria-live="polite" aria-label="Đang tải"><div>3RDHub <i>Vietnam</i></div><div class="bb"><span></span></div><div class="bs">Đang tải, vui lòng chờ một chút…</div></div>
 <div id="app"></div>
-<script>setTimeout(function(){var b=document.getElementById('boot');if(b)b.className='slow'},4000)</script>
+<script>setTimeout(function(){var b=document.getElementById('boot');if(b)b.className='slow'},4000);setTimeout(function(){var b=document.getElementById('boot'),t=b&&b.querySelector('.bs');if(t)t.innerHTML='Tải trang đang lâu hơn bình thường. <a href="" onclick="location.reload();return false" style="color:#FF6A2B;font-weight:800">Tải lại</a>'},10000)</script>
 <noscript><style>#boot{display:none}</style>3RDHub Vietnam cần bật JavaScript để hiển thị nội dung.</noscript>
 <script type="module" src="/src/main.ts"></script>
 </body>
