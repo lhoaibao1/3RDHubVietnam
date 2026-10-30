@@ -42,6 +42,7 @@
 #p-mo-hinh{--bt:#FF6A2B;--bt2:#7B4DFF;--pat:var(--polka);--patsz:42px 42px;--patmv:42px 42px,63px 63px}
 #p-advertiser{--bt:#7B4DFF;--bt2:#FF4D8D;--pat:var(--cubes);--patsz:56px 98px;--patmv:56px 98px,56px 98px,84px 147px,84px 147px,56px 98px,84px 147px;--bx1:90%}
 #p-san-pham{--bt:#1BA6D9;--bt2:#7B4DFF;--pat:var(--stripes);--patsz:16px 16px;--patmv:0 16px}
+#p-bao-gia{--bt:#FFB238;--bt2:#FF6A2B;--pat:var(--checker);--patsz:48px 48px;--patmv:48px 48px}
 #p-cong-nghe{--bt:#00ADD8;--bt2:#42B883;--pat:var(--vlines);--patsz:28px 56px,28px 56px;--patmv:28px 56px,28px 56px}
 #p-doi-tac{--bt:#12A06A;--bt2:#1BA6D9;--pat:var(--bokeh);--patsz:100% 100%;--patmv:0 0}
 #p-hoi-dap{--bt:#FFB238;--bt2:#FF6A2B;--pat:var(--zig);--patsz:28px 28px;--patmv:14px 0,14px 0,28px 0,28px 0}

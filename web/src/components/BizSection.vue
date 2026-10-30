@@ -28,7 +28,7 @@ onBeforeUnmount(() => clearInterval(timer))
       <div class="k2">Sản phẩm</div>
       <h2><span>Hệ thống affiliate riêng,</span><span class="o">mang thương hiệu của bạn.</span></h2>
       <p class="lead">3RDVN Technology thiết kế và lập trình trọn gói: website cho cộng tác viên, nền tảng quản trị và kết nối với đối tác. 3RDHub Vietnam chính là hệ thống chúng tôi tự xây và đang vận hành.</p>
-      <RouterLink class="more" to="/san-pham">Xem chi tiết →</RouterLink>
+      <RouterLink class="more" to="/san-pham">Xem chi tiết →</RouterLink> <RouterLink class="more" to="/baogia">Xem báo giá →</RouterLink>
     </div>
     <div class="lyr">
       <div><span class="n">1</span><span><b>Website cho cộng tác viên</b><span>Trang chiến dịch, đăng ký publisher, tạo link, ví hoa hồng, định danh</span></span></div>

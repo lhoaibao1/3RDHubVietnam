@@ -63,6 +63,11 @@ const assert = require('assert');
   await F('Mã Google Analytics').fill('G-ABCDE12345');
   await p.click('.savebar .save'); await p.waitForSelector('.savebar:not(.on)', { state: 'attached' });
   ok('lưu cài đặt');
+  await p.click('button[data-tab=email]');
+  await p.waitForFunction(() => document.querySelector('input[autocomplete=off]') && document.querySelector('input[autocomplete=off]').value !== '');
+  assert.strictEqual(await p.locator('input[autocomplete=off]').first().inputValue(), 'mail.3rdhubvietnam.tech'); ok('SMTP: có sẵn cấu hình iNET, chưa có mật khẩu');
+  await p.click('button[data-tab=quote]');
+  assert.strictEqual(await p.locator('.panel h2:has-text("Gói ")').count(), 3); ok('báo giá: có 3 gói mặc định để sửa');
   await p.screenshot({ path: '' + (process.env.OUT || '/tmp') + '/adm_settings.png' });
 
   // kiểm tra website công khai nhận thay đổi (ngữ cảnh mới, không cache)
@@ -86,6 +91,8 @@ const assert = require('assert');
   assert(foot.includes('(+84) 900 111 222') && foot.includes('Công ty Thử Nghiệm'), 'footer'); ok('website: chân trang lấy hotline và tên công ty mới');
   assert(await s.locator('footer .ftsoc a[href="https://facebook.com/3rdhub"]').count() === 1); ok('website: có icon Facebook ở chân trang');
   assert(await s.locator('.story.night').count() === 1, 'kiểu 3D nhà máy'); ok('website: kiểu cảnh 3D chọn trong CMS được áp dụng');
+  await s.goto(SITE + '/baogia'); await s.waitForSelector('.plan'); assert.strictEqual(await s.locator('.plan').count(), 3); ok('website: trang /baogia hiện 3 gói');
+  await s.goto(SITE + '/'); await s.waitForTimeout(1200);
   assert(await s.locator('a[href="tel:+84900111222"]').count() > 0); ok('website: link gọi dùng số mới');
   assert((await s.textContent('#faq')).includes('Câu hỏi thử nghiệm?')); ok('website: câu hỏi mới hiện ở trang chủ');
   await s.goto(SITE + '/hoi-dap'); await s.waitForTimeout(800);

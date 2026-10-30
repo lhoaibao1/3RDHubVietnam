@@ -81,6 +81,14 @@
       "sub": "3RDHub Vietnam",
       "tint": "#5B6279",
       "shot": "/"
+    },
+    "baogia": {
+      "title": "Báo giá | 3RDHub Vietnam",
+      "desc": "Báo giá hệ thống affiliate riêng, bản quyền 3RDHub và gói vận hành, nâng cấp. Chọn gói gần nhất với nhu cầu, để lại thông tin để nhận báo giá theo đúng phạm vi.",
+      "head": "Báo giá theo đúng phạm vi của bạn.",
+      "sub": "Hệ thống affiliate riêng, bản quyền 3RDHub, vận hành và nâng cấp.",
+      "tint": "#FFB238",
+      "shot": "/baogia"
     }
   }
 }

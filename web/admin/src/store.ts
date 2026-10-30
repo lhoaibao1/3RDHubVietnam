@@ -40,6 +40,8 @@ export const useAdmin = defineStore('admin', {
       c.partners = c.partners || []
       c.settings = c.settings || {}
       c.legal = c.legal || {}
+      c.quote = c.quote || { plans: [] }
+      c.quote.plans = c.quote.plans || []
       this.content = c
       this.saved = JSON.stringify(c)
     },
@@ -83,10 +85,12 @@ export const useAdmin = defineStore('admin', {
       if (!this.content) return
       this.saving = true
       try {
-        const r = await api<{ content: Content; updated: number }>('PUT', 'content', { content: this.content, note: 'Cập nhật nội dung' })
+        const r = await api<{ content: Content; updated: number; translated?: number; translate_failed?: number }>('PUT', 'content', { content: this.content, note: 'Cập nhật nội dung' })
         this.adopt(r.content)
         this.updated = r.updated
-        this.say('Đã lưu. Website cập nhật ngay.')
+        const tr = r.translated ? ` Đã tự dịch ${r.translated} đoạn sang tiếng Anh.` : ''
+        const bad = r.translate_failed ? ` ${r.translate_failed} đoạn chưa dịch được, sẽ dịch lại ở lần lưu sau.` : ''
+        this.say('Đã lưu. Website cập nhật ngay.' + tr + bad, !!r.translate_failed)
       } catch (e) {
         this.say((e as Error).message, true)
       } finally {

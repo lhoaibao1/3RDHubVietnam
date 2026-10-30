@@ -13,6 +13,7 @@ const company: Field[] = [
 ]
 const links: Field[] = [
   { key: 'parent_url', label: 'Website công ty mẹ', hint: 'Chân trang và trang pháp lý có liên kết tới đây', type: 'url' },
+  { key: 'demo_url', label: 'Link trang demo', hint: 'Nút "Xem demo" ở trang Sản phẩm và Báo giá', type: 'url' },
   { key: 'signup_url', label: 'Link nút "Đăng ký ngay"', hint: 'Trang đăng ký trên app', type: 'url' },
   { key: 'facebook', label: 'Facebook', hint: 'https://facebook.com/...', type: 'url' },
   { key: 'zalo', label: 'Zalo', hint: 'https://zalo.me/...', type: 'url' },

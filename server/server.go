@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"mime"
@@ -37,6 +38,7 @@ type App struct {
 	pool     *pgxpool.Pool
 	defaults Defaults
 	rl       *limiter
+	tr       *translator
 }
 
 func loadDefaults() (Defaults, error) {
@@ -338,7 +340,7 @@ func (a *App) apiContent(w http.ResponseWriter, r *http.Request) {
 		a.handleErr(w, r, err)
 		return
 	}
-	body := jsonBytes(map[string]any{"v": upd, "ov": c.Ov, "faq": c.Faq, "partners": c.Partners, "settings": c.Settings, "legal": c.Legal})
+	body := jsonBytes(map[string]any{"v": upd, "ov": c.Ov, "faq": c.Faq, "partners": c.Partners, "settings": c.Settings, "legal": c.Legal, "quote": c.Quote})
 	sum := sha1.Sum(body)
 	etag := `"` + hex.EncodeToString(sum[:])[:20] + `"`
 	h := map[string]string{"ETag": etag, "Cache-Control": "no-cache"}
@@ -365,9 +367,10 @@ func (a *App) apiLead(w http.ResponseWriter, r *http.Request) {
 		a.sendJSON(w, r, 200, map[string]any{"ok": true}, nil)
 		return
 	}
+	var phone, company, need, msg string
+	lang := "vi"
 	name, err := strip(d["name"], 120, "Họ tên")
 	if err == nil {
-		var phone, company, need, msg string
 		if phone, err = strip(d["phone"], 40, "Số điện thoại"); err == nil {
 			if len([]rune(name)) < 2 {
 				err = bad("Nhập họ và tên.")
@@ -385,7 +388,6 @@ func (a *App) apiLead(w http.ResponseWriter, r *http.Request) {
 			msg, err = strip(d["message"], 4000, "giá trị")
 		}
 		if err == nil {
-			lang := "vi"
 			if d["lang"] == "en" {
 				lang = "en"
 			}
@@ -401,6 +403,7 @@ func (a *App) apiLead(w http.ResponseWriter, r *http.Request) {
 		a.handleErr(w, r, err)
 		return
 	}
+	go a.notifyLead("[3RDHub] Yêu cầu mới từ website", fmt.Sprintf("Có yêu cầu mới trên website 3RDHub Vietnam.\n\nHọ tên: %s\nĐiện thoại: %s\nCông ty: %s\nNhu cầu: %s\nNgôn ngữ: %s\n\nNội dung:\n%s\n\nXem và xử lý trong trang quản trị CMS, mục Yêu cầu khách.\n", name, phone, company, need, lang, msg))
 	a.sendJSON(w, r, 200, map[string]any{"ok": true}, nil)
 }
 

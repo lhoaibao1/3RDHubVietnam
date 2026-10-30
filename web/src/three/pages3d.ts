@@ -200,8 +200,8 @@ function boot() {
     cam.aspect=asp;if(!mob)cam.setViewOffset(W,H,-W*.21,0,W,H);else cam.clearViewOffset();cam.near=Math.max(.5,dist-40);cam.far=dist+60;cam.updateProjectionMatrix();
     cur.s.fog.near=dist-2;cur.s.fog.far=dist+cur.R*3.2;
     R.render(cur.s,cam)})();
-  BUILD['san-pham']=BUILD['advertiser'];
-  var TINT={'san-pham':0x1BA6D9,'mo-hinh':0xFF6A2B,'advertiser':0x7B4DFF,'cong-nghe':0x00ADD8,'doi-tac':0x12A06A,'hoi-dap':0xFFB238,'lien-he':0xFF4D8D};
+  BUILD['san-pham']=BUILD['advertiser'];BUILD['bao-gia']=BUILD['advertiser'];
+  var TINT={'bao-gia':0xFFB238,'san-pham':0x1BA6D9,'mo-hinh':0xFF6A2B,'advertiser':0x7B4DFF,'cong-nghe':0x00ADD8,'doi-tac':0x12A06A,'hoi-dap':0xFFB238,'lien-he':0xFF4D8D};
   function show(slot?:any,id?:any,partners?:any){if(!BUILD[id])return false;PARTNERS=partners;slot.insertBefore(cv,slot.firstChild);
     if(!SC[id]){var o=base();BUILD[id](o);decor(o,TINT[id]||0xFF6A2B);o.a.forEach(function(q){var f=q.bob||q.obj;if(f)f.traverse(function(n){n.castShadow=false})});SC[id]=o}
     cur=SC[id];cur.s.fog.color.copy(bgCol());cur.t0=clk.getElapsedTime();size();return true}

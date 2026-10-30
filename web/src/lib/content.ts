@@ -1,11 +1,13 @@
 import defaults from '../../../server/seed/defaults.json'
 
 export type Lang = 'vi' | 'en'
-export interface Pair { vi: string; en?: string }
-export interface OvItem { vi?: string; en?: string }
+export interface Pair { vi: string; en?: string; x?: string }
+export interface OvItem { vi?: string; en?: string; x?: string }
 export interface Faq { id: string; cat: Pair; q: Pair; a: Pair; home?: boolean }
 export interface Partner { id?: string; name: string; url?: string; logo: string; group: Pair }
 export interface LegalDoc { title: Pair; updated: Pair; body: Pair }
+export interface QuotePlan { id: string; name: Pair; price: Pair; unit: Pair; desc: Pair; features: Pair[]; hot?: boolean }
+export interface Quote { plans: QuotePlan[] }
 export interface Content {
   v?: number
   ov: Record<string, OvItem>
@@ -13,10 +15,11 @@ export interface Content {
   partners: Partner[]
   settings: Record<string, string>
   legal: Record<string, LegalDoc>
+  quote?: Quote
 }
 
 /** Nội dung mặc định (cùng nguồn với server/seed/defaults.json) để hiện ngay trước khi tải /api/content. */
-export const DEFAULTS = defaults as unknown as { faq: Faq[]; partners: Partner[]; settings: Record<string, string>; legal: Record<string, LegalDoc> }
+export const DEFAULTS = defaults as unknown as { faq: Faq[]; partners: Partner[]; settings: Record<string, string>; legal: Record<string, LegalDoc>; quote: Quote }
 
 export const DEF_SETTINGS: Record<string, string> = {
   signup_url: 'https://app.3rdvn.io.vn/auth/login?tab=signup',
@@ -30,7 +33,7 @@ export const DEF_SETTINGS: Record<string, string> = {
   company_name_en: '3RDVN Technology Co., Ltd',
   address_en: 'Group 10 Tinh Thuy, Quang Phu Ward, Da Nang City, Vietnam', working_hours: '', working_hours_en: '',
   facebook: '', zalo: '', tiktok: '', youtube: '', instagram: '',
-  site_title: '', meta_description: '', analytics_id: '', scene_style: 'classic',
+  site_title: '', meta_description: '', analytics_id: '', scene_style: 'classic', demo_url: 'https://demo.3rdvn.io.vn',
 }
 
 export const SLUGS = ['mo-hinh', 'advertiser', 'san-pham', 'cong-nghe', 'doi-tac', 'hoi-dap', 'lien-he'] as const

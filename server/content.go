@@ -12,9 +12,9 @@ import (
 const maxJSON = 3 * 1024 * 1024
 
 var settingKeys = []string{"signup_url", "email", "hotline", "hotline_tel", "company_name", "tax_id", "address", "working_hours", "working_hours_en",
-	"facebook", "zalo", "tiktok", "youtube", "instagram", "site_title", "meta_description", "analytics_id", "parent_url", "company_name_en", "address_en", "scene_style"}
+	"facebook", "zalo", "tiktok", "youtube", "instagram", "site_title", "meta_description", "analytics_id", "parent_url", "company_name_en", "address_en", "scene_style", "demo_url"}
 var sceneStyles = map[string]bool{"classic": true, "isometric": true, "factory": true, "ecosystem": true, "orbit": true, "voxel": true, "blueprint": true, "neon": true}
-var urlSettings = map[string]bool{"signup_url": true, "facebook": true, "zalo": true, "tiktok": true, "youtube": true, "instagram": true, "parent_url": true}
+var urlSettings = map[string]bool{"signup_url": true, "facebook": true, "zalo": true, "tiktok": true, "youtube": true, "instagram": true, "parent_url": true, "demo_url": true}
 var settingMax = map[string]int{"meta_description": 400, "address": 300, "company_name": 120, "company_name_en": 120, "address_en": 300, "site_title": 120, "tax_id": 40, "analytics_id": 40}
 var legalKeys = []string{"terms", "privacy"}
 
@@ -26,16 +26,36 @@ var (
 	telStripRe  = regexp.MustCompile(`[\s.\-()]`)
 	analyticsRe = regexp.MustCompile(`^[A-Za-z]{1,3}-[A-Za-z0-9-]{4,20}$`)
 	idCleanRe   = regexp.MustCompile(`[^A-Za-z0-9_-]`)
+	hashRe      = regexp.MustCompile(`^[0-9a-f]{6,20}$`)
 )
 
+// Pair là một đoạn chữ hai ngôn ngữ. X là dấu vết bản English do máy tự dịch (băm của bản tiếng Việt lúc dịch):
+// còn X nghĩa là EN do hệ thống dịch và sẽ dịch lại khi tiếng Việt đổi; người dùng tự sửa EN thì X bị xoá.
 type Pair struct {
 	VI string `json:"vi"`
 	EN string `json:"en"`
+	X  string `json:"x,omitempty"`
 }
 
 type OvItem struct {
 	VI string `json:"vi,omitempty"`
 	EN string `json:"en,omitempty"`
+	X  string `json:"x,omitempty"`
+}
+
+// QuotePlan là một gói trên trang Báo giá (nội dung do CMS quản lý).
+type QuotePlan struct {
+	ID       string `json:"id"`
+	Name     Pair   `json:"name"`
+	Price    Pair   `json:"price"`
+	Unit     Pair   `json:"unit"`
+	Desc     Pair   `json:"desc"`
+	Features []Pair `json:"features"`
+	Hot      bool   `json:"hot"`
+}
+
+type Quote struct {
+	Plans []QuotePlan `json:"plans"`
 }
 
 type Faq struct {
@@ -66,6 +86,7 @@ type Content struct {
 	Partners []Partner           `json:"partners"`
 	Settings map[string]string   `json:"settings"`
 	Legal    map[string]LegalDoc `json:"legal"`
+	Quote    Quote               `json:"quote"`
 }
 
 // Defaults là nội dung mặc định nhúng trong chương trình (seed/defaults.json).
@@ -74,9 +95,13 @@ type Defaults struct {
 	Partners []Partner           `json:"partners"`
 	Settings map[string]string   `json:"settings"`
 	Legal    map[string]LegalDoc `json:"legal"`
+	Quote    Quote               `json:"quote"`
 }
 
 func (c *Content) normalize() {
+	if c.Quote.Plans == nil {
+		c.Quote.Plans = []QuotePlan{}
+	}
 	if c.Ov == nil {
 		c.Ov = map[string]OvItem{}
 	}
@@ -95,7 +120,7 @@ func (c *Content) normalize() {
 }
 
 func defaultContent(d *Defaults) Content {
-	c := Content{Faq: d.Faq, Partners: d.Partners}
+	c := Content{Faq: d.Faq, Partners: d.Partners, Quote: d.Quote}
 	c.normalize()
 	return c
 }
@@ -144,7 +169,11 @@ func pairOf(v any, n int, field string) (Pair, error) {
 		return Pair{}, err
 	}
 	en, err := str(m["en"], n, field)
-	return Pair{vi, en}, err
+	x, _ := m["x"].(string)
+	if !hashRe.MatchString(x) {
+		x = ""
+	}
+	return Pair{vi, en, x}, err
 }
 
 func cleanID(v any, def string) string {
@@ -219,6 +248,9 @@ func cleanContent(in any) (Content, error) {
 			return out, err
 		} else {
 			item.EN = t
+		}
+		if x, _ := v["x"].(string); hashRe.MatchString(x) {
+			item.X = x
 		}
 		if item.VI != "" || item.EN != "" {
 			out.Ov[k] = item
@@ -333,6 +365,50 @@ func cleanContent(in any) (Content, error) {
 			return out, bad("Mã Google Analytics có dạng G-XXXXXXXXXX")
 		}
 		out.Settings[k] = v
+	}
+
+	if q := asMap(c["quote"]); q != nil {
+		plans, _ := q["plans"].([]any)
+		if len(plans) > 12 {
+			return out, bad("Tối đa 12 gói báo giá")
+		}
+		for i, raw := range plans {
+			m := asMap(raw)
+			if m == nil {
+				continue
+			}
+			pl := QuotePlan{ID: cleanID(m["id"], fmt.Sprintf("q%d", i+1)), Hot: truthy(m["hot"]), Features: []Pair{}}
+			var err error
+			if pl.Name, err = pairOf(m["name"], 120, "Tên gói"); err != nil {
+				return out, err
+			}
+			if strings.TrimSpace(pl.Name.VI) == "" {
+				return out, bad("Gói báo giá số %d chưa có tên", i+1)
+			}
+			if pl.Price, err = pairOf(m["price"], 80, "Giá"); err != nil {
+				return out, err
+			}
+			if pl.Unit, err = pairOf(m["unit"], 80, "Đơn vị giá"); err != nil {
+				return out, err
+			}
+			if pl.Desc, err = pairOf(m["desc"], 400, "Mô tả gói"); err != nil {
+				return out, err
+			}
+			fs, _ := m["features"].([]any)
+			if len(fs) > 40 {
+				return out, bad("Mỗi gói tối đa 40 dòng tính năng")
+			}
+			for _, f := range fs {
+				pf, err := pairOf(f, 300, "Tính năng")
+				if err != nil {
+					return out, err
+				}
+				if strings.TrimSpace(pf.VI) != "" {
+					pl.Features = append(pl.Features, pf)
+				}
+			}
+			out.Quote.Plans = append(out.Quote.Plans, pl)
+		}
 	}
 
 	legal := asMap(c["legal"])

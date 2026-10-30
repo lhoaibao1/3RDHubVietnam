@@ -150,3 +150,13 @@ textarea.tall{min-height:420px;overflow:auto;line-height:1.55;font-size:14px}
 .side nav .sec{margin:14px 12px 4px;font-size:11.5px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);opacity:.8}
 .side nav{overflow:auto}
 .side nav button{padding:9px 12px}
+
+/* ===== nền trang quản trị: vệt màu mềm, hoạ tiết chấm, thanh bên và khung có chiều sâu ===== */
+body{background:radial-gradient(900px 520px at 6% -6%,rgba(255,106,43,.17),transparent 62%),radial-gradient(820px 560px at 100% 2%,rgba(123,77,255,.15),transparent 62%),radial-gradient(760px 640px at 72% 108%,rgba(0,173,216,.13),transparent 62%),radial-gradient(600px 500px at 0% 100%,rgba(255,178,56,.12),transparent 60%),var(--bg);background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(circle,rgba(11,42,111,.13) 1.2px,transparent 1.5px) 0 0/26px 26px;-webkit-mask-image:linear-gradient(135deg,#000,transparent 55%,#000);mask-image:linear-gradient(135deg,#000,transparent 55%,#000);opacity:.6}
+.side{background:linear-gradient(180deg,#fff 0%,#FFF8F3 60%,#F2EEFF 100%);box-shadow:8px 0 30px -24px rgba(20,20,60,.4)}
+.top{background:color-mix(in srgb,var(--bg) 70%,transparent)}
+.panel{box-shadow:0 1px 0 rgba(255,255,255,.8) inset,0 18px 40px -30px rgba(20,20,60,.35);border:1px solid rgba(228,224,216,.8)}
+.stat{box-shadow:0 18px 40px -30px rgba(20,20,60,.35)}
+.login{background:radial-gradient(700px 420px at 15% 10%,rgba(255,106,43,.22),transparent 62%),radial-gradient(700px 480px at 90% 90%,rgba(123,77,255,.22),transparent 62%)}
+.login form{border:1px solid rgba(228,224,216,.8)}

@@ -7,6 +7,7 @@ import LoginView from './views/LoginView.vue'
 import DashView from './views/DashView.vue'
 import ModuleView from './views/ModuleView.vue'
 import LookView from './views/LookView.vue'
+import EmailView from './views/EmailView.vue'
 import LegalView from './views/LegalView.vue'
 import LeadsView from './views/LeadsView.vue'
 import SettingsView from './views/SettingsView.vue'
@@ -15,8 +16,8 @@ import HistoryView from './views/HistoryView.vue'
 const a = useAdmin()
 a.boot()
 
-const MODULE_TABS = ['home', 'model', 'advertiser', 'product', 'tech', 'partners', 'faq', 'contact', 'chrome']
-const VIEWS: Record<string, unknown> = { dash: DashView, legal: LegalView, leads: LeadsView, settings: SettingsView, history: HistoryView, look: LookView }
+const MODULE_TABS = ['home', 'model', 'advertiser', 'product', 'quote', 'tech', 'partners', 'faq', 'contact', 'chrome']
+const VIEWS: Record<string, unknown> = { dash: DashView, legal: LegalView, leads: LeadsView, settings: SettingsView, history: HistoryView, look: LookView, email: EmailView }
 const ICONS: Record<TabKey, string> = {
   dash: '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
   home: '<path d="M3 11l9-8 9 8M5 10v10h14V10"/>',
@@ -25,6 +26,8 @@ const ICONS: Record<TabKey, string> = {
   product: '<path d="M21 8l-9-5-9 5v8l9 5 9-5zM3.3 7.5L12 12l8.7-4.5M12 22V12"/>',
   tech: '<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>',
   contact: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  quote: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M9 13h6M9 17h6"/>',
+  email: '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>',
   chrome: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18"/>',
   look: '<path d="M12 2l9 5v10l-9 5-9-5V7zM12 12l9-5M12 12v10M12 12L3 7"/>',
   faq: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',

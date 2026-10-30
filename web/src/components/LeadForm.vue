@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useSite } from '@/stores/site'
 
 // Form tư vấn cho Advertiser: gửi về /api/lead (CMS); nếu máy chủ không nhận thì mở email soạn sẵn.
-const props = defineProps<{ variant: 'home' | 'page' }>()
+const props = defineProps<{ variant: 'home' | 'page'; need?: string; prefill?: string }>()
 const site = useSite()
 
 const NEEDS: { n: string; home: string; page: string }[] = [
   { n: 'Chạy chiến dịch trên 3RDHub', home: 'Chạy chiến dịch trên 3RDHub', page: 'Chạy chiến dịch' },
   { n: 'Xây hệ thống affiliate riêng', home: 'Xây hệ thống riêng', page: 'Hệ thống riêng' },
   { n: 'Nhận bản quyền 3RDHub', home: 'Nhận bản quyền 3RDHub', page: 'Bản quyền 3RDHub' },
+  { n: 'Nhận báo giá hệ thống', home: 'Nhận báo giá', page: 'Báo giá' },
 ]
-const need = ref(NEEDS[0].n)
+const need = ref(NEEDS.find((o) => o.n === props.need)?.n || NEEDS[0].n)
 const f = reactive({ name: '', phone: '', company: '', msg: '', website: '' })
+watch(() => props.prefill, (v) => { if (v) { need.value = props.need || need.value; f.msg = site.t('Tôi quan tâm đến') + ' ' + v + '.' } })
 const busy = ref(false)
 const msg = ref('')
 const msgClass = ref('')

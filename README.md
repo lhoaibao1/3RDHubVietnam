@@ -96,10 +96,16 @@ Thử `deploy.sh` mà không đụng hệ thống thật: `PGHOST=<thư mục so
 Thanh bên chia theo từng trang của website, mỗi trang một tab có chữ và dữ liệu riêng của trang đó:
 
 - **Các trang website**: Trang chủ, Mô hình, Advertiser (đưa chiến dịch lên mạng lưới publisher), Sản phẩm (hệ thống affiliate riêng, bản quyền 3RDHub), Công nghệ, Đối tác, Hỏi đáp, Liên hệ, Pháp lý. Mỗi tab sửa hơn 450 đoạn chữ (Tiếng Việt và English, "Về gốc" từng đoạn); riêng Đối tác sửa danh sách logo (website chỉ hiện logo, không link), Hỏi đáp sửa câu hỏi và chọn câu hiện ở trang chủ, Liên hệ sửa email, hotline, giờ làm việc, Pháp lý sửa Điều khoản và Chính sách bảo mật (có xem trước; hai trang nằm riêng ở `/dieu-khoan`, `/bao-mat`).
-- **Toàn website**: *Menu và chân trang* (chữ dùng chung, thông báo cookie), *Giao diện 3D* (chọn một trong 8 kiểu cảnh, có ảnh xem trước và nút "Xem thử" mở website với `?scene=<kiểu>`, chỉ trên trình duyệt của bạn), *Cài đặt chung* (tên công ty, mã số thuế, địa chỉ, link đăng ký, mạng xã hội, SEO, mã Google Analytics, đổi mật khẩu).
+- **Báo giá**: trang `/baogia` (không nằm trên menu, mở từ trang Sản phẩm) lấy các gói và giá từ tab *Báo giá* trong CMS.
+- **Toàn website**: *Menu và chân trang* (chữ dùng chung, thông báo cookie), *Giao diện 3D* (chọn một trong 8 kiểu cảnh, có ảnh xem trước và nút "Xem thử" mở website với `?scene=<kiểu>`, chỉ trên trình duyệt của bạn), *Email (SMTP)* (máy chủ gửi thư, mật khẩu mã hoá, gửi thử, báo khi có yêu cầu mới), *Cài đặt chung* (tên công ty, mã số thuế, địa chỉ, link đăng ký, mạng xã hội, SEO, mã Google Analytics, đổi mật khẩu).
 - **Vận hành**: *Yêu cầu khách* (form liên hệ: trạng thái, ghi chú, xuất CSV) và *Lịch sử* (mỗi lần lưu là một phiên bản, giữ 60 bản gần nhất, khôi phục bằng một cú bấm).
 
 Hình ảnh, nội dung cảnh 3D và bố cục là phần thiết kế (nằm trong `web/`), CMS chỉ chọn *kiểu* cảnh 3D. Mã các kiểu mới ở `web/src/three/styles/`: `skin.ts` (phong cách: ánh sáng, nền, vật liệu), `parts.ts` (các chi tiết 3D), `concepts.ts` (cảnh riêng cho từng trang: trang chủ, Mô hình, Advertiser, Sản phẩm, Công nghệ, Đối tác, Hỏi đáp, Liên hệ), `host.ts` (ghép cảnh với skin). Thêm một kiểu mới = thêm một hàm skin và một dòng trong `sceneTypes.ts` + danh sách kiểu của backend (`sceneStyles` trong `server/content.go`).
+
+## Tự dịch và email
+
+- **Tự dịch Việt → Anh**: chỉ cần viết tiếng Việt trong CMS. Khi bấm Lưu, backend dịch những đoạn English còn trống hoặc đang là bản máy dịch mà tiếng Việt đã đổi (chữ trên trang, hỏi đáp, nhóm đối tác, trang pháp lý, báo giá). Ô English do bạn tự sửa thì được giữ nguyên. Kết quả được nhớ trong bảng `tr_cache`. Mặc định dùng điểm cuối dịch miễn phí không chính thức của Google; đặt `TRANSLATE_KEY` (Google Cloud Translation API) để dùng bản chính thức, hoặc `TRANSLATE=off` để tắt. Máy chủ phải ra được internet.
+- **Email SMTP**: tab *Email (SMTP)* trong CMS (mặc định điền sẵn `mail.3rdhubvietnam.tech`, cổng 465 SSL, tài khoản `hello@3rdhubvietnam.tech`). Mật khẩu chỉ nhập trong CMS, được mã hoá AES-256-GCM bằng khoá `secret.key` nằm trong thư mục dữ liệu của máy chủ, không có trong repo, không có trong `/api/content` và không hiện lại. Có nút gửi thử và tuỳ chọn báo email khi có yêu cầu mới (tắt mặc định).
 
 ## Bảo mật (tóm tắt)
 

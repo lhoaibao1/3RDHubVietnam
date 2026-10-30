@@ -452,6 +452,125 @@
   "meta_description": "",
   "analytics_id": "",
   "parent_url": "https://3rdvn.io.vn",
-  "scene_style": "classic"
+  "scene_style": "classic",
+  "demo_url": "https://demo.3rdvn.io.vn"
+ },
+ "quote": {
+  "plans": [
+   {
+    "id": "custom",
+    "name": {
+     "vi": "Hệ thống affiliate riêng",
+     "en": "Custom affiliate system"
+    },
+    "price": {
+     "vi": "Liên hệ báo giá",
+     "en": "Contact us for a quote"
+    },
+    "unit": {
+     "vi": "Theo phạm vi dự án",
+     "en": "Based on project scope"
+    },
+    "desc": {
+     "vi": "Xây nền tảng mang thương hiệu của bạn theo đúng quy trình nghiệp vụ.",
+     "en": "A platform built under your brand around your own workflow."
+    },
+    "hot": false,
+    "features": [
+     {
+      "vi": "Website cho cộng tác viên",
+      "en": "Website for affiliates"
+     },
+     {
+      "vi": "Hệ thống quản trị chiến dịch, báo cáo, đối soát",
+      "en": "Admin system for campaigns, reports and reconciliation"
+     },
+     {
+      "vi": "Postback, API key và môi trường test",
+      "en": "Postback, API keys and a test environment"
+     },
+     {
+      "vi": "Thương hiệu và tên miền riêng",
+      "en": "Your own brand and domain"
+     },
+     {
+      "vi": "Bàn giao mã nguồn và tài liệu",
+      "en": "Source code and documentation handover"
+     }
+    ]
+   },
+   {
+    "id": "license",
+    "name": {
+     "vi": "Bản quyền 3RDHub",
+     "en": "3RDHub licence"
+    },
+    "price": {
+     "vi": "Liên hệ báo giá",
+     "en": "Contact us for a quote"
+    },
+    "unit": {
+     "vi": "Theo gói tính năng",
+     "en": "Based on feature package"
+    },
+    "desc": {
+     "vi": "Triển khai nhanh trên nền tảng đã chạy thực tế, đổi thương hiệu theo bạn.",
+     "en": "Launch fast on a platform already running in production, rebranded for you."
+    },
+    "hot": true,
+    "features": [
+     {
+      "vi": "Dùng lại hệ thống 3RDHub đang vận hành",
+      "en": "Reuse the 3RDHub system already in operation"
+     },
+     {
+      "vi": "Đổi thương hiệu, cấu hình theo yêu cầu",
+      "en": "Rebrand and configure to your needs"
+     },
+     {
+      "vi": "Triển khai và đào tạo đội vận hành",
+      "en": "Deployment and operator training"
+     },
+     {
+      "vi": "Bổ sung tính năng theo từng giai đoạn",
+      "en": "Features added in phases"
+     }
+    ]
+   },
+   {
+    "id": "care",
+    "name": {
+     "vi": "Vận hành và nâng cấp",
+     "en": "Operations and upgrades"
+    },
+    "price": {
+     "vi": "Liên hệ báo giá",
+     "en": "Contact us for a quote"
+    },
+    "unit": {
+     "vi": "Theo tháng hoặc theo năm",
+     "en": "Monthly or yearly"
+    },
+    "desc": {
+     "vi": "Giữ hệ thống ổn định và phát triển thêm khi quy mô tăng.",
+     "en": "Keep the system stable and keep it growing with your scale."
+    },
+    "hot": false,
+    "features": [
+     {
+      "vi": "Giám sát và sao lưu định kỳ",
+      "en": "Monitoring and regular backups"
+     },
+     {
+      "vi": "Hỗ trợ kỹ thuật theo thoả thuận",
+      "en": "Technical support as agreed"
+     },
+     {
+      "vi": "Nâng cấp và bổ sung tính năng",
+      "en": "Upgrades and new features"
+     }
+    ]
+   }
+  ]
  }
 }

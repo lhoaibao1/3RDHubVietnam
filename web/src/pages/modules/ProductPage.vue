@@ -17,7 +17,7 @@ usePageFx(root)
     <div>
       <h1><span>Hệ thống affiliate riêng,</span> <span class="o">mang thương hiệu của bạn.</span></h1>
       <p class="lead">Xây hệ thống theo yêu cầu, hoặc nhận bản quyền chính hệ thống 3RDHub đang vận hành thực tế. 3RDVN Technology lo trọn gói từ thiết kế, lập trình đến bàn giao.</p>
-      <div class="acts"><RouterLink class="btn or" to="/lien-he">Nhận tư vấn</RouterLink><RouterLink class="btn gh" to="/cong-nghe">Xem công nghệ</RouterLink></div></div>
+      <div class="acts"><RouterLink class="btn or" to="/baogia">Xem báo giá</RouterLink><a class="btn gh" :href="site.S('demo_url')" target="_blank" rel="noopener">Xem demo</a></div></div>
     <Page3D id="san-pham" tint="#1BA6D9"><div class="ft" style="left:18px;top:18px"><b>Hệ thống quản trị</b><span>Chiến dịch, báo cáo, đối soát</span></div><div class="ft" style="right:18px;bottom:18px"><b>Bàn giao trọn gói</b><span>Mã nguồn, tài liệu, đào tạo</span></div></Page3D>
   </div>
 
@@ -48,6 +48,8 @@ usePageFx(root)
 
   <div class="ps"><div class="k2">Quy trình</div><h2>Triển khai trong sáu bước</h2>
     <ol class="steps6"><li><b>01</b><h3>Tư vấn</h3><p>Nghe sản phẩm, quy mô publisher và cách bạn muốn trả hoa hồng.</p></li><li><b>02</b><h3>Thiết kế</h3><p>Chốt luồng nghiệp vụ, giao diện và phạm vi tính năng.</p></li><li><b>03</b><h3>Lập trình</h3><p>Frontend Vue.js, backend Go, kết nối đối tác.</p></li><li><b>04</b><h3>Kiểm thử</h3><p>Chạy thử tracking và postback trên môi trường test.</p></li><li><b>05</b><h3>Bàn giao</h3><p>Tài liệu bàn giao, hướng dẫn đội vận hành.</p></li><li><b>06</b><h3>Nâng cấp</h3><p>Bổ sung tính năng theo từng giai đoạn.</p></li></ol></div>
+
+  <div class="ps"><div class="cta xs"><div><h2>Muốn biết chi phí?</h2><p>Xem các gói và để lại thông tin, chúng tôi báo giá theo đúng phạm vi của bạn.</p></div><RouterLink class="btn or" to="/baogia">Xem báo giá</RouterLink></div></div>
 
   <PageCta />
 </section>

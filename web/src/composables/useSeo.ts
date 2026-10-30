@@ -21,7 +21,8 @@ export function useSeo() {
     const slug = String(route.params.slug || route.path.replace(/^\//, ''))
     let page = ''
     const legal = LEGAL_SLUGS[slug]
-    if (legal) page = site.legal(legal).title
+    if (slug === 'baogia') page = site.t('Báo giá')
+    else if (legal) page = site.legal(legal).title
     else {
       const n = NAV.find((x) => x[0] === slug)
       if (n) page = site.t(n[1])

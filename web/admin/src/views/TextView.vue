@@ -76,7 +76,7 @@ function turn(d: number) { page.value += d; window.scrollTo(0, 0) }
       </div>
       <div class="cols">
         <label>Tiếng Việt<AutoTextarea :model-value="cur(it, 'vi')" @update:model-value="setField(it, 'vi', $event)" /></label>
-        <label>English<AutoTextarea :model-value="cur(it, 'en')" @update:model-value="setField(it, 'en', $event)" /></label>
+        <label>English <span v-if="ov[it.k]?.x" class="tag">Tự dịch</span><span v-else-if="ov[it.k]?.vi && !ov[it.k]?.en" class="tag or">Sẽ tự dịch khi lưu</span><AutoTextarea :model-value="cur(it, 'en')" @update:model-value="setField(it, 'en', $event)" /></label>
       </div>
     </div>
     <div v-if="pages > 1" class="pager">

@@ -210,7 +210,7 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 		rows.Close()
 		return ok(map[string]any{
 			"content":  c,
-			"defaults": map[string]any{"faq": a.defaults.Faq, "partners": a.defaults.Partners, "settings": a.defaults.Settings, "legal": a.defaults.Legal},
+			"defaults": map[string]any{"faq": a.defaults.Faq, "partners": a.defaults.Partners, "settings": a.defaults.Settings, "legal": a.defaults.Legal, "quote": a.defaults.Quote},
 			"leads":    counts, "updated": upd,
 		})
 
@@ -227,11 +227,69 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 		if note == "" {
 			note = "Lưu thay đổi"
 		}
+		// tự dịch Việt -> Anh những đoạn English còn trống hoặc đã cũ (người dùng không cần tự dịch)
+		prev, _, _ := a.currentContent(ctx)
+		tdone, tfail := a.autoTranslate(ctx, &c, prev)
 		if err := a.saveContent(ctx, c, note); err != nil {
 			return err
 		}
 		_, upd, _ := a.currentContent(ctx)
-		return ok(map[string]any{"ok": true, "content": c, "updated": upd})
+		return ok(map[string]any{"ok": true, "content": c, "updated": upd, "translated": tdone, "translate_failed": tfail})
+
+	case sub == "smtp" && m == http.MethodGet:
+		c := a.loadSMTP(ctx)
+		has := c.PassEnc != ""
+		c.PassEnc = ""
+		return ok(map[string]any{"smtp": c, "has_password": has})
+
+	case sub == "smtp" && m == http.MethodPut:
+		d, err := readJSON(r, 8192)
+		if err != nil {
+			return err
+		}
+		cur := a.loadSMTP(ctx)
+		c, err := cleanSMTP(d, cur)
+		if err != nil {
+			return err
+		}
+		if truthy(d["clear_password"]) {
+			c.PassEnc = ""
+		}
+		if pw, _ := d["password"].(string); pw != "" {
+			if len(pw) > 200 || strings.ContainsAny(pw, "\r\n\x00") {
+				return bad("Mật khẩu SMTP không hợp lệ")
+			}
+			if c.PassEnc, err = a.seal(pw); err != nil {
+				return err
+			}
+		}
+		if err := kvSetPool(ctx, a.pool, "smtp", c); err != nil {
+			return err
+		}
+		has := c.PassEnc != ""
+		c.PassEnc = ""
+		return ok(map[string]any{"ok": true, "smtp": c, "has_password": has})
+
+	case sub == "smtp-test" && m == http.MethodPost:
+		if !a.rl.ok("smtptest", clientIP(r), 6, 10*time.Minute) {
+			a.fail(w, r, 429, "Gửi thử quá nhiều lần, thử lại sau ít phút.")
+			return nil
+		}
+		d, err := readJSON(r, 2048)
+		if err != nil {
+			return err
+		}
+		to, err := strip(d["to"], 200, "Email nhận")
+		if err != nil {
+			return err
+		}
+		if !emailRe.MatchString(to) || !noCRLF(to) {
+			return bad("Email nhận thử không hợp lệ")
+		}
+		if err := a.sendMail(ctx, []string{to}, "[3RDHub CMS] Gửi thử email", "Đây là email gửi thử từ trang quản trị 3RDHub CMS.\nNếu bạn đọc được thư này thì cấu hình SMTP đã hoạt động.\n"); err != nil {
+			return bad("%v", err)
+		}
+		return ok(map[string]any{"ok": true})
 
 	case sub == "revisions" && m == http.MethodGet:
 		rows, err := a.pool.Query(ctx, `SELECT id,ts,note,snapshot FROM revisions ORDER BY id DESC LIMIT 60`)

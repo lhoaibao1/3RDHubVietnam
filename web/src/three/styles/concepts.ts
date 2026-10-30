@@ -2,7 +2,7 @@
 // `flow` là cảnh trang chủ (năm bước). Mọi cảnh dựng bằng chi tiết và vật liệu của skin đang chọn.
 import * as T from 'three'
 import { PAL } from './kit'
-import { barChart, bank, monitor, bubble, building, card, container, coinStack, database, doc, envelope, gear, headset, house, link, magnifier, mast, person, phone, pin, place, servers, shield, tag, textSprite, tile, tower, type Ctx, type Part } from './parts'
+import { barChart, bank, chip, monitor, bubble, building, card, container, coinStack, database, doc, envelope, gear, headset, house, link, magnifier, mast, person, phone, pin, place, servers, shield, tag, textSprite, tile, tower, type Ctx, type Part } from './parts'
 
 export interface Focus { look: [number, number, number]; r: number }
 export interface Built { foci: Record<string, Focus>; anchors: Record<string, T.Vector3> }
@@ -78,6 +78,26 @@ function product(c: Ctx): Built {
   return {
     foci: { overview: { look: [0, 3, 1], r: 18 }, admin: { look: [-9, 3.5, -1], r: 10 }, site: { look: [0, 3, -7], r: 9 }, api: { look: [9, 3, -1], r: 10 }, licence: { look: [2, 3, 7], r: 11 } },
     anchors: { m: up(M, -9, -1), w: up(W, 0, -7), a: up(A, 9, -1), l: up(L, 0, 6.5), d: up(D, 10, 8) },
+  }
+}
+
+/** Trang Báo giá: ba gói đặt trên bệ với chồng tiền cao dần, các tờ báo giá bay quanh. */
+function quote(c: Ctx): Built {
+  const A = place(c, tag(c, servers(c, PAL.cyan, 3), 'Custom system', 'By scope', PAL.cyan), -10, 0, 0, [6.6, 6, PAL.cyan])
+  const B = place(c, tag(c, chip(c, PAL.gold), '3RDHub licence', 'Most chosen', PAL.gold, undefined, -0.2), 0, 0, -2, [7.6, 7.2, PAL.gold])
+  const C = place(c, tag(c, gear(c, PAL.mint, 1.4), 'Operations', 'Monthly · Yearly', PAL.mint), 10, 0, 0, [6.6, 6, PAL.mint])
+  for (const [x, n] of [[-10, 3], [0, 5], [10, 4]] as [number, number][]) { const cs = coinStack(c, n + 3); cs.position.set(x + 2.6, 0, 4.6); c.root.add(cs) }
+  const bk = place(c, tag(c, tile(c, PAL.orange, 'banknote', 3), 'Quote', 'Itemised', PAL.orange), 0, 0, 9, [5.4, 5, PAL.orange])
+  link(c, [[-10, 0.8, 0], [-5, 2, 4], [0, 0.8, 9]], PAL.cyan, 2, 0.09)
+  link(c, [[0, 0.8, -2], [0, 2, 3], [0, 0.8, 9]], PAL.gold, 3, 0.1)
+  link(c, [[10, 0.8, 0], [5, 2, 4], [0, 0.8, 9]], PAL.mint, 2, 0.09)
+  for (let i = 0; i < 4; i++) {
+    const d = doc(c, PAL.gold); c.root.add(d)
+    c.tick((t) => { const u = (t * 0.1 + i / 4) % 1, a = u * Math.PI * 2; d.position.set(Math.sin(a) * 9, 6.5 + Math.sin(a * 2) * 0.7, Math.cos(a) * 4 + 3); d.rotation.y = a })
+  }
+  return {
+    foci: { overview: { look: [0, 3, 2], r: 18 }, custom: { look: [-10, 3, 0], r: 10 }, licence: { look: [0, 3.5, -2], r: 11 }, care: { look: [10, 3, 0], r: 10 } },
+    anchors: { a: up(A, -10, 0), b: up(B, 0, -2), c: up(C, 10, 0), q: up(bk, 0, 9) },
   }
 }
 
@@ -159,5 +179,5 @@ function contact(c: Ctx): Built {
 }
 
 export const CONCEPTS: Record<string, (c: Ctx) => Built> = {
-  flow, 'mo-hinh': model, advertiser, 'san-pham': product, 'cong-nghe': tech, 'doi-tac': partners, 'hoi-dap': faq, 'lien-he': contact,
+  flow, 'mo-hinh': model, advertiser, 'san-pham': product, 'bao-gia': quote, 'cong-nghe': tech, 'doi-tac': partners, 'hoi-dap': faq, 'lien-he': contact,
 }
