@@ -105,6 +105,24 @@ func (a *App) initData(ctx context.Context) error {
 		}
 		log.Printf("Đã xoá cấu hình ZNS cũ (token Zalo OA) khỏi CSDL")
 	}
+	// một lần: danh sách ảnh giao diện đã chỉnh trong CMS được bổ sung các màn Chiến dịch, Đơn hàng mới chụp từ UAT
+	var done bool
+	if ok, _ := kvGet(ctx, a.pool, "shots_v2", &done); !ok {
+		c, _, err := a.currentContent(ctx)
+		if err != nil {
+			return err
+		}
+		if merged, changed := mergeShots(c.Product.Shots, a.defaults.Product.Shots); changed {
+			c.Product.Shots = merged
+			if err := a.saveContent(ctx, c, "Thêm ảnh Chiến dịch, Đơn hàng vào trang Sản phẩm"); err != nil {
+				return err
+			}
+			log.Printf("Đã thêm ảnh Chiến dịch, Đơn hàng vào danh sách ảnh giao diện")
+		}
+		if err := kvSetPool(ctx, a.pool, "shots_v2", true); err != nil {
+			return err
+		}
+	}
 	entries, _ := seedFS.ReadDir("seed/logos")
 	for _, e := range entries {
 		dst := filepath.Join(a.uploads(), "seed-"+e.Name())

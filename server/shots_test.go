@@ -103,3 +103,41 @@ func TestLegalPDF(t *testing.T) {
 		t.Fatalf("sau khi sửa: %s %s %s", tt, up, b)
 	}
 }
+
+// Danh sách ảnh đã chỉnh còn 7 ảnh (đã gỡ Chiến dịch, Đơn hàng, Thành viên): khởi động lại thì được bổ sung một lần.
+func TestShotsUpgradeOnStart(t *testing.T) {
+	a := testApp(t)
+	keep := []string{"dashboard", "tracking", "clicks", "access", "settings", "advertisers", "apidocs"}
+	var saved []Shot
+	for _, id := range keep {
+		saved = append(saved, Shot{ID: id, Img: "/hub/" + id + ".webp", Label: Pair{VI: "Tên riêng " + id}})
+	}
+	saved = append(saved, Shot{ID: "u1", Img: "/uploads/x.webp", Label: Pair{VI: "Ảnh tự tải"}})
+	c, _, _ := a.currentContent(t.Context())
+	c.Product.Shots = saved
+	if err := a.saveContent(t.Context(), c, "thử"); err != nil {
+		t.Fatal(err)
+	}
+	pool := a.pool
+	pool.Exec(t.Context(), `DELETE FROM kv WHERE key='shots_v2'`)
+	if err := a.initData(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	c, _, _ = a.currentContent(t.Context())
+	var ids []string
+	for _, x := range c.Product.Shots {
+		ids = append(ids, x.ID)
+	}
+	want := "dashboard,campaign-list,campaign-detail,campaign-new,tracking,order-list,order-leads,clicks,team-members,access,settings,advertisers,apidocs,u1"
+	if strings.Join(ids, ",") != want || c.Product.Shots[0].Label.VI != "Tên riêng dashboard" {
+		t.Fatalf("sau nâng cấp: %s", strings.Join(ids, ","))
+	}
+	// chỉ chạy một lần: gỡ lại thì không tự thêm nữa
+	c.Product.Shots = saved
+	a.saveContent(t.Context(), c, "gỡ lại")
+	a.initData(t.Context())
+	c, _, _ = a.currentContent(t.Context())
+	if len(c.Product.Shots) != len(saved) {
+		t.Fatalf("không được thêm lần hai: %d", len(c.Product.Shots))
+	}
+}

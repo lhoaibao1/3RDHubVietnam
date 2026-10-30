@@ -123,6 +123,38 @@ func upgradeShots(s, def []Shot) []Shot {
 	return out
 }
 
+// mergeShots thêm các màn mới (Chiến dịch, Đơn hàng, Lead, Thành viên) vào danh sách ảnh đã chỉnh trong CMS, theo thứ tự mặc định;
+// giữ nguyên ảnh và tên đã chỉnh, ảnh tự tải lên nằm cuối. Trả false nếu không cần đổi.
+func mergeShots(saved, def []Shot) ([]Shot, bool) {
+	add := map[string]bool{"campaign-list": true, "campaign-detail": true, "campaign-new": true, "order-list": true, "order-leads": true, "team-members": true}
+	have := map[string]bool{}
+	for _, x := range saved {
+		have[x.Img] = true
+	}
+	changed := false
+	byImg := map[string]Shot{}
+	for _, x := range saved {
+		byImg[x.Img] = x
+	}
+	out := []Shot{}
+	used := map[string]bool{}
+	for _, d := range def {
+		if x, ok := byImg[d.Img]; ok {
+			out = append(out, x)
+			used[d.Img] = true
+		} else if add[d.ID] && !have[d.Img] {
+			out = append(out, d)
+			changed = true
+		}
+	}
+	for _, x := range saved {
+		if !used[x.Img] {
+			out = append(out, x)
+		}
+	}
+	return out, changed
+}
+
 var hubImgRe = regexp.MustCompile(`^/hub/[a-z0-9-]{1,40}\.webp$`)
 
 var projectIcons = map[string]bool{"layers": true, "globe": true, "database": true, "mail": true, "blocks": true, "cpu": true, "network": true, "workflow": true, "box": true, "smartphone": true}
