@@ -334,6 +334,22 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.apiRegister(w, r)
 	case p == "/api/zalo/webhook" && !a.isAdminHost(r):
 		a.zaloWebhook(w, r)
+	case p == "/dmca-validation.html" && get && !a.isAdminHost(r):
+		// file xác minh quyền sở hữu website của DMCA.com (Claim Site); mã sửa trong CMS, Cài đặt
+		c, _, err := a.currentContent(r.Context())
+		if err != nil {
+			a.handleErr(w, r, err)
+			return
+		}
+		code := c.Settings["dmca_verify"]
+		if code == "" {
+			code = a.defaults.Settings["dmca_verify"]
+		}
+		if code == "" {
+			a.fail(w, r, 404, "Không tìm thấy")
+			return
+		}
+		a.send(w, r, 200, []byte(code), "text/html; charset=utf-8", noStore)
 	case legalPDFRe.MatchString(p) && get:
 		a.apiLegalPDF(w, r)
 	case p == "/healthz" && get:

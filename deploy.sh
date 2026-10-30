@@ -235,6 +235,10 @@ $(proxy_block "$port")
         client_max_body_size 64k;
 $(proxy_block "$port")
     }
+    # file xác minh website của DMCA.com (mã sửa trong CMS)
+    location = /dmca-validation.html {
+$(proxy_block "$port")
+    }
     # PDF các chính sách (điều khoản, bảo mật, giá, thanh toán...) tạo từ nội dung CMS
     location ^~ /api/legal/ {
 $(proxy_block "$port")

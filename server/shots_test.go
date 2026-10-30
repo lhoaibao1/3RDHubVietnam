@@ -141,3 +141,23 @@ func TestShotsUpgradeOnStart(t *testing.T) {
 		t.Fatalf("không được thêm lần hai: %d", len(c.Product.Shots))
 	}
 }
+
+// File xác minh DMCA: mặc định, sửa trong CMS thì đổi theo, mã sai định dạng bị chặn.
+func TestDMCAValidation(t *testing.T) {
+	a := testApp(t)
+	r := do(a, "GET", "3rdhubvietnam.tech", "/dmca-validation.html", nil, nil)
+	if r.code != 200 || string(r.body) != "MFNpcThzSzN2ZC8yUmN1UG1lMHlnZmsxZnNwdlg0dzd2ZjJZOG01QktOWT01" {
+		t.Fatalf("mặc định: %d %s", r.code, r.body)
+	}
+	ck := login(t, a)
+	h := map[string]string{"Cookie": ck, "X-CMS": "1"}
+	if r := do(a, "PUT", cms, "/api/admin/content", []byte(`{"content":{"settings":{"dmca_verify":"<script>"}}}`), h); r.code != 400 {
+		t.Fatalf("mã xấu phải bị chặn: %d", r.code)
+	}
+	if r := do(a, "PUT", cms, "/api/admin/content", []byte(`{"content":{"settings":{"dmca_verify":"QUJDREVGR0hJSktMTU5PUA=="}}}`), h); r.code != 200 {
+		t.Fatalf("lưu: %d %s", r.code, r.body)
+	}
+	if r := do(a, "GET", "3rdhubvietnam.tech", "/dmca-validation.html", nil, nil); string(r.body) != "QUJDREVGR0hJSktMTU5PUA==" {
+		t.Fatalf("sau khi sửa: %s", r.body)
+	}
+}
