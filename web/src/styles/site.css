@@ -702,20 +702,27 @@ html.vt-theme::view-transition-new(root){z-index:2}
 :root[data-theme="dark"] footer.ft2{box-shadow:0 -1px 0 var(--line)}
 
 /* ===== thông báo cookie ===== */
-.ck{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:90;width:min(960px,calc(100vw - 24px));display:flex;gap:18px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:22px;padding:18px 20px;box-shadow:0 24px 60px -20px rgba(8,16,48,.45)}
-.ckm{flex:1 1 380px;min-width:0}
-.ck h2{margin:0 0 4px;font-size:16px;font-weight:900}
-.ck p{margin:0;font-size:14px;line-height:1.55;color:var(--ink2)}
-.ck p a{color:var(--or-d);font-weight:800}
-.ckd{display:grid;gap:10px;margin-top:12px}
-.ckr{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
-.ckr input{margin-top:4px;width:18px;height:18px;accent-color:var(--or);flex:none}
-.ckr b{display:block;font-weight:800}.ckr small{display:block;color:var(--ink2);font-size:13px}
-.cka{display:flex;gap:8px;flex-wrap:wrap}
-.cka .btn{padding:10px 16px;font-size:14px}
-.ck-enter-active,.ck-leave-active{transition:opacity .35s,transform .35s}
-.ck-enter-from,.ck-leave-to{opacity:0;transform:translate(-50%,24px)}
-@media(max-width:640px){.cka{width:100%}.cka .btn{flex:1 1 auto}}
+.cbar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:90;width:min(960px,calc(100vw - 24px));display:flex;gap:18px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:22px;padding:18px 20px;box-shadow:0 24px 60px -20px rgba(8,16,48,.45)}
+.cbm{flex:1 1 380px;min-width:0}
+.cbar h2{margin:0 0 4px;font-size:16px;font-weight:900}
+.cbar p{margin:0;font-size:14px;line-height:1.55;color:var(--ink2)}
+.cbar p a{color:var(--or-d);font-weight:800}
+.cbd{display:grid;gap:10px;margin-top:12px}
+.cbr{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
+.cbr input{margin-top:4px;width:18px;height:18px;accent-color:var(--or);flex:none}
+.cbr b{display:block;font-weight:800}.cbr small{display:block;color:var(--ink2);font-size:13px}
+.cba{display:flex;gap:8px;flex-wrap:wrap}
+.cba .btn{padding:10px 16px;font-size:14px}
+.cbar-enter-active,.cbar-leave-active{transition:opacity .35s,transform .35s}
+.cbar-enter-from,.cbar-leave-to{opacity:0;transform:translate(-50%,24px)}
+@media(max-width:640px){.cba{width:100%}.cba .btn{flex:1 1 auto}}
 .ftcookie{all:unset;cursor:pointer;color:inherit;text-decoration:underline;text-underline-offset:3px}
 .ftcookie:hover{color:var(--or-d)}
 .ftcookie:focus-visible{outline:3px solid var(--or);outline-offset:2px;border-radius:6px}
+
+/* vòng xoay báo đang dựng cảnh 3D */
+.glload{position:absolute;inset:0;z-index:2;display:grid;place-items:center;pointer-events:none;opacity:0;transition:opacity .5s}
+.glload.on{opacity:1}
+.glload i{width:44px;height:44px;border-radius:50%;border:4px solid color-mix(in srgb,var(--ink) 14%,transparent);border-top-color:var(--or);animation:glspin .9s linear infinite;margin-left:min(34vw,420px)}
+@keyframes glspin{to{transform:rotate(360deg)}}
+@media(max-width:900px){.glload i{margin-left:0}}

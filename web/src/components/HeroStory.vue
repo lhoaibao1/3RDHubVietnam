@@ -21,6 +21,7 @@ const playing = !RM  // tự chạy, tôn trọng "giảm chuyển động"
 const tagK = ref(1)
 const tagLabel = ref('Advertiser')
 
+const loading = ref(true)
 let hero: Hero | null = null
 let stepT = 0
 let raf = 0
@@ -39,6 +40,7 @@ let building = 0
 /** Dựng cảnh theo kiểu đang chọn (kiểu cũ hoặc một trong ba kiểu mới); đổi kiểu thì dựng lại trên canvas mới. */
 async function build() {
   const my = ++building
+  loading.value = true
   hero?.dispose(); hero = null
   await nextTick()
   if (my !== building || !canvas.value || !tag.value) return
@@ -50,6 +52,8 @@ async function build() {
     hero.go(cur.value)
   } catch (e) {
     console.error(e)
+  } finally {
+    if (my === building) loading.value = false
   }
 }
 watch(style, build)
@@ -85,6 +89,7 @@ onBeforeUnmount(() => {
 <section class="story" id="mo-hinh" :class="{ night: style !== 'classic' && !DAY_STYLES.includes(style), solid: style !== 'classic', day: DAY_STYLES.includes(style) }">
   <div ref="pin" class="pin">
     <canvas id="gl" :key="style" ref="canvas" aria-label="Cảnh 3D mô hình tiếp thị liên kết: doanh nghiệp, 3RDHub, publisher, khách hàng, hoa hồng"></canvas>
+    <div class="glload" :class="{ on: loading }" aria-hidden="true"><i></i></div>
     <div ref="tag" class="tag"><b>{{ tagK }}</b><span>{{ site.t(tagLabel) }}</span></div>
     <div class="panel">
       <div id="steps" ref="steps" class="steps">
