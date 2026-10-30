@@ -43,6 +43,7 @@ export const DEF_SETTINGS: Record<string, string> = {
   address_en: 'Group 10 Tinh Thuy, Quang Phu Ward, Da Nang City, Vietnam', working_hours: '', working_hours_en: '',
   facebook: '', zalo: '', tiktok: '', youtube: '', instagram: '', linkedin: '',
   site_title: '', meta_description: '', analytics_id: '', scene_style: 'classic', demo_url: 'https://demo.3rdvn.io.vn',
+  bct_url: 'https://online.gov.vn/nen-tang/07af9ec2-8fb6-4bfa-93ed-b960a9d6f21d',
 }
 
 export const SLUGS = ['mo-hinh', 'advertiser', 'san-pham', 'cong-nghe', 'doi-tac', 'hoi-dap', 'lien-he'] as const

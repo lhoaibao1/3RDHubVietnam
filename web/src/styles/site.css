@@ -891,3 +891,5 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 @media(max-width:600px){.polist li{grid-template-columns:auto 1fr}.polist .pa{grid-column:1/-1}}
 .pnote{margin:16px 0 0;font-size:14px;color:var(--ink2)}
 .pnote a{color:var(--or);font-weight:700}
+.ftbot .ftbct{display:inline-flex;flex:none;justify-self:start;width:max-content;border-radius:6px;background:#fff;padding:3px 6px;line-height:0}
+.ftbot .ftbct img{height:44px;width:auto}

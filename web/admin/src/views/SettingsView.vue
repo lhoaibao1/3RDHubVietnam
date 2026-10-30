@@ -25,6 +25,7 @@ const links: Field[] = [
   { key: 'youtube', label: 'YouTube', hint: 'https://youtube.com/@...', type: 'url' },
   { key: 'instagram', label: 'Instagram', hint: 'https://instagram.com/...', type: 'url' },
   { key: 'linkedin', label: 'LinkedIn', hint: 'https://linkedin.com/company/...', type: 'url' },
+  { key: 'bct_url', label: 'Đường dẫn tra cứu Bộ Công Thương', hint: 'Logo "Đã thông báo Bộ Công Thương" ở chân trang liên kết tới đây (https://online.gov.vn/...). Để trống thì ẩn logo', type: 'url' },
 ]
 const seo: Field[] = [
   { key: 'site_title', label: 'Tiêu đề website', hint: 'Hiện trên tab trình duyệt. Mặc định: 3RDHub Vietnam' },

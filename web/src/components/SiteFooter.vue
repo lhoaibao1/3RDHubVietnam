@@ -12,6 +12,10 @@ const SOCIAL: [string, string][] = [['facebook', 'Facebook'], ['zalo', 'Zalo'], 
 const socials = computed(() => SOCIAL.filter(([k]) => /^https?:\/\//i.test(site.S(k))).map(([k, label]) => ({ k, label, url: okUrl(site.S(k)), path: BRANDS[k].p })))
 const hours = computed(() => (site.lang === 'en' && site.S('working_hours_en')) || site.S('working_hours'))
 const year = new Date().getFullYear()
+// Logo "Đã thông báo Bộ Công Thương" (mã nhúng của online.gov.vn); chỉ hiện khi đường dẫn là trang tra cứu của online.gov.vn
+const bct = computed(() => { const u = site.S('bct_url'); return /^https:\/\/online\.gov\.vn\//.test(u) ? u : '' })
+// máy chủ ảnh của Bộ không trả được ảnh thì dùng bản sao trên website
+function bctFallback(e: Event) { const i = e.target as HTMLImageElement; if (!i.src.endsWith('/img/bct-da-thong-bao.png')) i.src = '/img/bct-da-thong-bao.png' }
 const copy = computed(() => site.t('© {year} {name}. Bảo lưu mọi quyền.').replace('{year}', String(year)).replace('{name}', site.SL('company_name')))
 const note = computed(() => site.t('Nội dung, thương hiệu và hình ảnh trên website thuộc quyền sở hữu của {name} và các chủ sở hữu tương ứng. Không sao chép khi chưa có sự đồng ý bằng văn bản.').replace('{name}', site.SL('company_name')))
 const top = () => scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
@@ -60,6 +64,7 @@ const top = () => scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-moti
     <div class="w ftbot">
       <p class="ftcopy">{{ copy }}</p>
       <p class="ftnote">{{ note }}</p>
+      <a v-if="bct" class="ftbct" :href="bct" target="_blank" rel="noopener" title="Đã xác nhận với Bộ Công Thương"><img src="https://fileserver.online.gov.vn/uploads/Resources/iconxacnhan/DaThongBao.png" alt="Đã thông báo Bộ Công Thương" width="118" height="44" loading="lazy" @error="bctFallback"></a>
       <button type="button" class="fttop" :aria-label="$t('Lên đầu trang')" @click="top"><Icon name="arrow-up" /></button>
     </div>
   </footer>
