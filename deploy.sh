@@ -280,8 +280,6 @@ server {
     add_header X-Content-Type-Options nosniff always;
     add_header Referrer-Policy strict-origin-when-cross-origin always;
 $api
-    # chưa cài backend: khối SEO trả rỗng, trang dùng tiêu đề/mô tả dựng sẵn
-    location ^~ /api/seo/ { internal; return 204; }
     location / {
         try_files \$uri \$uri.html \$uri/ /index.html;
         expires -1;

@@ -4,7 +4,7 @@
 set -euo pipefail
 [ -n "${PGPORT:-}" ] || { echo "Đặt PGHOST và PGPORT trỏ tới một PostgreSQL thử nghiệm (cho phép vai trò postgres đăng nhập)."; exit 2; }
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
-T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
+T="$(mktemp -d)"; [ -n "${KEEP:-}" ] || trap 'rm -rf "$T"' EXIT; echo "T=$T"
 export DB_NAME="${DB_NAME:-tdhubcms_test}" DB_USER="${DB_USER:-$(id -un)}"
 mkdir -p "$T/bin" "$T/etc/nginx/sites-available" "$T/etc/nginx/sites-enabled" "$T/etc/systemd/system"
 cat > "$T/bin/nginx" <<'STUB'
