@@ -4,7 +4,7 @@ import { api } from '../api'
 import { useAdmin } from '../store'
 import type { Client } from '@/lib/content'
 
-// Khách hàng tiêu biểu: hiện ở trang chủ, trang Sản phẩm và Báo giá (mục "Khách hàng của chúng tôi"). Trống thì ẩn mục đó.
+// Khách hàng của chúng tôi: chỉ logo, hiện ngay dưới khu Đối tác. Trống thì ẩn mục đó.
 const a = useAdmin()
 const list = computed(() => a.content!.clients!)
 const uid = () => 'c' + Math.random().toString(36).slice(2, 8)
@@ -30,11 +30,11 @@ async function upload(c: Client, e: Event) {
   <div class="bar">
     <button class="btn" type="button" @click="add">+ Thêm khách hàng</button>
     <button class="btn gh" type="button" @click="restore">Khôi phục mặc định</button>
-    <span class="sub" style="margin:0">{{ list.length }} khách hàng. Hiện ở trang chủ, trang Sản phẩm và Báo giá. Danh sách trống thì mục này ẩn khỏi website.</span>
+    <span class="sub" style="margin:0">{{ list.length }} khách hàng. Chỉ hiện logo, ngay dưới khu Đối tác (trang chủ và trang Đối tác). Danh sách trống thì mục này ẩn.</span>
   </div>
   <div class="plist">
     <div v-for="(c, i) in list" :key="c.id" class="pcard">
-      <div class="logo"><img v-if="c.logo" :src="c.logo" :alt="c.name"><span v-else>Chưa có logo (hiện chữ viết tắt)</span></div>
+      <div class="logo"><img v-if="c.logo" :src="c.logo" :alt="c.name"><span v-else>Chưa có logo (tạm hiện tên)</span></div>
       <div class="bar" style="margin:0">
         <label class="btn gh sm" style="cursor:pointer">{{ c.logo ? 'Đổi logo' : 'Tải logo' }}<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none" @change="upload(c, $event)"></label>
         <button v-if="c.logo" class="btn gh sm" type="button" @click="c.logo = ''">Bỏ logo</button>
@@ -43,9 +43,7 @@ async function upload(c: Client, e: Event) {
         <button class="ib" type="button" title="Xuống" :disabled="i === list.length - 1" @click="move(i, 1)">↓</button>
         <button class="ib" type="button" title="Xoá" @click="remove(i)">✕</button>
       </div>
-      <label class="f">Tên khách hàng<input v-model="c.name" type="text"></label>
-      <label class="f">Mô tả ngắn (tiếng Việt, tự dịch khi lưu)<input v-model="c.desc.vi" type="text" placeholder="Ví dụ: Hệ thống affiliate cho đội 2.000 cộng tác viên"></label>
-      <label class="f">Website (không bắt buộc)<input v-model="c.url" type="url" placeholder="https://"></label>
+      <label class="f">Tên (không hiện trên web, dùng khi chưa có logo)<input v-model="c.name" type="text"></label>
     </div>
   </div>
 </template>

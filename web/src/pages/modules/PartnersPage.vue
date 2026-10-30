@@ -6,6 +6,7 @@ import Page3D from '@/components/Page3D.vue'
 import PageCta from '@/components/PageCta.vue'
 import { usePageFx } from '@/composables/usePageFx'
 import type { Partner } from '@/lib/content'
+import ClientsSection from '@/components/ClientsSection.vue'
 import { useSite } from '@/stores/site'
 
 const site = useSite()
@@ -54,6 +55,7 @@ const nOther = computed(() => partners.value.length - nBank.value - nFin.value)
           </div>
         </div>
       </div>
+      <div class="pgrp"><ClientsSection variant="page" /></div>
     </div>
 
     <div class="ps"><div class="k2">Sản phẩm</div><h2>Những sản phẩm đang có chiến dịch</h2>

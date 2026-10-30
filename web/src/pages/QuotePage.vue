@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router'
 import Icon from '@/components/Icon.vue'
 import Page3D from '@/components/Page3D.vue'
 import LeadForm from '@/components/LeadForm.vue'
-import ClientsSection from '@/components/ClientsSection.vue'
 import PlanCards from '@/components/PlanCards.vue'
 import CompareTable from '@/components/CompareTable.vue'
 import { usePageFx } from '@/composables/usePageFx'
@@ -54,8 +53,6 @@ onMounted(() => {
       <li><b>03</b><h3>Báo giá chi tiết</h3><p>Nhận bảng báo giá theo từng hạng mục và tiến độ.</p></li>
       <li><b>04</b><h3>Ký và triển khai</h3><p>Thống nhất hợp đồng, bắt đầu thiết kế và lập trình.</p></li>
     </ol></div>
-
-  <ClientsSection />
 
   <div class="g2 ps0">
     <article class="cd path">

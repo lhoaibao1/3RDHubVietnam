@@ -1,23 +1,28 @@
 <script setup lang="ts">
 import { useSite } from '@/stores/site'
 
-// Khách hàng tiêu biểu (sửa trong CMS, mục Khách hàng). Danh sách trống thì không hiện khu này.
+// Khách hàng của chúng tôi: chỉ hiện logo giống khu Đối tác, nằm ngay dưới Đối tác. Sửa trong CMS (mục Khách hàng); trống thì ẩn.
+// home: dải logo chạy ngang như trang chủ; page: lưới logo như trang Đối tác.
+defineProps<{ variant: 'home' | 'page' }>()
 const site = useSite()
-const initials = (n: string) => n.split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase()
 </script>
 
 <template>
-  <section v-if="site.clients.length" class="ps clients" data-cms="clients">
-    <div class="k2">Khách hàng</div>
-    <h2>Khách hàng của chúng tôi</h2>
-    <p class="sub">Doanh nghiệp và đối tác đã đấu nối API, vận hành cùng hệ thống 3RDVN.</p>
-    <div class="clist">
-      <article v-for="c in site.clients" :key="c.id" class="cl">
-        <span class="lg"><img v-if="c.logo" :src="c.logo" :alt="c.name"><b v-else>{{ initials(c.name) }}</b></span>
-        <h3>{{ c.name }}</h3>
-        <p v-if="site.pick(c.desc)">{{ site.pick(c.desc) }}</p>
-        <a v-if="c.url" :href="c.url" target="_blank" rel="noopener">{{ $t('Xem website') }} ↗</a>
-      </article>
+  <div v-if="site.clients.length" class="clients" :class="variant" data-cms="clients">
+    <h3 class="clh">Khách hàng của chúng tôi</h3>
+    <div v-if="variant === 'home'" class="plist">
+      <div class="mq rev">
+        <template v-for="copy in 2" :key="copy">
+          <div v-for="c in site.clients" :key="copy + c.id" class="pt" :aria-hidden="copy === 2 ? 'true' : undefined">
+            <span class="lg"><img v-if="c.logo" :src="c.logo" :alt="c.name"><b v-else>{{ c.name }}</b></span>
+          </div>
+        </template>
+      </div>
     </div>
-  </section>
+    <div v-else class="pg2">
+      <div v-for="c in site.clients" :key="c.id" class="pt">
+        <span class="lg"><img v-if="c.logo" :src="c.logo" :alt="c.name"><b v-else>{{ c.name }}</b></span>
+      </div>
+    </div>
+  </div>
 </template>

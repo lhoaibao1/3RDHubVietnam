@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSite } from '@/stores/site'
+import ClientsSection from './ClientsSection.vue'
 
 const site = useSite()
 </script>
@@ -18,5 +19,6 @@ const site = useSite()
         </template>
       </div>
     </div>
+    <ClientsSection variant="home" />
   </section>
 </template>
