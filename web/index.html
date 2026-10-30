@@ -36,7 +36,9 @@ html[data-theme=dark] #boot{background:#0E1426;color:#EDF1FF}
 </head>
 <body>
 <div id="boot" role="status" aria-live="polite" aria-label="Đang tải"><div>3RDHub <i>Vietnam</i></div><div class="bb"><span></span></div><div class="bs">Đang tải, vui lòng chờ một chút…</div></div>
-<div id="app"></div>
+<div id="app"><!-- Có sẵn trong HTML gốc để công cụ kiểm tra của DMCA.com và Bộ Công Thương đọc được; Vue thay bằng chân trang thật khi chạy -->
+<p class="seedbadges"><a href="https://www.dmca.com/Protection/Status.aspx?ID=05128573-eeec-4272-ad2b-a37ecfee4803" title="DMCA.com Protection Status" class="dmca-badge"><img src="https://images.dmca.com/Badges/dmca-badge-w100-5x1-10.png?ID=05128573-eeec-4272-ad2b-a37ecfee4803" alt="DMCA.com Protection Status" width="100" height="20"></a> <a href="https://online.gov.vn/nen-tang/07af9ec2-8fb6-4bfa-93ed-b960a9d6f21d" target="_blank" title="Đã xác nhận với Bộ Công Thương"><img src="https://fileserver.online.gov.vn/uploads/Resources/iconxacnhan/DaThongBao.png" alt="Đã xác nhận" style="height:44px;"></a></p>
+</div>
 <script>setTimeout(function(){var b=document.getElementById('boot');if(b)b.className='slow'},4000);setTimeout(function(){var b=document.getElementById('boot'),t=b&&b.querySelector('.bs');if(t)t.innerHTML='Tải trang đang lâu hơn bình thường. <a href="" onclick="location.reload();return false" style="color:#FF6A2B;font-weight:800">Tải lại</a>'},10000)</script>
 <noscript><style>#boot{display:none}</style>3RDHub Vietnam cần bật JavaScript để hiển thị nội dung.</noscript>
 <script type="module" src="/src/main.ts"></script>
