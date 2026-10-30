@@ -362,8 +362,9 @@ func (a *App) currentContent(ctx context.Context) (Content, int64, error) {
 	}
 	c.normalize()
 	if c.Product.Shots == nil { // chưa từng sửa ảnh giao diện trong CMS: dùng bộ ảnh mặc định
-		c.Product.Shots = a.defaults.Product.Shots
+		c.Product.Shots = append([]Shot(nil), a.defaults.Product.Shots...)
 	}
+	c.Product.Shots = upgradeShots(c.Product.Shots, a.defaults.Product.Shots)
 	var upd int64
 	if _, err := kvGet(ctx, a.pool, "updated", &upd); err != nil {
 		return c, 0, err

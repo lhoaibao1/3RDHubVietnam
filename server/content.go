@@ -97,6 +97,32 @@ type Product struct {
 	Shots []Shot `json:"shots"`
 }
 
+// Ảnh giao diện cũ đã đổi tên (tránh trình duyệt giữ ảnh demo cũ cùng tên) và danh sách mặc định cũ.
+var renamedHub = map[string]string{"/hub/orders.webp": "/hub/order-list.webp", "/hub/campaigns.webp": "/hub/campaign-list.webp", "/hub/members.webp": "/hub/team-members.webp"}
+
+const oldShotIDs = "dashboard,campaigns,tracking,orders,clicks,members,access,settings,advertisers,apidocs"
+
+// upgradeShots: bộ ảnh mặc định cũ (chưa chỉnh) thì dùng bộ mặc định mới; ảnh đã đổi tên thì trỏ sang tên mới.
+func upgradeShots(s, def []Shot) []Shot {
+	ids := make([]string, len(s))
+	same := true
+	for i, x := range s {
+		ids[i] = x.ID
+		same = same && x.Img == "/hub/"+x.ID+".webp"
+	}
+	if same && strings.Join(ids, ",") == oldShotIDs {
+		return append([]Shot(nil), def...)
+	}
+	out := make([]Shot, len(s))
+	copy(out, s)
+	for i := range out {
+		if n, ok := renamedHub[out[i].Img]; ok {
+			out[i].Img = n
+		}
+	}
+	return out
+}
+
 var hubImgRe = regexp.MustCompile(`^/hub/[a-z0-9-]{1,40}\.webp$`)
 
 var projectIcons = map[string]bool{"layers": true, "globe": true, "database": true, "mail": true, "blocks": true, "cpu": true, "network": true, "workflow": true, "box": true, "smartphone": true}
@@ -187,8 +213,14 @@ func (c *Content) normalize() {
 	}
 }
 
+// defaultContent trả bản sao độc lập của nội dung mặc định (sao chép sâu qua JSON), để việc đọc nội dung đã lưu
+// đè lên không làm hỏng bộ mặc định dùng chung trong bộ nhớ.
 func defaultContent(d *Defaults) Content {
 	c := Content{Faq: d.Faq, Partners: d.Partners, Quote: d.Quote, Clients: d.Clients, Product: d.Product}
+	var cp Content
+	if b, err := json.Marshal(c); err == nil && json.Unmarshal(b, &cp) == nil {
+		c = cp
+	}
 	c.normalize()
 	return c
 }

@@ -17,15 +17,27 @@ func TestProductShots(t *testing.T) {
 		s, _ := p["shots"].([]any)
 		return s
 	}
-	if n := len(shots()); n != 10 {
-		t.Fatalf("mặc định phải có 10 ảnh: %d", n)
+	if n := len(shots()); n != 13 {
+		t.Fatalf("mặc định phải có 13 ảnh: %d", n)
 	}
 	put := func(product string) resp {
 		return do(a, "PUT", cms, "/api/admin/content", []byte(`{"content":{"product":`+product+`}}`), h)
 	}
 	// lưu sản phẩm mà không gửi shots (CMS cũ): giữ bộ mặc định
-	if r := put(`{"modules":[]}`); r.code != 200 || len(shots()) != 10 {
+	if r := put(`{"modules":[]}`); r.code != 200 || len(shots()) != 13 {
 		t.Fatalf("thiếu shots phải giữ mặc định: %d %s", r.code, r.body)
+	}
+	// bộ 10 ảnh mặc định cũ đã lưu trên máy chủ: tự chuyển sang bộ mới
+	old := []string{}
+	for _, id := range strings.Split(oldShotIDs, ",") {
+		old = append(old, `{"id":"`+id+`","img":"/hub/`+id+`.webp","label":{"vi":"`+id+`"}}`)
+	}
+	if r := put(`{"shots":[` + strings.Join(old, ",") + `]}`); r.code != 200 || len(shots()) != 13 || shots()[5].(map[string]any)["img"] != "/hub/order-list.webp" {
+		t.Fatalf("nâng cấp bộ ảnh cũ: %d %v", r.code, shots())
+	}
+	// danh sách đã chỉnh có ảnh đổi tên: trỏ sang tên mới
+	if r := put(`{"shots":[{"id":"x","img":"/hub/orders.webp","label":{"vi":"Đơn"}}]}`); r.code != 200 || shots()[0].(map[string]any)["img"] != "/hub/order-list.webp" {
+		t.Fatalf("đổi tên ảnh: %v", shots())
 	}
 	// gỡ bớt, đổi tên, thêm ảnh tải lên; nhãn tự dịch
 	r := put(`{"shots":[{"id":"orders","img":"/hub/orders.webp","label":{"vi":"Đơn hàng mới"}},{"id":"x1","img":"/uploads/abc123.webp","label":{"vi":"Báo cáo"}}]}`)

@@ -50,19 +50,19 @@ const assert = require('assert');
     const sp = await ctx.newPage(); await sp.goto(SITE + '/san-pham'); await sp.waitForSelector('.prj');
     assert.strictEqual(await sp.locator('.prj').count(), 4);
     assert((await sp.textContent('.prjs')).includes('Thiết kế Website thử'));
-    assert.strictEqual(await sp.locator('.hthumbs img').count(), 10);
-    ok('website: trang Sản phẩm có 4 dự án, tên mới và 10 ảnh giao diện'); await sp.close();
+    assert.strictEqual(await sp.locator('.hthumbs img').count(), 13);
+    ok('website: trang Sản phẩm có 4 dự án, tên mới và 13 ảnh giao diện'); await sp.close();
   }
   // sản phẩm: gỡ một ảnh giao diện, đổi tên một ảnh
   await p.locator('.shcard').first().locator('button[title="Gỡ ảnh"]').click();
-  await p.locator('.shcard').first().locator('input[type=text]').fill('Chiến dịch (sửa)');
+  await p.locator('.shcard').first().locator('input[type=text]').fill('Tổng quan (sửa)');
   await p.screenshot({ path: '' + (process.env.OUT || '/tmp') + '/adm_shots.png' });
   await p.click('.savebar .save'); await p.waitForSelector('.savebar:not(.on)', { state: 'attached' });
   {
     const sp = await ctx.newPage(); await sp.goto(SITE + '/san-pham'); await sp.waitForSelector('.hthumbs img');
-    assert.strictEqual(await sp.locator('.hthumbs img').count(), 9);
-    assert((await sp.textContent('.hthumbs')).includes('Chiến dịch (sửa)'));
-    ok('sản phẩm: gỡ 1 ảnh giao diện, đổi tên ảnh, trang còn 9 ảnh'); await sp.close();
+    assert.strictEqual(await sp.locator('.hthumbs img').count(), 12);
+    assert((await sp.textContent('.hthumbs')).includes('Tổng quan (sửa)'));
+    ok('sản phẩm: gỡ 1 ảnh giao diện, đổi tên ảnh, trang còn 12 ảnh'); await sp.close();
   }
 
   // hỏi đáp: thêm câu hỏi hiện ở trang chủ
