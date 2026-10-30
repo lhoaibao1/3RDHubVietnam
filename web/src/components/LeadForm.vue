@@ -22,6 +22,23 @@ const msgClass = ref('')
 const nameEl = ref<HTMLInputElement | null>(null)
 const phoneEl = ref<HTMLInputElement | null>(null)
 const pre = props.variant === 'home' ? 'f' : 'g'
+// Mã để khách nhắn vào Zalo OA (máy chủ chỉ trả khi đã bật cho khách thật). Zalo không điền sẵn tin qua link nên phải có nút chép mã.
+const zalo = ref<{ code: string; url: string; expires_at: string } | null>(null)
+const copied = ref(false)
+async function copyCode() {
+  const c = zalo.value?.code || ''
+  try { await navigator.clipboard.writeText(c) } catch {
+    const t = document.createElement('textarea'); t.value = c; document.body.appendChild(t); t.select()
+    try { document.execCommand('copy') } catch { /* bỏ qua */ }
+    t.remove()
+  }
+  copied.value = true
+  setTimeout(() => { copied.value = false }, 4000)
+}
+const zaloExp = () => {
+  const d = new Date(zalo.value?.expires_at || '')
+  return isNaN(d.getTime()) ? '' : d.toLocaleString(site.lang === 'en' ? 'en-GB' : 'vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
+}
 
 function say(text: string, cls = '') { msg.value = text; msgClass.value = cls }
 
@@ -48,6 +65,7 @@ async function submit() {
     const j = await r.json().catch(() => ({}))
     if (r.ok && j.ok) {
       say(site.t('Cảm ơn bạn! Yêu cầu đã được gửi, đội ngũ 3RDVN Technology sẽ liên hệ sớm.'), 'ok')
+      zalo.value = j.zalo && typeof j.zalo.code === 'string' && /^https:\/\/zalo\.me\//.test(j.zalo.url) ? j.zalo : null
       f.name = f.phone = f.email = f.company = f.msg = ''
     } else if (r.status === 400 || r.status === 429) {
       say(j.error || site.t('Chưa gửi được, vui lòng thử lại.'), 'err2')
@@ -77,5 +95,20 @@ async function submit() {
     <label :for="pre + '4'">Nội dung<textarea :id="pre + '4'" v-model="f.msg" name="msg" placeholder="Sản phẩm, số lượng publisher dự kiến, thời gian mong muốn" /></label>
     <button class="btn or" type="submit" :disabled="busy">Gửi yêu cầu</button>
     <p class="msg" :class="msgClass" aria-live="polite">{{ msg }}</p>
+    <div v-if="zalo" class="lzalo">
+      <b class="lzt">Nhận tin về yêu cầu này qua Zalo</b>
+      <div class="lzc"><span>Mã của bạn</span><strong>{{ zalo.code }}</strong></div>
+      <div class="lza">
+        <button class="btn or" type="button" @click="copyCode">Chép mã</button>
+        <a class="btn gh" :href="zalo.url" target="_blank" rel="noopener">Mở Zalo OA</a>
+      </div>
+      <p class="lzok" aria-live="polite"><template v-if="copied">Đã chép mã vào bộ nhớ tạm.</template></p>
+      <ol>
+        <li><span>Bấm</span> <b>Mở Zalo OA</b> <span>và bấm</span> <b>Quan tâm</b>.</li>
+        <li><span>Gửi mã</span> <b>{{ zalo.code }}</b> <span>vào khung chat.</span></li>
+        <li>Bạn sẽ nhận tin xác nhận và các cập nhật tiếp theo qua Zalo.</li>
+      </ol>
+      <small><template v-if="zaloExp()"><span>Mã dùng được tới</span> {{ zaloExp() }}. </template><span>Nếu bạn không dùng Zalo, đội ngũ sẽ liên hệ theo số điện thoại đã gửi.</span></small>
+    </div>
   </form>
 </template>

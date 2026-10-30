@@ -11,6 +11,8 @@ const q = ref('')
 const leads = ref<Lead[]>([])
 const open = reactive<Record<number, boolean>>({})
 const notes = reactive<Record<number, string>>({})
+const zmsg = reactive<Record<number, string>>({})
+const zbusy = ref(0)
 let timer = 0
 
 async function load() {
@@ -35,6 +37,19 @@ async function remove(l: Lead) {
   if (!confirm('Xoá yêu cầu của ' + l.name + '? Không khôi phục được.')) return
   await guard(api('DELETE', 'leads/' + l.id).then(() => { leads.value = leads.value.filter((x) => x.id !== l.id); return a.refreshCounts() }))
 }
+// Gửi tin Zalo OA (tin tư vấn) cho khách đã ghép Zalo. Quá khung tương tác Zalo cho phép thì tin nằm chờ, tự gửi khi khách nhắn OA.
+async function sendZalo(l: Lead) {
+  const text = (zmsg[l.id] || '').trim()
+  if (!text) return
+  zbusy.value = l.id
+  try {
+    const r = await api<{ status: string; error?: string }>('POST', 'leads/' + l.id + '/zalo', { text })
+    if (r.status === 'sent') { a.say('Đã gửi tin Zalo'); zmsg[l.id] = '' }
+    else if (r.status === 'pending') { a.say('Khách chưa tương tác với OA gần đây: tin được giữ lại, sẽ tự gửi khi khách nhắn OA.'); zmsg[l.id] = '' }
+    else a.say('Zalo không nhận tin: ' + (r.error || ''), true)
+  } catch (e) { a.say((e as Error).message, true) } finally { zbusy.value = 0 }
+}
+const now = () => Math.floor(Date.now() / 1000)
 const badge = (s: Lead['status']) => (s === 'new' ? 'or' : s === 'done' ? 'ok' : s === 'spam' ? 'bad' : '')
 const tel = (p: string) => 'tel:' + p.replace(/[^\d+]/g, '')
 
@@ -65,6 +80,7 @@ onMounted(() => { guard(Promise.all([load(), a.refreshCounts()])) })
         <dt>Công ty</dt><dd>{{ l.company || '—' }}</dd>
         <dt>Ngôn ngữ</dt><dd>{{ l.lang === 'en' ? 'English' : 'Tiếng Việt' }}</dd>
         <dt>IP</dt><dd>{{ l.ip || '—' }}</dd>
+        <dt>Zalo</dt><dd><span v-if="l.zalo_linked" class="tag ok">Đã ghép Zalo</span><span v-else-if="l.zalo_code">Chưa ghép · mã <b>{{ l.zalo_code }}</b> {{ (l.zalo_code_exp || 0) < now() ? '(hết hạn)' : '(hạn ' + fmt(l.zalo_code_exp || 0) + ')' }}</span><span v-else>—</span></dd>
       </dl>
       <div v-if="l.message" class="msgbox">{{ l.message }}</div>
       <div class="row2">
@@ -74,6 +90,10 @@ onMounted(() => { guard(Promise.all([load(), a.refreshCounts()])) })
           </select>
         </label>
         <label class="f">Ghi chú<textarea v-model="notes[l.id]" rows="2" placeholder="Ghi chú nội bộ…" /></label>
+      </div>
+      <div v-if="l.zalo_linked" class="zsend">
+        <label class="f">Gửi tin Zalo cho khách<textarea v-model="zmsg[l.id]" rows="2" maxlength="2000" placeholder="Ví dụ: Hồ sơ của anh/chị đã được duyệt…" /></label>
+        <button class="btn sm" type="button" :disabled="zbusy === l.id || !(zmsg[l.id] || '').trim()" @click="sendZalo(l)">Gửi qua Zalo OA</button>
       </div>
       <div class="bar" style="margin:0">
         <button class="btn gh sm" type="button" @click="saveNote(l)">Lưu ghi chú</button>

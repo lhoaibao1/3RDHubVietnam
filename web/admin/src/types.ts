@@ -5,6 +5,7 @@ export interface Bootstrap { content: Content; defaults: Defaults; leads: Record
 export interface Lead {
   id: number; ts: number; name: string; phone: string; company: string; need: string; message: string
   lang: string; ip: string; ua: string; email?: string; status: 'new' | 'contacted' | 'done' | 'spam'; note: string
+  zalo_code?: string; zalo_code_exp?: number; zalo_linked?: boolean
 }
 export interface Revision { id: number; ts: number; note: string; ov: number; faq: number; partners: number }
 export interface StringItem { k: string; g: string; en: string }

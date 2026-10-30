@@ -118,16 +118,20 @@ type leadRow struct {
 	Status  string `json:"status"`
 	Note    string `json:"note"`
 	Email   string `json:"email"`
+	// Zalo OA: mã ghép và trạng thái đã ghép (không gửi Zalo user id ra trình duyệt)
+	ZaloCode   string `json:"zalo_code"`
+	ZaloExp    int64  `json:"zalo_code_exp"`
+	ZaloLinked bool   `json:"zalo_linked"`
 }
 
-const leadCols = `id,ts,name,phone,company,need,message,lang,ip,ua,status,note,email`
+const leadCols = `id,ts,name,phone,company,need,message,lang,ip,ua,status,note,email,zalo_code,zalo_code_exp,zalo_uid<>''`
 
 func scanLeads(rows pgx.Rows) ([]leadRow, error) {
 	defer rows.Close()
 	out := []leadRow{}
 	for rows.Next() {
 		var l leadRow
-		if err := rows.Scan(&l.ID, &l.TS, &l.Name, &l.Phone, &l.Company, &l.Need, &l.Message, &l.Lang, &l.IP, &l.UA, &l.Status, &l.Note, &l.Email); err != nil {
+		if err := rows.Scan(&l.ID, &l.TS, &l.Name, &l.Phone, &l.Company, &l.Need, &l.Message, &l.Lang, &l.IP, &l.UA, &l.Status, &l.Note, &l.Email, &l.ZaloCode, &l.ZaloExp, &l.ZaloLinked); err != nil {
 			return nil, err
 		}
 		out = append(out, l)
@@ -185,6 +189,12 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 		return nil
 	}
 	ok := func(v any) error { a.sendJSON(w, r, 200, v, noStore); return nil }
+	if v, hit, err := a.zaloAdmin(ctx, w, r, sub); hit {
+		if err != nil {
+			return err
+		}
+		return ok(v)
+	}
 
 	switch {
 	case sub == "me":
@@ -311,9 +321,6 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 			if truthy(d["clear_bot_token"]) {
 				c.BotToken = ""
 			}
-			if truthy(d["clear_oa"]) {
-				c.Secret, c.Refresh, c.Access, c.AccessExp = "", "", "", 0
-			}
 			err = kvSetPool(ctx, a.pool, "zalo", c)
 		}
 		zaloMu.Unlock()
@@ -371,26 +378,6 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 			list = append(list, map[string]string{"id": id, "name": n})
 		}
 		return ok(map[string]any{"chats": list})
-
-	case sub == "zns-test" && m == http.MethodPost:
-		if !a.rl.ok("zalotest", clientIP(r), 10, 10*time.Minute) {
-			a.fail(w, r, 429, "Thử quá nhiều lần, đợi ít phút.")
-			return nil
-		}
-		d, err := readJSON(r, 2048)
-		if err != nil {
-			return err
-		}
-		ph, _ := d["phone"].(string)
-		if len(digitsRe.ReplaceAllString(ph, "")) < 9 {
-			return bad("Nhập số điện thoại nhận thử")
-		}
-		l := sampleLead()
-		l.Phone = ph
-		if err := a.znsSend(ctx, l); err != nil {
-			return bad("%v", err)
-		}
-		return ok(map[string]any{"ok": true})
 
 	case sub == "notify-log" && m == http.MethodGet:
 		var list []notifyEntry

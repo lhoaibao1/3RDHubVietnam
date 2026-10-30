@@ -214,11 +214,16 @@ main_vhost() {
   if cms_installed; then
     local port; port="$(cms_port)"
     api="
-    # Backend Go: chỉ mở 3 đường dẫn công khai. Trang quản trị nằm ở $CMS_SUB
+    # Backend Go: chỉ mở các đường dẫn công khai dưới đây. Trang quản trị nằm ở $CMS_SUB
     location = /api/content {
 $(proxy_block "$port")
     }
     location = /api/lead {
+        client_max_body_size 64k;
+$(proxy_block "$port")
+    }
+    # Webhook của ứng dụng Zalo (tin khách nhắn OA); backend kiểm tra chữ ký X-ZEvent-Signature
+    location = /api/zalo/webhook {
         client_max_body_size 64k;
 $(proxy_block "$port")
     }

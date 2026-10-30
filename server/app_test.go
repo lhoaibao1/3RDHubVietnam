@@ -25,7 +25,7 @@ func testApp(t *testing.T) *App {
 		t.Fatal(err)
 	}
 	t.Cleanup(pool.Close)
-	for _, tb := range []string{"kv", "revisions", "leads", "tr_cache", "schema_migrations"} {
+	for _, tb := range []string{"kv", "revisions", "leads", "tr_cache", "zalo_outbox", "zalo_seen", "schema_migrations"} {
 		pool.Exec(ctx, "DROP TABLE IF EXISTS "+tb)
 	}
 	if err := migrate(ctx, pool); err != nil {
@@ -45,7 +45,7 @@ func testApp(t *testing.T) *App {
 	site := filepath.Join(dir, "site")
 	os.MkdirAll(site, 0o755)
 	os.WriteFile(filepath.Join(site, "index.html"), []byte("<html>site</html>"), 0o644)
-	a := &App{cfg: Config{DataDir: dir, AdminDir: admin, SiteDir: site, AdminPass: "matkhau-thu-nghiem", SessionTTL: 3600}, pool: pool, defaults: d, rl: newLimiter()}
+	a := &App{cfg: Config{DataDir: dir, AdminDir: admin, SiteDir: site, AdminPass: "matkhau-thu-nghiem", SessionTTL: 3600}, pool: pool, defaults: d, rl: newLimiter(), zoa: newZaloOA(Config{})}
 	if err := a.initData(ctx); err != nil {
 		t.Fatal(err)
 	}

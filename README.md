@@ -104,8 +104,37 @@ Mọi chỗ chỉ cần viết tiếng Việt, bản tiếng Anh tự dịch khi
 ## Tự dịch và email
 
 - **Tự dịch Việt → Anh**: chỉ cần viết tiếng Việt trong CMS. Khi bấm Lưu, backend dịch những đoạn English còn trống hoặc đang là bản máy dịch mà tiếng Việt đã đổi (chữ trên trang, hỏi đáp, nhóm đối tác, trang pháp lý, báo giá). Ô English do bạn tự sửa thì được giữ nguyên. Kết quả được nhớ trong bảng `tr_cache`. Mặc định dùng điểm cuối dịch miễn phí không chính thức của Google; đặt `TRANSLATE_KEY` (Google Cloud Translation API) để dùng bản chính thức, hoặc `TRANSLATE=off` để tắt. Máy chủ phải ra được internet.
-- **Thông báo khi có người đăng ký** (CMS, mục *Email & Zalo báo tin*): email chuyển tiếp cho đội ngũ (nhiều địa chỉ, bấm Trả lời là email thẳng cho khách), email xác nhận giao diện đẹp gửi khách (theo ngôn ngữ khách dùng, có xem mẫu), tin nhắn **Zalo Bot** cho đội ngũ (token từ bot.zaloplatforms.com, nút tìm chat ID) và tin **Zalo OA ZNS** gửi tới số điện thoại khách (App ID, Secret key, Refresh token, mẫu ZNS đã duyệt; hệ thống tự làm mới token). Mọi khoá được mã hoá bằng `secret.key`, có nhật ký 40 lần gửi gần nhất.
+- **Thông báo khi có người đăng ký** (CMS, mục *Email & Zalo báo tin*; phần ZNS cũ đã gỡ, xem mục Zalo OA bên dưới): email chuyển tiếp cho đội ngũ (nhiều địa chỉ, bấm Trả lời là email thẳng cho khách), email xác nhận giao diện đẹp gửi khách (theo ngôn ngữ khách dùng, có xem mẫu), tin nhắn **Zalo Bot** cho đội ngũ (token từ bot.zaloplatforms.com, nút tìm chat ID). Mọi khoá được mã hoá bằng `secret.key`, có nhật ký 40 lần gửi gần nhất.
 - **Email SMTP**: tab *Email (SMTP)* trong CMS (mặc định điền sẵn `mail.3rdhubvietnam.tech`, cổng 465 SSL, tài khoản `hello@3rdhubvietnam.tech`). Mật khẩu chỉ nhập trong CMS, được mã hoá AES-256-GCM bằng khoá `secret.key` nằm trong thư mục dữ liệu của máy chủ, không có trong repo, không có trong `/api/content` và không hiện lại. Có nút gửi thử và tuỳ chọn báo email khi có yêu cầu mới (tắt mặc định).
+
+## Zalo OA: tin cho khách của website (dùng chung OA với 3RDHub)
+
+OA "Công ty TNHH CÔNG NGHỆ 3RDVN" (`147468245835855615`) được kết nối trong 3RDHub; 3RDHub giữ refresh token và tự gia hạn.
+Website chỉ **mượn access token** từ 3RDHub để gửi **tin tư vấn** (miễn phí) cho khách của website. **Website không gọi `oauth.zaloapp.com`**, không đổi code, không làm mới token (có test chặn việc này), và không dùng ZNS (có phí). Phần ZNS cũ trong CMS đã gỡ; cấu hình ZNS cũ còn trong CSDL tự xoá khi khởi động.
+
+**Luồng:** khách gửi form → nhận mã `3R-12345` (hạn 7 ngày), nút **Chép mã** và **Mở Zalo OA** → khách bấm Quan tâm, nhắn mã → webhook nhận `user_send_text`, kiểm tra chữ ký, lưu Zalo user id vào yêu cầu và trả lời xác nhận → trong CMS (*Yêu cầu khách*) có ô **Gửi qua Zalo OA**. Mã dùng tiền tố `3R-` để không lẫn với mã `KH-` của 3RDHub; tin chứa mã khác bị bỏ qua.
+
+**Giới hạn của Zalo:** tin tư vấn chỉ gửi được khi khách đã quan tâm OA và tương tác với OA trong 7 ngày (mã lỗi `-213`, `-230`, `-232`, `-227`). Tin không gửi được nằm trong hàng chờ (`zalo_outbox`) và tự gửi khi khách nhắn OA hoặc quan tâm lại.
+
+**Token:** `GET {ZALO_OA_TOKEN_URL}` với `Authorization: Token {ZALO_OA_SHARE_KEY}`; giữ trong bộ nhớ tới `expires_at` trừ 5 phút. Zalo báo token không hợp lệ (`-216`, `-220`, `-124`) thì hỏi lại 3RDHub **một lần** rồi thử lại. 401 (sai khoá), 429 (quá 60 lần/phút), 503 `oa_unavailable` (OA mất kết nối trong 3RDHub) hiện ở CMS, mục *Email & Zalo báo tin*.
+
+Biến môi trường (trong `/etc/3rdhub-cms.env`, **không commit giá trị**), rồi `systemctl restart 3rdhub-cms`:
+
+| Biến | Giá trị |
+|---|---|
+| `ZALO_OA_TOKEN_URL` | `https://app.3rdvn.io.vn/api/v1/public/zalo-oa/token` |
+| `ZALO_OA_SHARE_KEY` | khoá tạo trong 3RDHub |
+| `ZALO_WEBHOOK_SECRET` | **OA Secret Key** của ứng dụng Zalo (developers.zalo.me → ứng dụng → Webhook), dùng xác thực `X-ZEvent-Signature` |
+| `ZALO_APP_ID` | mặc định `3689777608400566243` |
+| `ZALO_OA_ID` | mặc định `147468245835855615` |
+| `ZALO_POLL=1` | chỉ khi không đặt được webhook: đọc `listrecentchat` mỗi 45 giây |
+| `ZALO_OA_PUBLIC=1` | **chỉ bật sau khi thử xong**: hiện mã và nút Zalo cho khách thật sau khi gửi form |
+
+**Ứng dụng Zalo:** Webhook URL `https://3rdhubvietnam.tech/api/zalo/webhook`, bật sự kiện `user_send_text` và `follow`. Tên miền phải được xác thực trong ứng dụng (Xác thực domain; cách dễ nhất là bản ghi DNS TXT, không cần sửa website). Chữ ký: `mac=sha256(appId + body thô + timeStamp + OA Secret Key)`.
+
+**Thử trên máy chủ thật (chưa bật cho khách):** đặt 3 biến đầu và `ZALO_WEBHOOK_SECRET` → CMS, *Email & Zalo báo tin* → **Kiểm tra token** → **Tạo mã thử** → dùng tài khoản Zalo thử mở OA, Quan tâm, nhắn mã → nhận tin xác nhận → *Yêu cầu khách*, mở "Thử Zalo OA", gửi một tin. Ổn thì thêm `ZALO_OA_PUBLIC=1`.
+
+**Thử cục bộ:** `go test` (`zalooa_test.go`), và `tools/e2e/zalo.js` (3RDHub + Zalo giả, xem đầu file). `ZALO_API_BASE` chỉ dùng khi thử với máy chủ Zalo giả.
 
 ## Bảo mật (tóm tắt)
 
