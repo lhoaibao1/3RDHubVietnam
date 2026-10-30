@@ -83,10 +83,21 @@ type Project struct {
 	Points []Pair `json:"points"`
 }
 
+// Shot là một ảnh giao diện hệ thống ở trang Sản phẩm (ảnh mẫu trong /hub/ hoặc ảnh tải lên /uploads/).
+type Shot struct {
+	ID    string `json:"id"`
+	Img   string `json:"img"`
+	Label Pair   `json:"label"`
+}
+
 type Product struct {
 	Projects []Project `json:"projects"`
 	Modules  []Module  `json:"modules"`
+	// nil: dùng bộ ảnh mặc định; rỗng: ẩn khu ảnh giao diện
+	Shots []Shot `json:"shots"`
 }
+
+var hubImgRe = regexp.MustCompile(`^/hub/[a-z0-9-]{1,40}\.webp$`)
 
 var projectIcons = map[string]bool{"layers": true, "globe": true, "database": true, "mail": true, "blocks": true, "cpu": true, "network": true, "workflow": true, "box": true, "smartphone": true}
 
@@ -580,6 +591,29 @@ func cleanContent(in any) (Content, error) {
 				}
 			}
 			out.Product.Projects = append(out.Product.Projects, pj)
+		}
+		if sv, has := pm["shots"]; has && sv != nil {
+			shs, _ := sv.([]any)
+			if len(shs) > 30 {
+				return out, bad("Tối đa 30 ảnh giao diện")
+			}
+			out.Product.Shots = []Shot{}
+			for i, raw := range shs {
+				m := asMap(raw)
+				if m == nil {
+					continue
+				}
+				sh := Shot{ID: cleanID(m["id"], fmt.Sprintf("s%d", i+1))}
+				sh.Img, _ = m["img"].(string)
+				if !hubImgRe.MatchString(sh.Img) && !uploadRe.MatchString(sh.Img) {
+					return out, bad("Ảnh giao diện số %d chưa có ảnh hợp lệ", i+1)
+				}
+				var err error
+				if sh.Label, err = pairOf(m["label"], 80, "Tên màn hình"); err != nil {
+					return out, err
+				}
+				out.Product.Shots = append(out.Product.Shots, sh)
+			}
 		}
 		mods, _ := pm["modules"].([]any)
 		if len(mods) > 30 {

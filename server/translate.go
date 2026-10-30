@@ -280,6 +280,15 @@ func (a *App) autoTranslate(ctx context.Context, c *Content, prev Content) (done
 			jobs = append(jobs, pairJob(&p.Points[k], pp))
 		}
 	}
+	psh := map[string]Shot{}
+	for _, x := range prev.Product.Shots {
+		psh[x.ID] = x
+	}
+	for si := range c.Product.Shots {
+		x := &c.Product.Shots[si]
+		o, has := psh[x.ID]
+		jobs = append(jobs, pairJob(&x.Label, pairPtr(has, &o.Label)))
+	}
 	pm := map[string]Module{}
 	for _, m := range prev.Product.Modules {
 		pm[m.ID] = m

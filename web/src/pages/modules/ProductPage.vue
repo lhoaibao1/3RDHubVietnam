@@ -64,7 +64,7 @@ function jump(id: string) { document.getElementById('pj-' + id)?.scrollIntoView(
               <ul class="ck"><li v-for="(it, k) in m.items" :key="k">{{ site.pick(it) }}</li></ul>
             </article>
           </div></div>
-        <div class="pjs"><h3>Giao diện hệ thống</h3><HubGallery /></div>
+        <div v-if="site.shots.length" class="pjs"><h3>Giao diện hệ thống</h3><HubGallery /></div>
         <div class="pjs"><h3>Thuê, self-host hay mua source</h3><CompareTable /></div>
         <div class="pjs"><h3>Các gói</h3><PlanCards link /></div>
       </template>

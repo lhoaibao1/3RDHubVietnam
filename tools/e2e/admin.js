@@ -53,6 +53,17 @@ const assert = require('assert');
     assert.strictEqual(await sp.locator('.hthumbs img').count(), 10);
     ok('website: trang Sản phẩm có 4 dự án, tên mới và 10 ảnh giao diện'); await sp.close();
   }
+  // sản phẩm: gỡ một ảnh giao diện, đổi tên một ảnh
+  await p.locator('.shcard').first().locator('button[title="Gỡ ảnh"]').click();
+  await p.locator('.shcard').first().locator('input[type=text]').fill('Chiến dịch (sửa)');
+  await p.screenshot({ path: '' + (process.env.OUT || '/tmp') + '/adm_shots.png' });
+  await p.click('.savebar .save'); await p.waitForSelector('.savebar:not(.on)', { state: 'attached' });
+  {
+    const sp = await ctx.newPage(); await sp.goto(SITE + '/san-pham'); await sp.waitForSelector('.hthumbs img');
+    assert.strictEqual(await sp.locator('.hthumbs img').count(), 9);
+    assert((await sp.textContent('.hthumbs')).includes('Chiến dịch (sửa)'));
+    ok('sản phẩm: gỡ 1 ảnh giao diện, đổi tên ảnh, trang còn 9 ảnh'); await sp.close();
+  }
 
   // hỏi đáp: thêm câu hỏi hiện ở trang chủ
   await p.click('button[data-tab=faq]');

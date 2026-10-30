@@ -114,6 +114,9 @@ func TestAutoTranslate(t *testing.T) {
 	if _, ok := pub["clients"]; !ok {
 		t.Fatal("thiếu clients ở /api/content")
 	}
+	if r := do(a, "GET", cms, "/", nil, nil); !strings.Contains(r.hdr.Get("Content-Security-Policy"), "img-src data: blob: 'self' https://example.vn") {
+		t.Fatalf("CMS phải hiện được ảnh mẫu của website: %s", r.hdr.Get("Content-Security-Policy"))
+	}
 	if r := do(a, "GET", cms, "/", nil, nil); !strings.Contains(r.hdr.Get("Content-Security-Policy"), "frame-src 'self' https://example.vn") {
 		t.Fatalf("CSP trang quản trị phải cho nhúng website chính: %s", r.hdr.Get("Content-Security-Policy"))
 	}

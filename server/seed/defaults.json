@@ -947,6 +947,88 @@
   }
  ],
  "product": {
+  "shots": [
+   {
+    "id": "dashboard",
+    "img": "/hub/dashboard.webp",
+    "label": {
+     "vi": "Tổng quan",
+     "en": "Overview"
+    }
+   },
+   {
+    "id": "campaigns",
+    "img": "/hub/campaigns.webp",
+    "label": {
+     "vi": "Chiến dịch",
+     "en": "Campaigns"
+    }
+   },
+   {
+    "id": "tracking",
+    "img": "/hub/tracking.webp",
+    "label": {
+     "vi": "Tạo link",
+     "en": "Create links"
+    }
+   },
+   {
+    "id": "orders",
+    "img": "/hub/orders.webp",
+    "label": {
+     "vi": "Đơn hàng",
+     "en": "Orders"
+    }
+   },
+   {
+    "id": "clicks",
+    "img": "/hub/clicks.webp",
+    "label": {
+     "vi": "Lượt click",
+     "en": "Clicks"
+    }
+   },
+   {
+    "id": "members",
+    "img": "/hub/members.webp",
+    "label": {
+     "vi": "Thành viên",
+     "en": "Members"
+    }
+   },
+   {
+    "id": "access",
+    "img": "/hub/access.webp",
+    "label": {
+     "vi": "Phân quyền",
+     "en": "Permissions"
+    }
+   },
+   {
+    "id": "settings",
+    "img": "/hub/settings.webp",
+    "label": {
+     "vi": "Cài đặt",
+     "en": "Settings"
+    }
+   },
+   {
+    "id": "advertisers",
+    "img": "/hub/advertisers.webp",
+    "label": {
+     "vi": "Advertiser",
+     "en": "Advertisers"
+    }
+   },
+   {
+    "id": "apidocs",
+    "img": "/hub/apidocs.webp",
+    "label": {
+     "vi": "Tài liệu API",
+     "en": "API docs"
+    }
+   }
+  ],
   "modules": [
    {
     "id": "dieu-hanh",

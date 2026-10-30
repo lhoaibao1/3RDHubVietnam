@@ -201,3 +201,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .zsteps code{font-size:12.5px;overflow-wrap:anywhere}
 .zsend{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin:10px 0}
 @media(max-width:700px){.zsend{grid-template-columns:1fr}}
+
+/* Ảnh giao diện hệ thống (tab Sản phẩm) */
+.shgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:12px}
+.shcard{display:grid;gap:8px;padding:10px;border-radius:14px;background:var(--bg)}
+.shcard img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;border-radius:10px;background:#fff;box-shadow:0 0 0 1px var(--line)}

@@ -11,7 +11,9 @@ export interface QuoteRow { label: Pair; cells: Pair[] }
 export interface Quote { plans: QuotePlan[]; rows?: QuoteRow[] }
 export interface Module { id: string; code: Pair; title: Pair; items: Pair[] }
 export interface Project { id: string; icon: string; name: Pair; tag: Pair; desc: Pair; points: Pair[] }
-export interface Product { projects?: Project[]; modules: Module[] }
+export interface Shot { id: string; img: string; label: Pair }
+/** shots: null/thiếu = bộ ảnh mặc định, [] = ẩn khu ảnh giao diện */
+export interface Product { projects?: Project[]; modules: Module[]; shots?: Shot[] | null }
 export interface Client { id: string; name: string; logo: string; url?: string; desc: Pair }
 export interface Content {
   v?: number

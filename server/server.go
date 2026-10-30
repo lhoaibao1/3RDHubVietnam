@@ -174,6 +174,12 @@ func siteFrameSrc(r *http.Request) string {
 	return "'self'"
 }
 
+// adminPageCSP cho trang quản trị nhúng website (sửa trên trang) và hiện ảnh mẫu của website (/hub/...).
+func adminPageCSP(r *http.Request) string {
+	site := siteFrameSrc(r)
+	return strings.Replace(adminCSP, "img-src 'self' data: blob:", "img-src data: blob: "+site, 1) + "; frame-src " + site
+}
+
 var hostPortRe = regexp.MustCompile(`^[a-z0-9.-]{1,253}(:[0-9]{1,5})?$`)
 
 func (a *App) send(w http.ResponseWriter, r *http.Request, code int, body []byte, ctype string, h map[string]string) {
@@ -322,7 +328,7 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if name == "" {
 				name = "index.html"
 			}
-			a.serveFile(w, r, a.cfg.AdminDir, name, "no-cache", adminCSP+"; frame-src "+siteFrameSrc(r))
+			a.serveFile(w, r, a.cfg.AdminDir, name, "no-cache", adminPageCSP(r))
 		} else {
 			a.fail(w, r, 404, "Không tìm thấy")
 		}
@@ -353,6 +359,9 @@ func (a *App) currentContent(ctx context.Context) (Content, int64, error) {
 		return c, 0, err
 	}
 	c.normalize()
+	if c.Product.Shots == nil { // chưa từng sửa ảnh giao diện trong CMS: dùng bộ ảnh mặc định
+		c.Product.Shots = a.defaults.Product.Shots
+	}
 	var upd int64
 	if _, err := kvGet(ctx, a.pool, "updated", &upd); err != nil {
 		return c, 0, err
