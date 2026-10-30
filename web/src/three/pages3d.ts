@@ -173,7 +173,47 @@ function boot() {
     var loop=new T.CatmullRomCurve3([V(-3.6,5.4,.8),V(-1,7.6,2.6),V(3,8,1),V(2.6,7,-3.4),V(-2.6,6.6,-3)],true);
     for(var k=0;k<3;k++)mover(o,o.fx,loop,env(),.08,k/3,'face');
     bot(o,P,1.2,-.4,3,.25,true,.54);
-    o.tg.set(0,3.4,0);o.R=8.4;o.az=.28;o.el=.3}
+    o.tg.set(0,3.4,0);o.R=8.4;o.az=.28;o.el=.3},
+
+  /* Sản phẩm: bốn dòng sản phẩm (SaaS, Website/CMS, CRM/ERP, Mail Server) quanh lõi 3RDVN */
+  'san-pham':function(o){var Hb=podium(o,0,-2.6,3,0x1BA6D9);var H1=hub(Hb,.8,0,.54,0,0x1BA6D9);o.a.push({fn:H1.tick});
+    var S=podium(o,-8.4,1.4,2.7,0xFF6A2B),Wb=podium(o,-3,4.4,2.7,0x7B4DFF),Cr=podium(o,3,4.4,2.7,0x12A06A),Ml=podium(o,8.4,1.4,2.7,0xFF4D8D);
+    /* SaaS: các lớp dịch vụ xếp chồng, lớp trên cùng nhấp nhô */
+    var stk=new T.Group();stk.position.y=.54;S.add(stk);[MAT.navy,MAT.white,MAT.orange].forEach(function(m,i){var sl=RB(stk,3-i*.35,.42,2.2-i*.25,.16,m,0,i*.62,0);o.a.push({bob:sl,y0:i*.62,ph:i*.9,amp:.08+i*.04})});
+    var cl=new T.Group();sph(cl,.75,MAT.white,0,0,0);sph(cl,.55,MAT.white,-.75,-.15,0);sph(cl,.6,MAT.white,.75,-.1,0);cl.position.set(0,4.1,0);S.add(cl);o.a.push({bob:cl,y0:4.1,ph:.3,amp:.25});
+    /* Website / CMS: màn hình hiển thị một trang web */
+    var wu=ctex(640,420,function(x,w,h){x.fillStyle='#F6F4FB';x.fillRect(0,0,w,h);x.fillStyle='#fff';x.fillRect(0,0,w,54);['#FF5F57','#FEBC2E','#28C840'].forEach(function(c,i){x.fillStyle=c;x.beginPath();x.arc(28+i*24,27,8,0,7);x.fill()});
+      x.fillStyle='#0B2A6F';x.font='900 40px '+FONT;x.fillText('Website',40,128);x.fillStyle='#FF6A2B';x.fillText('của bạn',40,174);x.fillStyle='#FF6A2B';rr(x,40,206,150,46,23);x.fill();
+      x.fillStyle='#7B4DFF';rr(x,360,84,240,190,20);x.fill();x.fillStyle='rgba(255,255,255,.85)';x.beginPath();x.arc(480,180,52,0,7);x.fill();
+      for(var i=0;i<3;i++){x.fillStyle='#fff';rr(x,40+i*190,300,170,96,16);x.fill();x.fillStyle=['#FFB238','#3CC48B','#1BA6D9'][i];rr(x,58+i*190,318,40,40,10);x.fill()}});
+    monitor(Wb,3.6,2.4,wu,0,1.4,0,.15);
+    /* CRM / ERP: cụm cơ sở dữ liệu và biểu đồ */
+    var dbm=M(0x12A06A,{r:.4});for(var i=0;i<3;i++){cyl(Cr,1.05,.75,dbm,-.6,.54+i*.85,0,40);cyl(Cr,1.07,.1,MAT.white,-.6,.54+i*.85+.75,0,40)}
+    var bs=barsP(Cr,.7,.54,-.2,3);bs.g.scale.setScalar(.6);o.a.push({fn:function(t){bs.items.forEach(function(b:any,i:number){b.scale.y=.35+.65*(.5+.5*Math.sin(t*1.4+i*.9))})}});
+    /* Mail Server: hộp thư và phong bì bay vòng */
+    var MB=mailbox(Ml,-.2,.54,.2,-.35),flag=MB.flag;MB.g.scale.setScalar(.7);o.a.push({fn:function(t){flag.rotation.z=-.6+Math.sin(t*1.6)*.6}});
+    var et=ctex(256,170,function(x,w,h){x.fillStyle='#fff';rr(x,0,0,w,h,16);x.fill();x.strokeStyle='#0B2A6F';x.lineWidth=8;x.lineJoin='round';x.beginPath();x.moveTo(16,18);x.lineTo(w/2,96);x.lineTo(w-16,18);x.stroke();x.fillStyle='#FF4D8D';x.beginPath();x.arc(w-40,h-36,18,0,7);x.fill()});
+    function env(){var e=new T.Group();e.add(mesh(new T.BoxGeometry(1.5,1,.08),MAT.white));var f=new T.Mesh(new T.PlaneGeometry(1.48,.98),new T.MeshBasicMaterial({map:et,toneMapped:false}));f.position.z=.045;e.add(f);var f2=f.clone();f2.rotation.y=Math.PI;f2.position.z=-.045;e.add(f2);return e}
+    var lp=new T.CatmullRomCurve3([V(6.4,4.6,1.6),V(8.4,5.6,3.4),V(10.4,4.8,1.4),V(8.4,4.2,-.6)],true);for(var k=0;k<2;k++)mover(o,o.fx,lp,env(),.1,k/2,'face');
+    /* đường nối từ lõi ra bốn dự án, có gói dữ liệu chạy */
+    [[S,-8.4,1.4],[Wb,-3,4.4],[Cr,3,4.4],[Ml,8.4,1.4]].forEach(function(q:any,i){var x=q[1],z=q[2],c=tube(o.fx,[V(x*.25,.9,-2.6+(z+2.6)*.25),V(x*.55,1.5,-2.6+(z+2.6)*.55),V(x*.8,.9,-2.6+(z+2.6)*.8)],.06,MAT.cream);mover(o,o.fx,c,pk([0xFF6A2B,0x7B4DFF,0x3CC48B,0xFF4D8D][i]),.35,i*.2)});
+    label(o,S,'SaaS',0,5.6,0,'#FF6A2B');label(o,Wb,'Website / CMS',0,5.2,0,'#7B4DFF');label(o,Cr,'CRM / ERP',0,5,0,'#12A06A');label(o,Ml,'Mail Server',0,5.4,0,'#FF4D8D');
+    bot(o,Hb,.95,2,1.6,-.3,true,.54);
+    o.tg.set(-1.2,2.6,1);o.R=13.6;o.az=.04;o.el=.36},
+
+  /* Báo giá: tờ báo giá, chồng xu và robot tư vấn */
+  'bao-gia':function(o){o.mz=.84;var P=podium(o,0,0,6.2,0xFFB238);
+    var qt=ctex(420,560,function(x,w,h){x.fillStyle='#fff';rr(x,0,0,w,h,26);x.fill();x.fillStyle='#0B2A6F';x.font='900 44px '+FONT;x.fillText('BÁO GIÁ',36,74);x.fillStyle='#8890A6';x.font='700 20px '+FONT;x.fillText('3RDVN Technology',36,106);
+      for(var i=0;i<5;i++){x.fillStyle='#EEF1F7';rr(x,36,140+i*58,w-72,42,10);x.fill();x.fillStyle='#0B2A6F';rr(x,52,154+i*58,120-i*10,14,7);x.fill();x.fillStyle='#3CC48B';rr(x,w-130,154+i*58,62,14,7);x.fill()}
+      x.fillStyle='#FF6A2B';rr(x,36,442,w-72,74,16);x.fill();x.fillStyle='#fff';x.font='900 30px '+FONT;x.fillText('Tổng',60,490);x.textAlign='right';x.fillText('35tr',w-60,490)});
+    var sh=new T.Group();RB(sh,3.4,4.5,.12,.08,MAT.white,0,0,0);screen(sh,3.2,4.3,qt,0,2.25,.07);sh.position.set(-.4,1.2,-1.6);sh.rotation.set(-.1,.22,0);P.add(sh);o.a.push({bob:sh,y0:1.2,ph:0,amp:.14,sway:.06,r0:.22});
+    [[2.6,1.4,4],[3.6,.2,6],[4.4,1.6,8]].forEach(function(q:any){for(var i=0;i<q[2];i++)cyl(P,.62,.16,MAT.gold,q[0],.54+i*.18,q[1],32)});
+    for(var k=0;k<3;k++){var c=coin();c.position.set(2.2+k*1.1,5.6+k*.5,.4-k*.6);c.rotation.y=-.4;P.add(c);o.a.push({bob:c,y0:c.position.y,ph:k*1.3,amp:.3,sway:.6,r0:-.4})}
+    var ck=ctex(256,256,function(x,w,h){x.fillStyle='#12A06A';x.beginPath();x.arc(128,128,118,0,7);x.fill();x.strokeStyle='#fff';x.lineWidth=26;x.lineCap='round';x.lineJoin='round';x.beginPath();x.moveTo(78,132);x.lineTo(112,166);x.lineTo(180,94);x.stroke()});
+    var cs=spr(ck,1.3,-3.2,6.6,-.6);P.add(cs);o.a.push({bob:cs,y0:6.6,ph:2});
+    bot(o,P,1.2,-3.8,2.2,.4,true,.54);
+    o.tg.set(0,3,0);o.R=8.8;o.az=.3;o.el=.3}
+
   };
 
   var Q=new T.Quaternion();
@@ -200,7 +240,6 @@ function boot() {
     cam.aspect=asp;if(!mob)cam.setViewOffset(W,H,-W*.21,0,W,H);else cam.clearViewOffset();cam.near=Math.max(.5,dist-40);cam.far=dist+60;cam.updateProjectionMatrix();
     cur.s.fog.near=dist-2;cur.s.fog.far=dist+cur.R*3.2;
     R.render(cur.s,cam)})();
-  BUILD['san-pham']=BUILD['advertiser'];BUILD['bao-gia']=BUILD['advertiser'];
   var TINT={'bao-gia':0xFFB238,'san-pham':0x1BA6D9,'mo-hinh':0xFF6A2B,'advertiser':0x7B4DFF,'cong-nghe':0x00ADD8,'doi-tac':0x12A06A,'hoi-dap':0xFFB238,'lien-he':0xFF4D8D};
   function show(slot?:any,id?:any,partners?:any){if(!BUILD[id])return false;PARTNERS=partners;slot.insertBefore(cv,slot.firstChild);
     if(!SC[id]){var o=base();BUILD[id](o);decor(o,TINT[id]||0xFF6A2B);o.a.forEach(function(q){var f=q.bob||q.obj;if(f)f.traverse(function(n){n.castShadow=false})});SC[id]=o}

@@ -2,7 +2,7 @@
 // `flow` là cảnh trang chủ (năm bước). Mọi cảnh dựng bằng chi tiết và vật liệu của skin đang chọn.
 import * as T from 'three'
 import { PAL } from './kit'
-import { barChart, bank, chip, monitor, bubble, building, card, container, coinStack, database, doc, envelope, gear, headset, house, link, magnifier, mast, person, phone, pin, place, servers, shield, tag, textSprite, tile, tower, type Ctx, type Part } from './parts'
+import { barChart, bank, chip, cloud, monitor, bubble, building, card, container, coinStack, database, doc, envelope, gear, headset, house, link, magnifier, mast, person, phone, pin, place, servers, shield, tag, textSprite, tile, tower, type Ctx, type Part } from './parts'
 
 export interface Focus { look: [number, number, number]; r: number }
 export interface Built { foci: Record<string, Focus>; anchors: Record<string, T.Vector3> }
@@ -63,21 +63,21 @@ function advertiser(c: Ctx): Built {
   }
 }
 
-/** Trang Sản phẩm: trang quản trị, website cho publisher, kết nối đối tác và bản quyền, bàn giao trọn gói. */
+/** Trang Sản phẩm: bốn dòng sản phẩm (SaaS, Website/CMS, CRM/ERP, Mail Server) nối về lõi 3RDVN ở giữa. */
 function product(c: Ctx): Built {
-  const M = place(c, tag(c, monitor(c, PAL.cyan), 'Admin system', 'Campaigns · Reports', PAL.cyan, 'chart-column'), -9, 0, -1, [8, 6.4, PAL.cyan])
-  const W = place(c, tag(c, phone(c, PAL.mint), 'Publisher site', 'Links · Wallet', PAL.mint), 0, 0, -7, [5.6, 5.4, PAL.mint])
-  const A = place(c, tag(c, servers(c, PAL.violet, 4), 'Partner API', 'Postback · Keys', PAL.violet, 'workflow'), 9, 0, -1, [6.4, 5.4, PAL.violet])
-  const L = place(c, tag(c, tile(c, PAL.gold, 'key-round', 3), 'Licence', '3RDHub rights', PAL.gold), 0, 0, 6.5, [6, 5.4, PAL.gold])
-  const D = place(c, tag(c, container(c, PAL.orange), 'Handover', 'Code · Docs', PAL.orange), 10, 0, 8, [6, 4.6, PAL.orange])
-  const cs = coinStack(c, 6); cs.position.set(-4.2, 0, 7.5); c.root.add(cs)
-  link(c, [[0, 0.8, -7], [-4, 1.8, -5], [-9, 0.8, -1]], PAL.mint, 3, 0.1)
-  link(c, [[-9, 0.8, -1], [0, 2.4, 1], [9, 0.8, -1]], PAL.cyan, 3, 0.1)
-  link(c, [[0, 0.8, 6.5], [-4, 1.8, 3], [-9, 0.8, -1]], PAL.gold, 2, 0.09)
-  link(c, [[9, 0.8, -1], [10, 1.8, 3], [10, 0.8, 8]], PAL.orange, 2, 0.09)
+  const S = place(c, tag(c, cloud(c, PAL.cyan), 'SaaS', '3RDVN HUB', PAL.cyan, 'layers'), -13, 0, 3, [7, 6.4, PAL.cyan])
+  const W = place(c, tag(c, monitor(c, PAL.violet), 'Website / CMS', 'Design · CMS', PAL.violet, 'globe'), -4.6, 0, -4, [7.4, 6, PAL.violet])
+  const R = place(c, tag(c, database(c, PAL.mint), 'CRM / ERP', 'Process · Reports', PAL.mint, 'database'), 4.6, 0, -4, [7, 6.4, PAL.mint])
+  const E = place(c, tag(c, envelope(c, PAL.pink), 'Mail Server', 'Domain email', PAL.pink, 'mail', -0.4), 13, 0, 3, [7, 6, PAL.pink])
+  const H = place(c, chip(c, PAL.orange), 0, 0, 6, [5.4, 5, PAL.orange])
+  const bc = barChart(c, PAL.mint); bc.g.scale.setScalar(0.5); bc.g.position.set(8.4, 0.6, -1.4); c.root.add(bc.g)
+  link(c, [[0, 0.8, 6], [-7, 2, 5.5], [-13, 0.8, 3]], PAL.cyan, 3, 0.1)
+  link(c, [[0, 0.8, 6], [-2.6, 2, 1], [-4.6, 0.8, -4]], PAL.violet, 3, 0.1)
+  link(c, [[0, 0.8, 6], [2.6, 2, 1], [4.6, 0.8, -4]], PAL.mint, 3, 0.1)
+  link(c, [[0, 0.8, 6], [7, 2, 5.5], [13, 0.8, 3]], PAL.pink, 3, 0.1)
   return {
-    foci: { overview: { look: [0, 3, 1], r: 18 }, admin: { look: [-9, 3.5, -1], r: 10 }, site: { look: [0, 3, -7], r: 9 }, api: { look: [9, 3, -1], r: 10 }, licence: { look: [2, 3, 7], r: 11 } },
-    anchors: { m: up(M, -9, -1), w: up(W, 0, -7), a: up(A, 9, -1), l: up(L, 0, 6.5), d: up(D, 10, 8) },
+    foci: { overview: { look: [0, 3, 1], r: 19 }, saas: { look: [-13, 3.5, 3], r: 10 }, web: { look: [-4.6, 3, -4], r: 10 }, crm: { look: [4.6, 3, -4], r: 10 }, mail: { look: [13, 3, 3], r: 10 } },
+    anchors: { h: up(H, 0, 6), s: up(S, -13, 3), w: up(W, -4.6, -4), r: up(R, 4.6, -4), e: up(E, 13, 3) },
   }
 }
 

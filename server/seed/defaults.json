@@ -1201,6 +1201,148 @@
      }
     ]
    }
+  ],
+  "projects": [
+   {
+    "id": "saas",
+    "icon": "layers",
+    "name": {
+     "vi": "SaaS 3RDVN HUB",
+     "en": "SaaS 3RDVN HUB"
+    },
+    "tag": {
+     "vi": "Phần mềm vận hành phân phối, dùng ngay không cần xây",
+     "en": "Distribution operations software, ready to use"
+    },
+    "desc": {
+     "vi": "Nền tảng quản trị chiến dịch affiliate, nhân sự, đơn hàng và hoa hồng trên một hệ thống. Doanh nghiệp chọn thuê theo năm (đã gồm máy chủ), tự cài trên máy chủ riêng, hoặc mua mã nguồn để tự phát triển. Chính 3RDHub Vietnam đang chạy trên nền tảng này.",
+     "en": "A platform to manage affiliate campaigns, people, orders and commission in one system. Rent it yearly (servers included), self-host it on your own servers, or buy the source code and build on it. 3RDHub Vietnam itself runs on this platform."
+    },
+    "points": [
+     {
+      "vi": "9 nhóm chức năng từ chiến dịch đến thanh toán",
+      "en": "9 module groups from campaigns to payouts"
+     },
+     {
+      "vi": "Tạo link theo mã nhân viên, short link, QR",
+      "en": "Staff-code links, short links, QR codes"
+     },
+     {
+      "vi": "Đối soát, hoa hồng, phiếu chi rõ ràng",
+      "en": "Clear reconciliation, commission and payouts"
+     },
+     {
+      "vi": "Phân quyền theo vai trò, nhật ký đăng nhập",
+      "en": "Role-based access and login audit"
+     }
+    ]
+   },
+   {
+    "id": "web",
+    "icon": "globe",
+    "name": {
+     "vi": "Thiết kế Website / CMS",
+     "en": "Website / CMS design"
+    },
+    "tag": {
+     "vi": "Website đẹp, nhanh, tự quản trị nội dung",
+     "en": "Fast, beautiful websites you manage yourself"
+    },
+    "desc": {
+     "vi": "Thiết kế và lập trình website giới thiệu, landing page, website bán hàng hoặc cổng thông tin, kèm trang quản trị (CMS) để doanh nghiệp tự sửa chữ, hình, bài viết mà không cần lập trình viên. Website bạn đang xem là một ví dụ: song ngữ tự dịch, sửa trực tiếp trên trang, chuẩn SEO.",
+     "en": "We design and build company websites, landing pages, online stores and portals with an admin panel (CMS) so your team edits text, images and posts without a developer. The website you are viewing is an example: bilingual with auto-translation, on-page editing and SEO built in."
+    },
+    "points": [
+     {
+      "vi": "Giao diện riêng theo thương hiệu, hiệu ứng 3D",
+      "en": "Custom design for your brand, 3D effects"
+     },
+     {
+      "vi": "CMS sửa trực tiếp trên trang, song ngữ tự dịch",
+      "en": "On-page CMS editing, bilingual auto-translation"
+     },
+     {
+      "vi": "Chuẩn SEO, ảnh chia sẻ, tốc độ tải nhanh",
+      "en": "SEO, share images and fast loading"
+     },
+     {
+      "vi": "Form liên hệ báo về email, Zalo",
+      "en": "Contact forms notify email and Zalo"
+     }
+    ]
+   },
+   {
+    "id": "crm",
+    "icon": "database",
+    "name": {
+     "vi": "Xây dựng CRM / ERP",
+     "en": "CRM / ERP development"
+    },
+    "tag": {
+     "vi": "Phần mềm quản trị theo đúng quy trình của bạn",
+     "en": "Management software built around your process"
+    },
+    "desc": {
+     "vi": "Xây hệ thống quản lý khách hàng (CRM) và quản trị doanh nghiệp (ERP) theo đúng nghiệp vụ: từ khách tiềm năng, cơ hội bán hàng, đơn hàng, kho, đến nhân sự và báo cáo. Dữ liệu tập trung một chỗ, phân quyền rõ ràng, kết nối được với hệ thống sẵn có qua API.",
+     "en": "We build customer relationship (CRM) and enterprise resource planning (ERP) systems around your actual workflow: leads, sales opportunities, orders and inventory through to HR and reporting. Data in one place, clear permissions, and API connections to the systems you already use."
+    },
+    "points": [
+     {
+      "vi": "Quản lý khách hàng, cơ hội, lịch chăm sóc",
+      "en": "Customers, opportunities and follow-up schedules"
+     },
+     {
+      "vi": "Đơn hàng, kho, công nợ",
+      "en": "Orders, inventory and receivables"
+     },
+     {
+      "vi": "Nhân sự, KPI, phân quyền theo phòng ban",
+      "en": "HR, KPIs and department permissions"
+     },
+     {
+      "vi": "Báo cáo theo thời gian thực, xuất Excel",
+      "en": "Real-time reports, Excel export"
+     },
+     {
+      "vi": "Kết nối API với hệ thống khác",
+      "en": "API integration with other systems"
+     }
+    ]
+   },
+   {
+    "id": "mail",
+    "icon": "mail",
+    "name": {
+     "vi": "Thiết kế dịch vụ Mail Server",
+     "en": "Mail server service design"
+    },
+    "tag": {
+     "vi": "Email doanh nghiệp theo tên miền riêng",
+     "en": "Business email on your own domain"
+    },
+    "desc": {
+     "vi": "Thiết kế và vận hành hệ thống email theo tên miền của doanh nghiệp (ví dụ ten@congty.vn): hộp thư cho nhân viên, gửi email giao dịch từ website và phần mềm, cấu hình chống giả mạo để thư không vào spam, sao lưu và giám sát.",
+     "en": "We design and run email on your company domain (e.g. name@company.com): mailboxes for staff, transactional email from your website and software, anti-spoofing setup so mail stays out of spam, plus backups and monitoring."
+    },
+    "points": [
+     {
+      "vi": "Hộp thư theo tên miền, webmail, IMAP/SMTP",
+      "en": "Domain mailboxes, webmail, IMAP/SMTP"
+     },
+     {
+      "vi": "SPF, DKIM, DMARC để thư không vào spam",
+      "en": "SPF, DKIM and DMARC to keep mail out of spam"
+     },
+     {
+      "vi": "Gửi email giao dịch, thông báo từ hệ thống",
+      "en": "Transactional and notification email from your systems"
+     },
+     {
+      "vi": "Sao lưu, giám sát, hỗ trợ kỹ thuật",
+      "en": "Backups, monitoring and technical support"
+     }
+    ]
+   }
   ]
  }
 }

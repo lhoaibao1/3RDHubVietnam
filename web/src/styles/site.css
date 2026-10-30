@@ -105,7 +105,7 @@ p{margin:0}a{color:inherit}img{display:block;max-width:100%}button{font:inherit;
 #gl3{position:absolute;inset:0;width:100%;height:100%;display:block}
 .ft{position:absolute;z-index:2;background:var(--card);border-radius:16px;padding:10px 14px;box-shadow:0 14px 30px -18px rgba(20,20,50,.5);display:grid;font-size:13px;animation:fl 4s ease-in-out infinite}
 .ft b{font-size:15px;font-weight:900}.ft span{color:var(--ink2)}
-.ft:nth-of-type(2){animation-delay:-2s}
+.ft ~ .ft{animation-delay:-2s}
 @keyframes fl{50%{transform:translateY(-8px)}}
 .term{background:#0D1430;color:#D7DEF5;border-radius:30px;overflow:hidden;display:flex;flex-direction:column;min-height:500px;box-shadow:0 30px 60px -36px rgba(13,20,48,.8)}
 .term .tb{display:flex;align-items:center;gap:8px;padding:14px 18px;background:#151E42;font-size:13px;color:#8D97BD}
@@ -501,7 +501,7 @@ form input:focus,form textarea:focus{outline:none;border-color:var(--or)}
 .cd.ch .ic svg{width:24px;height:24px}
 @media(max-width:900px){
   .p3d{height:340px;border-radius:26px}
-  .p3d .ft{display:grid;font-size:12px;padding:8px 12px}.p3d .ft b{font-size:13.5px}.p3d .ft:nth-of-type(2){display:none}
+  .p3d .ft{display:grid;font-size:12px;padding:8px 12px}.p3d .ft b{font-size:13.5px}.p3d .ft ~ .ft{display:none}
   .cnt{grid-template-columns:repeat(2,minmax(0,1fr))}
   .seq li{grid-template-columns:40px 1fr}.seq .si{grid-row:span 2;margin:0}.seq li::before{top:50%;transform:translateY(-50%)}
 }
@@ -519,8 +519,8 @@ form input:focus,form textarea:focus{outline:none;border-color:var(--or)}
   background:radial-gradient(48% 62% at 70% 52%,color-mix(in srgb,var(--tint) 16%,transparent),transparent 72%)}
 .p3d::after{content:none}
 .p3d .ft{left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;z-index:4}
-.p3d .ft:nth-of-type(1){right:max(24px,calc(50vw - 600px))!important;bottom:20%!important}
-.p3d .ft:nth-of-type(2){left:calc(50% + 40px)!important;bottom:8%!important}
+.p3d .ft:not(.ft ~ .ft){right:max(24px,calc(50vw - 600px))!important;bottom:20%!important}
+.p3d .ft ~ .ft{left:calc(50% + 40px)!important;bottom:8%!important}
 .pg:not([hidden]) .pgh>div:first-child>*{animation:hin .9s cubic-bezier(.2,.8,.2,1) both}
 .pg:not([hidden]) .pgh>div:first-child>*:nth-child(2){animation-delay:.08s}
 .pg:not([hidden]) .pgh>div:first-child>*:nth-child(3){animation-delay:.16s}
@@ -564,8 +564,8 @@ form input:focus,form textarea:focus{outline:none;border-color:var(--or)}
   .p3d{position:relative;inset:auto;margin-left:calc(50% - 50vw);height:52svh;min-height:320px;max-height:470px;order:-1;
     background:radial-gradient(70% 60% at 50% 55%,color-mix(in srgb,var(--tint) 16%,transparent),transparent 75%)}
   .p3d::before{content:"";position:absolute;inset:auto 0 0;height:60px;background:linear-gradient(transparent,var(--bg));z-index:2;pointer-events:none}
-  .p3d .ft:nth-of-type(1){right:16px!important;top:auto!important;bottom:18px!important;left:auto!important}
-  .p3d .ft:nth-of-type(2){display:none}
+  .p3d .ft:not(.ft ~ .ft){right:16px!important;top:auto!important;bottom:18px!important;left:auto!important}
+  .p3d .ft ~ .ft{display:none}
   .seq li:not(:last-child)::after{right:auto;left:50%;top:auto;bottom:-15px;margin:0 0 0 -9px;transform:rotate(90deg);animation:nudgeY 1.2s ease-in-out infinite}
   @keyframes nudgeY{50%{transform:rotate(90deg) translateX(4px)}}
 }
@@ -794,10 +794,38 @@ html.vt-theme::view-transition-new(root){z-index:2}
 .htrack img{flex:none;width:100%;height:auto;display:block;aspect-ratio:1280/784;object-fit:cover;object-position:top}
 .hnav{position:absolute;top:50%;width:42px;height:42px;border-radius:50%;border:0;background:rgba(11,42,111,.78);color:#fff;font-size:26px;line-height:1;cursor:pointer}
 .hnav.prev{left:12px}.hnav.next{right:12px}
-.hthumbs{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:thin}
-.hthumbs button{flex:none;width:132px;border:2px solid transparent;border-radius:12px;padding:0;background:var(--card);cursor:pointer;overflow:hidden;opacity:.7;transition:opacity .2s,border-color .2s}
+.hthumbs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;padding-bottom:6px}
+@media(max-width:760px){.hthumbs{display:flex;overflow-x:auto;scrollbar-width:none}.hthumbs::-webkit-scrollbar{display:none}}
+.hthumbs button{flex:none;min-width:0;border:2px solid transparent;border-radius:12px;padding:0;background:var(--card);cursor:pointer;overflow:hidden;opacity:.7;transition:opacity .2s,border-color .2s}
 .hthumbs button.on{border-color:var(--or);opacity:1}
 .hthumbs img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top}
 .hthumbs span{display:block;font-size:11.5px;font-weight:800;padding:4px 6px;color:var(--ink)}
 @media(max-width:900px){.mods{grid-template-columns:1fr}.hnav{width:34px;height:34px;font-size:20px}}
 @media(min-width:901px) and (max-width:1100px){.mods{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Trang Sản phẩm: các dự án */
+.prjs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:28px}
+.prj{display:grid;gap:8px;align-content:start;position:relative;color:inherit;text-decoration:none;cursor:pointer}
+.prj h3{margin:6px 0 0}
+.prj p{color:var(--ink2);font-size:15px;margin:0}
+.prj .pn{position:absolute;right:20px;top:18px;font-weight:900;font-size:13px;letter-spacing:.08em;color:var(--ink2);opacity:.6}
+.prj .more{margin-top:6px;font-weight:800;font-size:14px;color:var(--or)}
+.pi{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--or),#ffb238);color:#fff;flex:none}
+.pi svg{width:24px;height:24px}
+.pjd{scroll-margin-top:90px}
+.pjh{display:flex;gap:16px;align-items:center}
+.pjh h2{margin:4px 0 0}
+.pjb{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;margin-top:24px;align-items:start}
+.pjx p{font-size:17px;line-height:1.65;color:var(--ink2)}
+.pjx h3,.pjc h3{margin:0 0 10px;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--or)}
+.pjc .ck{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.pjs{margin-top:44px}
+.pjs>h3{font-size:22px;margin:0}
+.pjs .mods{margin-top:18px}
+@media(max-width:1000px){.prjs{grid-template-columns:repeat(2,minmax(0,1fr))}.pjb{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:760px){.hthumbs button{width:120px}}
+@media(max-width:520px){.prjs{grid-template-columns:minmax(0,1fr)}.pjh{flex-direction:column;align-items:flex-start;gap:10px}}
+
+/* Ẩn thanh cuộn của trình duyệt, vẫn cuộn bình thường */
+html,body{scrollbar-width:none;-ms-overflow-style:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}

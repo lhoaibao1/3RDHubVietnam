@@ -264,6 +264,22 @@ func (a *App) autoTranslate(ctx context.Context, c *Content, prev Content) (done
 			jobs = append(jobs, pairJob(&r.Cells[ci], pc))
 		}
 	}
+	pjm := map[string]Project{}
+	for _, p := range prev.Product.Projects {
+		pjm[p.ID] = p
+	}
+	for pi := range c.Product.Projects {
+		p := &c.Product.Projects[pi]
+		o, has := pjm[p.ID]
+		jobs = append(jobs, pairJob(&p.Name, pairPtr(has, &o.Name)), pairJob(&p.Tag, pairPtr(has, &o.Tag)), pairJob(&p.Desc, pairPtr(has, &o.Desc)))
+		for k := range p.Points {
+			var pp *Pair
+			if has && k < len(o.Points) {
+				pp = &o.Points[k]
+			}
+			jobs = append(jobs, pairJob(&p.Points[k], pp))
+		}
+	}
 	pm := map[string]Module{}
 	for _, m := range prev.Product.Modules {
 		pm[m.ID] = m

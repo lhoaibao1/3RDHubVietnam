@@ -45,6 +45,7 @@ export const useAdmin = defineStore('admin', {
       c.quote.rows = c.quote.rows || []
       c.product = c.product || { modules: [] }
       c.product.modules = c.product.modules || []
+      c.product.projects = c.product.projects || []
       c.quote.plans = c.quote.plans || []
       this.content = c
       this.saved = JSON.stringify(c)

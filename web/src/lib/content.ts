@@ -10,7 +10,8 @@ export interface QuotePlan { id: string; name: Pair; price: Pair; unit: Pair; de
 export interface QuoteRow { label: Pair; cells: Pair[] }
 export interface Quote { plans: QuotePlan[]; rows?: QuoteRow[] }
 export interface Module { id: string; code: Pair; title: Pair; items: Pair[] }
-export interface Product { modules: Module[] }
+export interface Project { id: string; icon: string; name: Pair; tag: Pair; desc: Pair; points: Pair[] }
+export interface Product { projects?: Project[]; modules: Module[] }
 export interface Client { id: string; name: string; logo: string; url?: string; desc: Pair }
 export interface Content {
   v?: number

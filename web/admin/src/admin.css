@@ -184,3 +184,7 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .nlog{width:100%;border-collapse:collapse;font-size:14px}
 .nlog td{padding:9px 8px;border-top:1px solid var(--line);vertical-align:top}
 .nlog small{display:block;color:var(--bad);margin-top:4px;overflow-wrap:anywhere}
+
+/* Ẩn thanh cuộn của trình duyệt, vẫn cuộn bình thường */
+html,body{scrollbar-width:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}

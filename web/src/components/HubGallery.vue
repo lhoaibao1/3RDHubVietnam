@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 // Ảnh chụp giao diện thật của 3RDVN HUB, tự chuyển ảnh, bấm ảnh nhỏ để xem.
-const SHOTS: [string, string][] = [['orders', 'Đơn hàng'], ['home', 'Trang chủ KPI'], ['campaigns', 'Chiến dịch'], ['link', 'Tạo link'], ['members', 'Thành viên'], ['hh', 'Hoa hồng'], ['pay', 'Đối soát'], ['projects', 'Dự án'], ['utm', 'UTM'], ['mkt', 'Lead MKT'], ['brand', 'Thương hiệu'], ['lost', 'Mất đơn']]
+const SHOTS: [string, string][] = [['dashboard', 'Tổng quan'], ['campaigns', 'Chiến dịch'], ['tracking', 'Tạo link'], ['orders', 'Đơn hàng'], ['clicks', 'Lượt click'], ['members', 'Thành viên'], ['access', 'Phân quyền'], ['settings', 'Cài đặt'], ['advertisers', 'Advertiser'], ['apidocs', 'Tài liệu API']]
 const i = ref(0)
 let t = 0
 const RM = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches

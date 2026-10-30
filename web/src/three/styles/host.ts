@@ -28,7 +28,7 @@ export function createHost(canvas: HTMLCanvasElement, skinId: SkinId, opt: { sid
   /* khoảng cách camera: đủ để cả vùng cần xem nằm trong phần khung không bị chữ che (theo tỉ lệ khung hiện tại) */
   const keyOf = (f: { look: [number, number, number]; r: number }): Key => {
     const r = canvas.getBoundingClientRect(), aspect = Math.max(0.5, r.width / Math.max(1, r.height))
-    const usable = side && r.width > 900 ? 0.56 : 0.92
+    const usable = side && r.width > 900 ? 0.5 : 0.92
     const fit = 1.08 / (usable * Math.tan((sk.fov * Math.PI) / 360) * aspect)
     const d = f.r * Math.max(sk.k, fit)
     return { pos: [f.look[0] + D.x * d, f.look[1] + D.y * d, f.look[2] + D.z * d], look: f.look, fov: sk.fov }

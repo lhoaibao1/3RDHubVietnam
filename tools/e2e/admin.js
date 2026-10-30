@@ -39,6 +39,21 @@ const assert = require('assert');
   await p.waitForSelector('.savebar:not(.on)', { state: 'attached' });
   ok('lưu thành công: ' + await p.textContent('.toast'));
 
+  // sản phẩm: sửa tên một dự án
+  await p.click('button[data-tab=product]');
+  await p.waitForSelector('text=Dự án (dòng sản phẩm)');
+  const prj = p.locator('.panel .mgrid > .panel').nth(1);
+  await prj.locator('label.f:has-text("Tên dự án") input').fill('Thiết kế Website thử');
+  await p.click('.savebar .save'); await p.waitForSelector('.savebar:not(.on)', { state: 'attached' });
+  ok('sản phẩm: sửa tên dự án và lưu');
+  {
+    const sp = await ctx.newPage(); await sp.goto(SITE + '/san-pham'); await sp.waitForSelector('.prj');
+    assert.strictEqual(await sp.locator('.prj').count(), 4);
+    assert((await sp.textContent('.prjs')).includes('Thiết kế Website thử'));
+    assert.strictEqual(await sp.locator('.hthumbs img').count(), 10);
+    ok('website: trang Sản phẩm có 4 dự án, tên mới và 10 ảnh giao diện'); await sp.close();
+  }
+
   // hỏi đáp: thêm câu hỏi hiện ở trang chủ
   await p.click('button[data-tab=faq]');
   await p.click('text=+ Thêm câu hỏi');

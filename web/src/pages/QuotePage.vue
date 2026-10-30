@@ -20,11 +20,13 @@ function choose(name: string, trial = false) {
   chosen.value = name
   setTimeout(() => document.getElementById('form2')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
 }
-// đến từ nút "Chọn gói này" (?goi=) hoặc "Đăng ký dùng thử" (?dungthu=1) ở trang Sản phẩm
+// đến từ nút "Chọn gói này" (?goi=), "Nhận báo giá" của một dự án (?duan=) hoặc "Đăng ký dùng thử" (?dungthu=1) ở trang Sản phẩm
 const route = useRoute()
 onMounted(() => {
   const g = site.quotePlans.find((p) => p.id === route.query.goi)
+  const d = site.projects.find((p) => p.id === route.query.duan)
   if (g) choose(site.pick(g.name) + ' (' + site.pick(g.price) + ')')
+  else if (d) choose(site.pick(d.name))
   else if (route.query.dungthu) choose(site.t('Dùng thử hệ thống'), true)
 })
 </script>

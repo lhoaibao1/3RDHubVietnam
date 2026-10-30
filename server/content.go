@@ -73,9 +73,22 @@ type Module struct {
 	Items []Pair `json:"items"`
 }
 
-type Product struct {
-	Modules []Module `json:"modules"`
+// Project là một dòng sản phẩm/dịch vụ của công ty (trang Sản phẩm: SaaS, Website/CMS, CRM/ERP, Mail Server...).
+type Project struct {
+	ID     string `json:"id"`
+	Icon   string `json:"icon"`
+	Name   Pair   `json:"name"`
+	Tag    Pair   `json:"tag"`
+	Desc   Pair   `json:"desc"`
+	Points []Pair `json:"points"`
 }
+
+type Product struct {
+	Projects []Project `json:"projects"`
+	Modules  []Module  `json:"modules"`
+}
+
+var projectIcons = map[string]bool{"layers": true, "globe": true, "database": true, "mail": true, "blocks": true, "cpu": true, "network": true, "workflow": true, "box": true, "smartphone": true}
 
 type Faq struct {
 	ID   string `json:"id"`
@@ -139,6 +152,9 @@ func (c *Content) normalize() {
 	}
 	if c.Product.Modules == nil {
 		c.Product.Modules = []Module{}
+	}
+	if c.Product.Projects == nil {
+		c.Product.Projects = []Project{}
 	}
 	if c.Quote.Plans == nil {
 		c.Quote.Plans = []QuotePlan{}
@@ -522,6 +538,49 @@ func cleanContent(in any) (Content, error) {
 	}
 
 	if pm := asMap(c["product"]); pm != nil {
+		prs, _ := pm["projects"].([]any)
+		if len(prs) > 12 {
+			return out, bad("Tối đa 12 dự án")
+		}
+		for i, raw := range prs {
+			m := asMap(raw)
+			if m == nil {
+				continue
+			}
+			pj := Project{ID: cleanID(m["id"], fmt.Sprintf("p%d", i+1)), Points: []Pair{}}
+			if ic, _ := m["icon"].(string); projectIcons[ic] {
+				pj.Icon = ic
+			} else {
+				pj.Icon = "layers"
+			}
+			var err error
+			if pj.Name, err = pairOf(m["name"], 120, "Tên dự án"); err != nil {
+				return out, err
+			}
+			if strings.TrimSpace(pj.Name.VI) == "" {
+				return out, bad("Dự án số %d chưa có tên", i+1)
+			}
+			if pj.Tag, err = pairOf(m["tag"], 200, "Câu giới thiệu ngắn"); err != nil {
+				return out, err
+			}
+			if pj.Desc, err = pairOf(m["desc"], 2000, "Mô tả dự án"); err != nil {
+				return out, err
+			}
+			pts, _ := m["points"].([]any)
+			if len(pts) > 30 {
+				return out, bad("Mỗi dự án tối đa 30 dòng")
+			}
+			for _, pv := range pts {
+				p, err := pairOf(pv, 300, "Điểm nổi bật")
+				if err != nil {
+					return out, err
+				}
+				if strings.TrimSpace(p.VI) != "" {
+					pj.Points = append(pj.Points, p)
+				}
+			}
+			out.Product.Projects = append(out.Product.Projects, pj)
+		}
 		mods, _ := pm["modules"].([]any)
 		if len(mods) > 30 {
 			return out, bad("Tối đa 30 nhóm chức năng")
