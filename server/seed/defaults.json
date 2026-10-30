@@ -453,7 +453,8 @@
   "analytics_id": "",
   "parent_url": "https://3rdvn.io.vn",
   "scene_style": "classic",
-  "demo_url": "https://demo.3rdvn.io.vn"
+  "demo_url": "https://demo.3rdvn.io.vn",
+  "linkedin": ""
  },
  "quote": {
   "plans": [
@@ -572,5 +573,17 @@
     ]
    }
   ]
- }
+ },
+ "clients": [
+  {
+   "id": "3rdhub",
+   "name": "3RDHub Vietnam",
+   "logo": "",
+   "url": "https://3rdhubvietnam.tech",
+   "desc": {
+    "vi": "Nền tảng tiếp thị liên kết tài chính do 3RDVN Technology tự xây và đang vận hành.",
+    "en": "The financial affiliate platform 3RDVN Technology built and runs itself."
+   }
+  }
+ ]
 }

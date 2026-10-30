@@ -89,6 +89,15 @@ func TestAutoTranslate(t *testing.T) {
 	if pl["name"].(map[string]any)["en"] != "EN: Gói A" || pl["features"].([]any)[0].(map[string]any)["en"] != "EN: Tính năng một" {
 		t.Fatalf("quote: %v", pl)
 	}
+	// 7b) khách hàng: mô tả tự dịch, logo phải là ảnh đã tải lên
+	j = put(`{"clients":[{"id":"k1","name":"Công ty A","desc":{"vi":"Khách hàng thân thiết"}}]}`)
+	cl := j["content"].(map[string]any)["clients"].([]any)[0].(map[string]any)
+	if cl["desc"].(map[string]any)["en"] == "" || cl["name"] != "Công ty A" {
+		t.Fatalf("clients: %v", cl)
+	}
+	if r := do(a, "PUT", cms, "/api/admin/content", []byte(`{"content":{"clients":[{"name":"X","logo":"http://evil/x.png"}]}}`), h); r.code != 400 {
+		t.Fatalf("logo xấu phải 400, được %d", r.code)
+	}
 	// 7) dịch lỗi thì vẫn lưu được, EN để trống
 	srv.Close()
 	j = put(`{"ov":{"Lỗi":{"vi":"Chữ mới"}}}`)
@@ -101,6 +110,12 @@ func TestAutoTranslate(t *testing.T) {
 	}
 	// công khai có quote
 	pub := do(a, "GET", "example.vn", "/api/content", nil, nil).json(t)
+	if _, ok := pub["clients"]; !ok {
+		t.Fatal("thiếu clients ở /api/content")
+	}
+	if r := do(a, "GET", cms, "/", nil, nil); !strings.Contains(r.hdr.Get("Content-Security-Policy"), "frame-src 'self' https://example.vn") {
+		t.Fatalf("CSP trang quản trị phải cho nhúng website chính: %s", r.hdr.Get("Content-Security-Policy"))
+	}
 	if _, ok := pub["quote"]; !ok {
 		t.Fatal("thiếu quote ở /api/content")
 	}

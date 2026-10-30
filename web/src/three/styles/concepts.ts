@@ -101,24 +101,25 @@ function quote(c: Ctx): Built {
   }
 }
 
-/** Trang Công nghệ: Vue/Vite → Nginx → Go → PostgreSQL/Redis, đóng gói Docker, có lớp bảo mật. */
+/** Trang Công nghệ: luồng một lượt bấm đi từ trái sang phải: Frontend → Nginx → Backend Go → PostgreSQL / Redis,
+ *  hàng trước là Docker (đóng gói) và lớp bảo mật bao quanh backend. */
 function tech(c: Ctx): Built {
-  const F = place(c, tag(c, tile(c, PAL.mint, 'brand:vuedotjs', 3), 'Frontend', 'Vue 3 · Vite · Pinia', PAL.mint), -15, 0, 3, [5, 5, PAL.mint])
-  const N = place(c, tag(c, tile(c, PAL.cyan, 'brand:nginx', 2.6), 'Nginx', 'Edge · Cache', PAL.cyan), -7.5, 0, -3, [5, 5, PAL.cyan])
-  const Bk = place(c, tag(c, gear(c, PAL.cyan, 1.5), 'Backend', 'Go · REST API', PAL.cyan, 'brand:go'), 0, 0, -5, [7, 7, PAL.cyan])
-  const Db = place(c, tag(c, database(c, PAL.violet), 'PostgreSQL', 'Source of truth', PAL.violet, 'brand:postgresql'), 8, 0, 2, [6, 6, PAL.violet])
-  const Rd = place(c, tag(c, tile(c, PAL.pink, 'brand:redis', 2.6), 'Redis', 'Queue · Cache', PAL.pink), 8, 0, -9, [5, 5, PAL.pink])
-  const Dk = place(c, tag(c, container(c, PAL.orange), 'Docker', 'Ship anywhere', PAL.orange, 'brand:docker'), 15, 0, -5, [6, 5, PAL.orange])
-  const Sh = place(c, tag(c, shield(c, PAL.gold), 'Security', 'Keys · Roles · Logs', PAL.gold), 0, 0, 9, [6, 5, PAL.gold])
-  link(c, [[-15, 0.8, 3], [-11, 1.6, 0], [-7.5, 0.8, -3]], PAL.mint, 3, 0.12)
-  link(c, [[-7.5, 0.8, -3], [-4, 1.6, -5], [0, 0.8, -5]], PAL.cyan, 3, 0.12)
-  link(c, [[0, 0.8, -5], [4, 1.8, -1], [8, 0.8, 2]], PAL.violet, 3, 0.12)
-  link(c, [[0, 0.8, -5], [4, 1.8, -8], [8, 0.8, -9]], PAL.pink, 2, 0.1)
-  link(c, [[8, 0.8, -9], [12, 1.8, -7], [15, 0.8, -5]], PAL.orange, 2, 0.1)
-  link(c, [[0, 0.8, 9], [0, 1.8, 2], [0, 0.8, -5]], PAL.gold, 2, 0.08)
+  const F = place(c, tag(c, tile(c, PAL.mint, 'brand:vuedotjs', 2.8), 'Frontend', 'Vue 3 · Vite', PAL.mint), -15, 0, -1, [5.4, 5.4, PAL.mint])
+  const N = place(c, tag(c, tile(c, PAL.cyan, 'brand:nginx', 2.6), 'Nginx', 'Edge · Cache', PAL.cyan), -7.5, 0, -4, [5.4, 5.4, PAL.cyan])
+  const Bk = place(c, tag(c, gear(c, PAL.cyan, 1.5), 'Backend Go', 'REST API · Tracking', PAL.cyan), 0, 0, -6, [7, 6.4, PAL.cyan])
+  const Db = place(c, tag(c, database(c, PAL.violet), 'PostgreSQL', 'Data', PAL.violet), 8, 0, -4, [6, 6, PAL.violet])
+  const Rd = place(c, tag(c, tile(c, PAL.pink, 'brand:redis', 2.6), 'Redis', 'Queue · Cache', PAL.pink), 15, 0, -1, [5.4, 5.4, PAL.pink])
+  const Sh = place(c, tag(c, shield(c, PAL.gold), 'Security', 'Keys · Roles · Logs', PAL.gold), -5, 0, 6, [6, 5.4, PAL.gold])
+  const Dk = place(c, tag(c, container(c, PAL.orange), 'Docker', 'Deploy anywhere', PAL.orange), 6, 0, 6, [6, 5, PAL.orange])
+  link(c, [[-15, 0.8, -1], [-11, 1.6, -3.5], [-7.5, 0.8, -4]], PAL.mint, 3, 0.12)
+  link(c, [[-7.5, 0.8, -4], [-4, 1.6, -6], [0, 0.8, -6]], PAL.cyan, 3, 0.12)
+  link(c, [[0, 0.8, -6], [4, 1.8, -6], [8, 0.8, -4]], PAL.violet, 3, 0.12)
+  link(c, [[8, 0.8, -4], [12, 1.6, -3], [15, 0.8, -1]], PAL.pink, 2, 0.1)
+  link(c, [[-5, 0.8, 6], [-3, 1.8, 0], [0, 0.8, -6]], PAL.gold, 2, 0.08)
+  link(c, [[0, 0.8, -6], [3, 1.8, 0], [6, 0.8, 6]], PAL.orange, 2, 0.08)
   return {
-    foci: { overview: { look: [0, 3, -1], r: 20 }, front: { look: [-12, 2.5, 0], r: 10 }, back: { look: [2, 3, -4], r: 12 }, data: { look: [10, 3, -3], r: 12 } },
-    anchors: { f: up(F, -15, 3), n: up(N, -7.5, -3), b: up(Bk, 0, -5), d: up(Db, 8, 2) },
+    foci: { overview: { look: [0, 2.5, 0], r: 18 }, front: { look: [-11, 2.5, -2.5], r: 9 }, back: { look: [0, 3, -5], r: 9 }, data: { look: [11, 2.5, -2.5], r: 9 }, ops: { look: [0, 2.5, 6], r: 9 } },
+    anchors: { f: up(F, -15, -1), n: up(N, -7.5, -4), b: up(Bk, 0, -6), d: up(Db, 8, -4), r: up(Rd, 15, -1), s: up(Sh, -5, 6), k: up(Dk, 6, 6) },
   }
 }
 

@@ -236,6 +236,15 @@ func (a *App) autoTranslate(ctx context.Context, c *Content, prev Content) (done
 		jobs = append(jobs, pairJob(&d.Title, pairPtr(has, &pd.Title)), pairJob(&d.Updated, pairPtr(has, &pd.Updated)), pairJob(&d.Body, pairPtr(has, &pd.Body)))
 		back = append(back, func() { c.Legal[key] = d })
 	}
+	cp := map[string]Client{}
+	for _, x := range prev.Clients {
+		cp[x.ID] = x
+	}
+	for i := range c.Clients {
+		x := &c.Clients[i]
+		o, has := cp[x.ID]
+		jobs = append(jobs, pairJob(&x.Desc, pairPtr(has, &o.Desc)))
+	}
 	qp := map[string]QuotePlan{}
 	for _, p := range prev.Quote.Plans {
 		qp[p.ID] = p

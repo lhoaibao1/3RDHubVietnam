@@ -50,7 +50,7 @@ const catLabel = (c: string) => site.pick(items.value.find((f) => f.cat.vi === c
       </Page3D>
     </div>
 
-    <div class="fq2">
+    <div class="fq2" data-cms="faq">
       <div v-for="s in sections" :key="s.key">
         <h2>{{ s.title }}</h2>
         <AnimDetails v-for="f in s.rows" :key="f.id" :summary="site.pick(f.q)" :text="site.pick(f.a)" :open="!!query.trim()" />

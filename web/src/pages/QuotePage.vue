@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import Icon from '@/components/Icon.vue'
 import Page3D from '@/components/Page3D.vue'
 import LeadForm from '@/components/LeadForm.vue'
+import ClientsSection from '@/components/ClientsSection.vue'
 import { usePageFx } from '@/composables/usePageFx'
 import { useSite } from '@/stores/site'
 
@@ -29,7 +30,7 @@ function choose(name: string) {
   </div>
 
   <div class="ps"><div class="k2">Các gói</div><h2>Chọn gói phù hợp</h2>
-    <div class="g3 plans">
+    <div class="g3 plans" data-cms="quote">
       <article v-for="p in site.quotePlans" :key="p.id" class="cd plan" :class="{ hl: p.hot }">
         <span v-if="p.hot" class="badge">{{ $t('Được chọn nhiều') }}</span>
         <h3>{{ site.pick(p.name) }}</h3>
@@ -47,6 +48,8 @@ function choose(name: string) {
       <li><b>03</b><h3>Báo giá chi tiết</h3><p>Nhận bảng báo giá theo từng hạng mục và tiến độ.</p></li>
       <li><b>04</b><h3>Ký và triển khai</h3><p>Thống nhất hợp đồng, bắt đầu thiết kế và lập trình.</p></li>
     </ol></div>
+
+  <ClientsSection />
 
   <div class="g2 ps0">
     <article class="cd path">

@@ -45,7 +45,7 @@ const nOther = computed(() => partners.value.length - nBank.value - nFin.value)
       <div><CountUp :n="nOther" /><span>Đối tác chiến lược, affiliate</span></div>
     </div>
 
-    <div class="ps">
+    <div class="ps" data-cms="partners">
       <div v-for="g in groups" :key="g.label.vi" class="pgrp">
         <h3>{{ site.pick(g.label) }}</h3>
         <div class="pg2">

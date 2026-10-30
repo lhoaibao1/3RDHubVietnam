@@ -8,7 +8,7 @@ import Icon from './Icon.vue'
 import { openConsent } from '@/composables/useConsent'
 
 const site = useSite()
-const SOCIAL: [string, string][] = [['facebook', 'Facebook'], ['zalo', 'Zalo'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['instagram', 'Instagram']]
+const SOCIAL: [string, string][] = [['facebook', 'Facebook'], ['zalo', 'Zalo'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['instagram', 'Instagram'], ['linkedin', 'LinkedIn']]
 const socials = computed(() => SOCIAL.filter(([k]) => /^https?:\/\//i.test(site.S(k))).map(([k, label]) => ({ k, label, url: okUrl(site.S(k)), path: BRANDS[k].p })))
 const hours = computed(() => (site.lang === 'en' && site.S('working_hours_en')) || site.S('working_hours'))
 const year = new Date().getFullYear()
@@ -46,7 +46,7 @@ const top = () => scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-moti
       </nav>
       <div class="ftc ftco">
         <h3>Thông tin công ty</h3>
-        <div class="ftcard">
+        <div class="ftcard" data-cms="company">
           <p class="coname"><Icon name="building-2" /><b>{{ site.SL('company_name') }}</b></p>
           <ul>
             <li><i><Icon name="file-text" /></i><span><small>Mã số thuế</small><b>{{ site.S('tax_id') }}</b></span></li>

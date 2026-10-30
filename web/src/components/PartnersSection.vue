@@ -9,7 +9,7 @@ const site = useSite()
     <h2>Advertiser và đối tác đồng hành</h2>
     <p style="color:var(--ink2);margin-top:12px;max-width:40em">Các ngân hàng, công ty tài chính và mạng affiliate đang hợp tác cùng 3RDVN Technology.</p>
     <RouterLink class="more" to="/doi-tac">Xem chi tiết →</RouterLink>
-    <div class="plist">
+    <div class="plist" data-cms="partners">
       <div class="mq">
         <template v-for="copy in 2" :key="copy">
           <div v-for="p in site.partners" :key="copy + p.name" class="pt" :aria-hidden="copy === 2 ? 'true' : undefined">

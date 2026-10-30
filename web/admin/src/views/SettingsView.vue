@@ -3,6 +3,10 @@ import { ref } from 'vue'
 import { api } from '../api'
 import FieldsPanel from '../components/FieldsPanel.vue'
 import type { Field } from '../types'
+import ContactFields from './ContactFields.vue'
+
+// part: company = công ty, liên hệ, mạng xã hội; seo = SEO và theo dõi; account = mật khẩu
+defineProps<{ part: 'company' | 'seo' | 'account' }>()
 
 const company: Field[] = [
   { key: 'company_name', label: 'Tên công ty', hint: 'Dùng trong dòng bản quyền ở chân trang' },
@@ -20,6 +24,7 @@ const links: Field[] = [
   { key: 'tiktok', label: 'TikTok', hint: 'https://tiktok.com/@...', type: 'url' },
   { key: 'youtube', label: 'YouTube', hint: 'https://youtube.com/@...', type: 'url' },
   { key: 'instagram', label: 'Instagram', hint: 'https://instagram.com/...', type: 'url' },
+  { key: 'linkedin', label: 'LinkedIn', hint: 'https://linkedin.com/company/...', type: 'url' },
 ]
 const seo: Field[] = [
   { key: 'site_title', label: 'Tiêu đề website', hint: 'Hiện trên tab trình duyệt. Mặc định: 3RDHub Vietnam' },
@@ -52,10 +57,13 @@ async function changePassword() {
 </script>
 
 <template>
-  <FieldsPanel title="Thông tin công ty" sub="Hiện ở chân trang và trang pháp lý. Để trống để dùng giá trị mặc định (hiện mờ trong ô); địa chỉ để trống thì ẩn." :fields="company" />
-  <FieldsPanel title="Liên kết và mạng xã hội" sub="Mạng xã hội chỉ hiện biểu tượng ở chân trang khi bạn điền link." :fields="links" />
-  <FieldsPanel title="SEO và theo dõi" sub="Tiêu đề và mô tả được áp dụng khi trang tải xong (Google đọc được; Facebook, Zalo khi chia sẻ link vẫn dùng ảnh và mô tả mặc định của từng trang)." :fields="seo" />
-  <form class="panel" @submit.prevent="changePassword">
+  <template v-if="part === 'company'">
+    <FieldsPanel title="Thông tin công ty" sub="Hiện ở chân trang và trang pháp lý. Để trống để dùng giá trị mặc định (hiện mờ trong ô); địa chỉ để trống thì ẩn. Bản tiếng Anh để trống thì dùng bản mặc định." :fields="company" />
+    <ContactFields />
+    <FieldsPanel title="Liên kết và mạng xã hội" sub="Mạng xã hội chỉ hiện biểu tượng ở chân trang khi bạn điền link." :fields="links" />
+  </template>
+  <FieldsPanel v-if="part === 'seo'" title="SEO và theo dõi" sub="Tiêu đề và mô tả được áp dụng khi trang tải xong (Google đọc được; Facebook, Zalo khi chia sẻ link vẫn dùng ảnh và mô tả mặc định của từng trang)." :fields="seo" />
+  <form v-if="part === 'account'" class="panel" @submit.prevent="changePassword">
     <h2>Đổi mật khẩu quản trị</h2>
     <p class="sub">Tối thiểu 10 ký tự. Nên dùng mật khẩu dài và không dùng lại ở nơi khác.</p>
     <div class="grid g2"><label class="f">Mật khẩu hiện tại<input v-model="cur" type="password" autocomplete="current-password"></label><span /></div>

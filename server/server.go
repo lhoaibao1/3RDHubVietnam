@@ -156,6 +156,17 @@ func secure(r *http.Request) bool {
 	return strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https") || strings.Contains(r.Header.Get("CF-Visitor"), `"https"`)
 }
 
+// siteFrameSrc cho phép trang quản trị (cms.<tên miền>) nhúng website chính để sửa trực tiếp trên trang.
+func siteFrameSrc(r *http.Request) string {
+	h := strings.ToLower(r.Host)
+	if strings.HasPrefix(h, "cms.") && hostPortRe.MatchString(h[4:]) {
+		return "'self' https://" + h[4:] + " http://" + h[4:]
+	}
+	return "'self'"
+}
+
+var hostPortRe = regexp.MustCompile(`^[a-z0-9.-]{1,253}(:[0-9]{1,5})?$`)
+
 func (a *App) send(w http.ResponseWriter, r *http.Request, code int, body []byte, ctype string, h map[string]string) {
 	hd := w.Header()
 	hd.Set("Content-Type", ctype)
@@ -296,7 +307,7 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if name == "" {
 				name = "index.html"
 			}
-			a.serveFile(w, r, a.cfg.AdminDir, name, "no-cache", adminCSP)
+			a.serveFile(w, r, a.cfg.AdminDir, name, "no-cache", adminCSP+"; frame-src "+siteFrameSrc(r))
 		} else {
 			a.fail(w, r, 404, "Không tìm thấy")
 		}
@@ -340,7 +351,7 @@ func (a *App) apiContent(w http.ResponseWriter, r *http.Request) {
 		a.handleErr(w, r, err)
 		return
 	}
-	body := jsonBytes(map[string]any{"v": upd, "ov": c.Ov, "faq": c.Faq, "partners": c.Partners, "settings": c.Settings, "legal": c.Legal, "quote": c.Quote})
+	body := jsonBytes(map[string]any{"v": upd, "ov": c.Ov, "faq": c.Faq, "partners": c.Partners, "settings": c.Settings, "legal": c.Legal, "quote": c.Quote, "clients": c.Clients})
 	sum := sha1.Sum(body)
 	etag := `"` + hex.EncodeToString(sum[:])[:20] + `"`
 	h := map[string]string{"ETag": etag, "Cache-Control": "no-cache"}

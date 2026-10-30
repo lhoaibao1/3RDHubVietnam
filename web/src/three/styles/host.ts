@@ -13,9 +13,11 @@ export interface Host extends World {
   tour(on: boolean): void
 }
 
-export function createHost(canvas: HTMLCanvasElement, skinId: SkinId): Host {
+/** `side`: cảnh nằm sau chữ (chữ bên trái, cảnh lệch phải) như đầu trang; false khi cảnh nằm gọn trong một khung riêng. */
+export function createHost(canvas: HTMLCanvasElement, skinId: SkinId, opt: { side?: boolean } = {}): Host {
   const sk = makeSkin(skinId)
-  const st = createStage(canvas, sk.stage)
+  const side = opt.side !== false
+  const st = createStage(canvas, side ? sk.stage : { ...sk.stage, offsetX: 0 })
   const back = new T.Group(); st.scene.add(back)
   const bg = sk.setup(st, back)
   let content: T.Group | null = null
@@ -23,7 +25,17 @@ export function createHost(canvas: HTMLCanvasElement, skinId: SkinId): Host {
   let built: Built | null = null
   let timer = 0, touring = false, ti = 0
   const D = new T.Vector3(...sk.dir).normalize()
-  const keyOf = (f: { look: [number, number, number]; r: number }): Key => ({ pos: [f.look[0] + D.x * f.r * sk.k, f.look[1] + D.y * f.r * sk.k, f.look[2] + D.z * f.r * sk.k], look: f.look, fov: sk.fov })
+  /* khoảng cách camera: đủ để cả vùng cần xem nằm trong phần khung không bị chữ che (theo tỉ lệ khung hiện tại) */
+  const keyOf = (f: { look: [number, number, number]; r: number }): Key => {
+    const r = canvas.getBoundingClientRect(), aspect = Math.max(0.5, r.width / Math.max(1, r.height))
+    const usable = side && r.width > 900 ? 0.56 : 0.92
+    const fit = 1.08 / (usable * Math.tan((sk.fov * Math.PI) / 360) * aspect)
+    const d = f.r * Math.max(sk.k, fit)
+    return { pos: [f.look[0] + D.x * d, f.look[1] + D.y * d, f.look[2] + D.z * d], look: f.look, fov: sk.fov }
+  }
+  let lastKey = 'overview'
+  const onResize = () => focus(lastKey, true)
+  addEventListener('resize', onResize)
   st.onTick((t, dt) => { bg(t, dt); for (const f of ticks) f(t) })
 
   function clear() {
@@ -31,7 +43,7 @@ export function createHost(canvas: HTMLCanvasElement, skinId: SkinId): Host {
     content.traverse((o: any) => { if (o.geometry) o.geometry.dispose(); const m = o.material; if (m) (Array.isArray(m) ? m : [m]).forEach((x: T.Material) => x.dispose()) })
     st.scene.remove(content); content = null
   }
-  function focus(k: string, fast?: boolean) { const f = built && (built.foci[k] || built.foci.overview); if (f) st.fly(keyOf(f), fast) }
+  function focus(k: string, fast?: boolean) { lastKey = k; const f = built && (built.foci[k] || built.foci.overview); if (f) st.fly(keyOf(f), fast) }
   function schedule() {
     clearTimeout(timer)
     if (!touring || RM || !built) return
@@ -55,6 +67,6 @@ export function createHost(canvas: HTMLCanvasElement, skinId: SkinId): Host {
     focus(k, fast) { focus(k, fast) },
     anchor: (k) => (built && built.anchors[k]) || null,
     project: st.project, visible: st.visible,
-    dispose() { clearTimeout(timer); clear(); st.dispose() },
+    dispose() { removeEventListener('resize', onResize); clearTimeout(timer); clear(); st.dispose() },
   }
 }

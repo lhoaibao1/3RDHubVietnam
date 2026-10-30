@@ -4,6 +4,7 @@ import { observeReveal, type RevealGroup } from '@/composables/reveal'
 import HeroStory from '@/components/HeroStory.vue'
 import BizSection from '@/components/BizSection.vue'
 import TechSection from '@/components/TechSection.vue'
+import ClientsSection from '@/components/ClientsSection.vue'
 import PartnersSection from '@/components/PartnersSection.vue'
 import FaqSection from '@/components/FaqSection.vue'
 import ContactSection from '@/components/ContactSection.vue'
@@ -26,6 +27,7 @@ onBeforeUnmount(() => stop())
   <main id="top" ref="root">
     <HeroStory />
     <BizSection />
+    <div class="w"><ClientsSection /></div>
     <TechSection />
     <PartnersSection />
     <FaqSection />

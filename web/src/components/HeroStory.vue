@@ -67,7 +67,7 @@ onMounted(() => {
     const d = Math.min(100, n - last)
     last = n
     const k = cur.value
-    if ((!hero || hero.visible()) && playing) {
+    if ((!hero || hero.visible()) && playing && !document.documentElement.classList.contains('cms-edit')) {
       stepT += d
       if (stepT >= DUR[k]) go((k + 1) % NAMES.length)
     }

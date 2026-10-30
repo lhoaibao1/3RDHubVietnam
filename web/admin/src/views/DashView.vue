@@ -17,8 +17,9 @@ const c = computed(() => a.content!)
     <h2>Bắt đầu nhanh</h2>
     <p class="sub">Lần chỉnh sửa gần nhất: {{ a.updated ? fmt(a.updated) : 'chưa có' }}</p>
     <div class="bar">
-      <button class="btn" type="button" @click="a.go('home')">Sửa trang chủ</button>
-      <button class="btn gh" type="button" @click="a.go('product')">Trang Sản phẩm</button>
+      <button class="btn" type="button" @click="a.go('live')">Sửa chữ ngay trên trang</button>
+      <button class="btn gh" type="button" @click="a.go('quote')">Báo giá</button>
+      <button class="btn gh" type="button" @click="a.go('clients')">Khách hàng</button>
       <button class="btn gh" type="button" @click="a.go('faq')">Quản lý hỏi đáp</button>
       <button class="btn gh" type="button" @click="a.go('partners')">Quản lý đối tác</button>
       <button class="btn gh" type="button" @click="a.go('legal')">Điều khoản và bảo mật</button>
@@ -32,7 +33,8 @@ const c = computed(() => a.content!)
       <li><b>Mỗi đoạn chữ có 2 ô</b>: Tiếng Việt và English. Để trống ô English thì dùng bản dịch mặc định.</li>
       <li><b>Chữ giống nhau ở nhiều chỗ</b> (ví dụ nút "Đăng ký làm publisher") đổi một lần là đổi hết.</li>
       <li><b>Làm sai?</b> Vào mục "Lịch sử" để khôi phục phiên bản trước.</li>
-      <li><b>Mỗi trang website một tab</b>: chữ, danh sách và hình của trang đó nằm cùng một chỗ. Kiểu cảnh 3D chọn ở tab "Giao diện 3D".</li>
+      <li><b>Sửa chữ: vào "Sửa trên trang"</b>, bấm thẳng vào chữ trên website để sửa. Không nhớ chữ nằm ở trang nào thì dùng "Tìm chữ để sửa".</li>
+      <li><b>Chỉ cần viết tiếng Việt</b>: khi lưu, hệ thống tự dịch sang tiếng Anh.</li>
     </ul>
   </div>
 </template>

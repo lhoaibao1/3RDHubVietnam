@@ -16,7 +16,7 @@ const html = computed(() => renderLegal(fillTokens(d.value.body, (k) => site.SL(
       <h1>{{ d.title }}</h1>
       <p class="lupd">{{ site.t('Cập nhật lần cuối') }}: {{ d.updated }}</p>
       <!-- eslint-disable-next-line vue/no-v-html -->
-      <div class="lbody" v-html="html" />
+      <div class="lbody" data-cms="legal" v-html="html" />
     </article>
   </section>
 </template>

@@ -25,7 +25,7 @@ const assert = require('assert');
   await p.screenshot({ path: '' + (process.env.OUT || '/tmp') + '/adm_dash.png' });
 
   // sửa chữ
-  await p.click('button[data-tab=chrome]');
+  await p.click('button[data-tab=text]');
   await p.fill('input[type=search]', 'Đăng ký ngay');
   await p.waitForSelector('.trow');
   const first = p.locator('.trow').first();
@@ -52,14 +52,15 @@ const assert = require('assert');
 
   // liên hệ, giao diện 3D, cài đặt chung: mỗi việc một tab
   const F = (label) => p.locator('label.f', { hasText: label }).locator('input,textarea').first();
-  await p.click('button[data-tab=contact]');
+  await p.click('button[data-tab=company]');
   await F('Số hotline (hiển thị)').fill('(+84) 900 111 222');
   await F('Số hotline (để bấm gọi)').fill('+84900111222');
   await p.click('button[data-tab=look]');
   await p.click('.scene:has-text("Nhà máy tự động") .pick');
-  await p.click('button[data-tab=settings]');
+  await p.click('button[data-tab=company]');
   await F('Facebook').fill('https://facebook.com/3rdhub');
   await F('Tên công ty').fill('Công ty Thử Nghiệm');
+  await p.click('button[data-tab=seo]');
   await F('Mã Google Analytics').fill('G-ABCDE12345');
   await p.click('.savebar .save'); await p.waitForSelector('.savebar:not(.on)', { state: 'attached' });
   ok('lưu cài đặt');
@@ -68,6 +69,16 @@ const assert = require('assert');
   assert.strictEqual(await p.locator('input[autocomplete=off]').first().inputValue(), 'mail.3rdhubvietnam.tech'); ok('SMTP: có sẵn cấu hình iNET, chưa có mật khẩu');
   await p.click('button[data-tab=quote]');
   assert.strictEqual(await p.locator('.panel h2:has-text("Gói ")').count(), 3); ok('báo giá: có 3 gói mặc định để sửa');
+  // sửa trực tiếp trên trang: bấm vào chữ trong khung website, sửa ở cột bên phải, khung đổi chữ ngay
+  await p.click('button[data-tab=live]');
+  const fr = p.frameLocator('.lv-frame iframe');
+  await fr.locator('.k2', { hasText: 'Sản phẩm' }).first().waitFor({ timeout: 20000 });
+  await fr.locator('.biz .k2').first().click();
+  await p.waitForSelector('.lv-side textarea');
+  await p.locator('.lv-side textarea').first().fill('Sản phẩm của chúng tôi');
+  await fr.locator('.biz .k2', { hasText: 'Sản phẩm của chúng tôi' }).waitFor({ timeout: 5000 });
+  ok('sửa trên trang: bấm chữ trên website, sửa và thấy ngay');
+  await p.click('.savebar .discard, .savebar .btn.gh').catch(() => {});
   await p.screenshot({ path: '' + (process.env.OUT || '/tmp') + '/adm_settings.png' });
 
   // kiểm tra website công khai nhận thay đổi (ngữ cảnh mới, không cache)

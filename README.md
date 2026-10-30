@@ -93,14 +93,13 @@ Thử `deploy.sh` mà không đụng hệ thống thật: `PGHOST=<thư mục so
 
 ## CMS làm được gì
 
-Thanh bên chia theo từng trang của website, mỗi trang một tab có chữ và dữ liệu riêng của trang đó:
+- **Sửa trên trang**: website mở ngay trong CMS; rê chuột thấy viền cam quanh chữ sửa được, bấm vào là sửa ở cột bên phải và thấy kết quả ngay. Vùng viền tím (hỏi đáp, đối tác, khách hàng, báo giá, thông tin công ty) bấm vào để mở đúng mục quản lý. Không nhớ chữ ở đâu thì dùng **Tìm chữ để sửa**.
+- **Danh sách**: Hỏi đáp, Đối tác (chỉ logo), Khách hàng ("Khách hàng của chúng tôi" ở trang chủ, Sản phẩm, Báo giá), Báo giá (các gói của trang `/baogia`), Điều khoản và Bảo mật.
+- **Thông tin**: Công ty, liên hệ, mạng xã hội (Facebook, Zalo, TikTok, YouTube, Instagram, LinkedIn), link demo, link đăng ký; SEO và Google Analytics.
+- **Hệ thống**: Giao diện 3D (8 kiểu, có xem thử), Email (SMTP), đổi mật khẩu.
+- **Vận hành**: Yêu cầu khách (trạng thái, ghi chú, xuất CSV), Lịch sử (60 bản gần nhất, khôi phục một cú bấm).
 
-- **Các trang website**: Trang chủ, Mô hình, Advertiser (đưa chiến dịch lên mạng lưới publisher), Sản phẩm (hệ thống affiliate riêng, bản quyền 3RDHub), Công nghệ, Đối tác, Hỏi đáp, Liên hệ, Pháp lý. Mỗi tab sửa hơn 450 đoạn chữ (Tiếng Việt và English, "Về gốc" từng đoạn); riêng Đối tác sửa danh sách logo (website chỉ hiện logo, không link), Hỏi đáp sửa câu hỏi và chọn câu hiện ở trang chủ, Liên hệ sửa email, hotline, giờ làm việc, Pháp lý sửa Điều khoản và Chính sách bảo mật (có xem trước; hai trang nằm riêng ở `/dieu-khoan`, `/bao-mat`).
-- **Báo giá**: trang `/baogia` (không nằm trên menu, mở từ trang Sản phẩm) lấy các gói và giá từ tab *Báo giá* trong CMS.
-- **Toàn website**: *Menu và chân trang* (chữ dùng chung, thông báo cookie), *Giao diện 3D* (chọn một trong 8 kiểu cảnh, có ảnh xem trước và nút "Xem thử" mở website với `?scene=<kiểu>`, chỉ trên trình duyệt của bạn), *Email (SMTP)* (máy chủ gửi thư, mật khẩu mã hoá, gửi thử, báo khi có yêu cầu mới), *Cài đặt chung* (tên công ty, mã số thuế, địa chỉ, link đăng ký, mạng xã hội, SEO, mã Google Analytics, đổi mật khẩu).
-- **Vận hành**: *Yêu cầu khách* (form liên hệ: trạng thái, ghi chú, xuất CSV) và *Lịch sử* (mỗi lần lưu là một phiên bản, giữ 60 bản gần nhất, khôi phục bằng một cú bấm).
-
-Hình ảnh, nội dung cảnh 3D và bố cục là phần thiết kế (nằm trong `web/`), CMS chỉ chọn *kiểu* cảnh 3D. Mã các kiểu mới ở `web/src/three/styles/`: `skin.ts` (phong cách: ánh sáng, nền, vật liệu), `parts.ts` (các chi tiết 3D), `concepts.ts` (cảnh riêng cho từng trang: trang chủ, Mô hình, Advertiser, Sản phẩm, Công nghệ, Đối tác, Hỏi đáp, Liên hệ), `host.ts` (ghép cảnh với skin). Thêm một kiểu mới = thêm một hàm skin và một dòng trong `sceneTypes.ts` + danh sách kiểu của backend (`sceneStyles` trong `server/content.go`).
+Mọi chỗ chỉ cần viết tiếng Việt, bản tiếng Anh tự dịch khi lưu. Hình ảnh, nội dung cảnh 3D và bố cục là phần thiết kế (nằm trong `web/`); mã các kiểu 3D mới ở `web/src/three/styles/` (`skin.ts` phong cách, `parts.ts` chi tiết, `concepts.ts` cảnh riêng từng trang, `host.ts` ghép cảnh với skin; nhãn trong cảnh là HTML nên chữ luôn nét).
 
 ## Tự dịch và email
 

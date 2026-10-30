@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { createDevScene } from '@/three/devscene'
 import { useTerminal } from '@/composables/useTerminal'
+import { useSite } from '@/stores/site'
 
 const STEPS = ['Khởi tạo', 'Viết API', 'Kiểm thử', 'Build', 'Triển khai']
 const devCanvas = ref<HTMLCanvasElement | null>(null)
@@ -9,15 +10,29 @@ const term = ref<HTMLElement | null>(null)
 const tout = ref<HTMLElement | null>(null)
 const terminal = useTerminal(term, tout)
 let scene: { dispose(): void } | null = null
+const site = useSite()
+// Kiểu cảnh 3D khác "Cổ điển": khu này dùng cảnh Công nghệ của chính kiểu đó cho đồng bộ với cả trang
+const style = computed(() => site.sceneStyle)
+let gen = 0
 
-onMounted(() => {
+async function build() {
+  const my = ++gen
+  scene?.dispose(); scene = null
+  if (!devCanvas.value) return
   try {
-    scene = createDevScene(devCanvas.value!, terminal.source)
+    if (style.value === 'classic') scene = createDevScene(devCanvas.value, terminal.source)
+    else {
+      const h = (await import('@/three/styles/host')).createHost(devCanvas.value, style.value as never, { side: false })
+      if (my !== gen) { h.dispose(); return }
+      h.show('cong-nghe'); h.tour(true); scene = h
+    }
   } catch (e) {
     console.error(e)
   }
-})
-onBeforeUnmount(() => scene?.dispose())
+}
+onMounted(build)
+watch(style, build, { flush: 'post' })
+onBeforeUnmount(() => { gen++; scene?.dispose() })
 </script>
 
 <template>
@@ -43,7 +58,7 @@ onBeforeUnmount(() => scene?.dispose())
     </div>
   </div>
   <div class="dev">
-    <div class="dev-stage"><canvas id="gl3" ref="devCanvas" aria-label="Cảnh 3D: robot 3RDVN đang lập trình hệ thống affiliate"></canvas>
+    <div class="dev-stage" :class="{ styled: style !== 'classic' }"><canvas id="gl3" :key="style" ref="devCanvas" aria-label="Cảnh 3D: robot 3RDVN đang lập trình hệ thống affiliate"></canvas>
       <div class="ft" style="left:6%;top:10%"><b>Vue.js</b><span>Giao diện publisher, quản trị</span></div>
       <div class="ft" style="left:30%;top:4%"><b>Go</b><span>API, tracking, postback</span></div>
     </div>

@@ -210,7 +210,7 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 		rows.Close()
 		return ok(map[string]any{
 			"content":  c,
-			"defaults": map[string]any{"faq": a.defaults.Faq, "partners": a.defaults.Partners, "settings": a.defaults.Settings, "legal": a.defaults.Legal, "quote": a.defaults.Quote},
+			"defaults": map[string]any{"faq": a.defaults.Faq, "partners": a.defaults.Partners, "settings": a.defaults.Settings, "legal": a.defaults.Legal, "quote": a.defaults.Quote, "clients": a.defaults.Clients},
 			"leads":    counts, "updated": upd,
 		})
 

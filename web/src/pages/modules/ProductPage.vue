@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import Icon from '@/components/Icon.vue'
 import Page3D from '@/components/Page3D.vue'
 import PageCta from '@/components/PageCta.vue'
+import ClientsSection from '@/components/ClientsSection.vue'
 import { usePageFx } from '@/composables/usePageFx'
 import { useSite } from '@/stores/site'
 
@@ -48,6 +49,8 @@ usePageFx(root)
 
   <div class="ps"><div class="k2">Quy trình</div><h2>Triển khai trong sáu bước</h2>
     <ol class="steps6"><li><b>01</b><h3>Tư vấn</h3><p>Nghe sản phẩm, quy mô publisher và cách bạn muốn trả hoa hồng.</p></li><li><b>02</b><h3>Thiết kế</h3><p>Chốt luồng nghiệp vụ, giao diện và phạm vi tính năng.</p></li><li><b>03</b><h3>Lập trình</h3><p>Frontend Vue.js, backend Go, kết nối đối tác.</p></li><li><b>04</b><h3>Kiểm thử</h3><p>Chạy thử tracking và postback trên môi trường test.</p></li><li><b>05</b><h3>Bàn giao</h3><p>Tài liệu bàn giao, hướng dẫn đội vận hành.</p></li><li><b>06</b><h3>Nâng cấp</h3><p>Bổ sung tính năng theo từng giai đoạn.</p></li></ol></div>
+
+  <ClientsSection />
 
   <div class="ps"><div class="cta xs"><div><h2>Muốn biết chi phí?</h2><p>Xem các gói và để lại thông tin, chúng tôi báo giá theo đúng phạm vi của bạn.</p></div><RouterLink class="btn or" to="/baogia">Xem báo giá</RouterLink></div></div>
 

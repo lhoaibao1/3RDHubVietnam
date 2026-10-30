@@ -12,9 +12,9 @@ import (
 const maxJSON = 3 * 1024 * 1024
 
 var settingKeys = []string{"signup_url", "email", "hotline", "hotline_tel", "company_name", "tax_id", "address", "working_hours", "working_hours_en",
-	"facebook", "zalo", "tiktok", "youtube", "instagram", "site_title", "meta_description", "analytics_id", "parent_url", "company_name_en", "address_en", "scene_style", "demo_url"}
+	"facebook", "zalo", "tiktok", "youtube", "instagram", "site_title", "meta_description", "analytics_id", "parent_url", "company_name_en", "address_en", "scene_style", "demo_url", "linkedin"}
 var sceneStyles = map[string]bool{"classic": true, "isometric": true, "factory": true, "ecosystem": true, "orbit": true, "voxel": true, "blueprint": true, "neon": true}
-var urlSettings = map[string]bool{"signup_url": true, "facebook": true, "zalo": true, "tiktok": true, "youtube": true, "instagram": true, "parent_url": true, "demo_url": true}
+var urlSettings = map[string]bool{"signup_url": true, "facebook": true, "zalo": true, "tiktok": true, "youtube": true, "instagram": true, "parent_url": true, "demo_url": true, "linkedin": true}
 var settingMax = map[string]int{"meta_description": 400, "address": 300, "company_name": 120, "company_name_en": 120, "address_en": 300, "site_title": 120, "tax_id": 40, "analytics_id": 40}
 var legalKeys = []string{"terms", "privacy"}
 
@@ -74,6 +74,15 @@ type Partner struct {
 	Group Pair   `json:"group"`
 }
 
+// Client là một khách hàng tiêu biểu (mục "Khách hàng của chúng tôi").
+type Client struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Logo string `json:"logo"`
+	URL  string `json:"url"`
+	Desc Pair   `json:"desc"`
+}
+
 type LegalDoc struct {
 	Title   Pair `json:"title"`
 	Updated Pair `json:"updated"`
@@ -87,6 +96,7 @@ type Content struct {
 	Settings map[string]string   `json:"settings"`
 	Legal    map[string]LegalDoc `json:"legal"`
 	Quote    Quote               `json:"quote"`
+	Clients  []Client            `json:"clients"`
 }
 
 // Defaults là nội dung mặc định nhúng trong chương trình (seed/defaults.json).
@@ -96,9 +106,13 @@ type Defaults struct {
 	Settings map[string]string   `json:"settings"`
 	Legal    map[string]LegalDoc `json:"legal"`
 	Quote    Quote               `json:"quote"`
+	Clients  []Client            `json:"clients"`
 }
 
 func (c *Content) normalize() {
+	if c.Clients == nil {
+		c.Clients = []Client{}
+	}
 	if c.Quote.Plans == nil {
 		c.Quote.Plans = []QuotePlan{}
 	}
@@ -120,7 +134,7 @@ func (c *Content) normalize() {
 }
 
 func defaultContent(d *Defaults) Content {
-	c := Content{Faq: d.Faq, Partners: d.Partners, Quote: d.Quote}
+	c := Content{Faq: d.Faq, Partners: d.Partners, Quote: d.Quote, Clients: d.Clients}
 	c.normalize()
 	return c
 }
@@ -365,6 +379,45 @@ func cleanContent(in any) (Content, error) {
 			return out, bad("Mã Google Analytics có dạng G-XXXXXXXXXX")
 		}
 		out.Settings[k] = v
+	}
+
+	if c["clients"] != nil {
+		cl, ok := c["clients"].([]any)
+		if !ok || len(cl) > 120 {
+			return out, bad("Danh sách khách hàng không hợp lệ")
+		}
+		for i, raw := range cl {
+			m := asMap(raw)
+			if m == nil {
+				continue
+			}
+			name, err := strip(m["name"], 120, "Tên khách hàng")
+			if err != nil {
+				return out, err
+			}
+			if name == "" {
+				return out, bad("Khách hàng số %d chưa có tên", i+1)
+			}
+			logo, err := strip(m["logo"], 200, "Logo")
+			if err != nil {
+				return out, err
+			}
+			if logo != "" && !uploadRe.MatchString(logo) {
+				return out, bad("Logo của '%s' không hợp lệ", name)
+			}
+			u, err := strip(m["url"], 500, "Website khách hàng")
+			if err != nil {
+				return out, err
+			}
+			if u != "" && !urlRe.MatchString(u) {
+				return out, bad("Website của '%s' phải bắt đầu bằng http:// hoặc https://", name)
+			}
+			desc, err := pairOf(m["desc"], 400, "Mô tả khách hàng")
+			if err != nil {
+				return out, err
+			}
+			out.Clients = append(out.Clients, Client{ID: cleanID(m["id"], fmt.Sprintf("c%d", i+1)), Name: name, Logo: logo, URL: u, Desc: desc})
+		}
 	}
 
 	if q := asMap(c["quote"]); q != nil {

@@ -62,6 +62,53 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
   const cur = { pos: new T.Vector3(0, 10, 40), look: new T.Vector3(), fov: o.fov || 30 }
   const tgt = { pos: new T.Vector3(0, 10, 40), look: new T.Vector3(), fov: o.fov || 30 }
   let vis = true, raf = 0, last = 0, flying = 0
+  /* lớp nhãn HTML */
+  const overlay = document.createElement('div'); overlay.className = 'gl-labels'; overlay.setAttribute('aria-hidden', 'true')
+  let lbls: T.Object3D[] = [], scan = 0
+  const lv = new T.Vector3()
+  function syncLabels() {
+    const par = canvas.parentElement
+    if (par && overlay.parentElement !== par) par.insertBefore(overlay, canvas.nextSibling)
+    overlay.style.left = canvas.offsetLeft + 'px'; overlay.style.top = canvas.offsetTop + 'px'
+    overlay.style.width = W + 'px'; overlay.style.height = H + 'px'
+    if (scan-- <= 0) {
+      scan = 20
+      const now: T.Object3D[] = []
+      scene.traverse((o) => { if (o.userData.lbl) now.push(o) })
+      for (const o of lbls) if (!now.includes(o)) { (o.userData.el as HTMLElement | undefined)?.remove(); delete o.userData.el }
+      lbls = now
+    }
+    /* đặt nhãn rồi đẩy những nhãn chồng nhau lên trên để không che nhau */
+    const placed: { x: number; y: number; w: number; h: number }[] = []
+    const items: { el: HTMLElement; x: number; y: number; z: number }[] = []
+    for (const o of lbls) {
+      let el = o.userData.el as HTMLElement | undefined
+      if (!el) {
+        const d = o.userData.lbl
+        el = document.createElement('div'); el.className = 'gl-lb'; el.style.setProperty('--c', d.color)
+        const b = document.createElement('b'); b.textContent = d.text; el.appendChild(b)
+        if (d.sub) { const sp = document.createElement('span'); sp.textContent = d.sub; el.appendChild(sp) }
+        overlay.appendChild(el); o.userData.el = el
+      }
+      o.getWorldPosition(lv); lv.project(camera)
+      const x = (lv.x * 0.5 + 0.5) * W, y = (-lv.y * 0.5 + 0.5) * H
+      const show = lv.z < 1 && x > -60 && x < W + 60 && y > -20 && y < H + 40
+      el.style.opacity = show ? '1' : '0'
+      if (show) items.push({ el, x, y, z: lv.z })
+    }
+    items.sort((a, b) => a.z - b.z) // gần camera đặt trước, giữ đúng chỗ
+    for (const it of items) {
+      const w = it.el.offsetWidth || 90, h = it.el.offsetHeight || 34
+      let y = it.y
+      for (let n = 0; n < 6; n++) {
+        const hit = placed.find((p) => Math.abs(p.x - it.x) < (p.w + w) / 2 + 4 && y > p.y - p.h - 4 && y - h < p.y + 4)
+        if (!hit) break
+        y = hit.y - hit.h - 6
+      }
+      placed.push({ x: it.x, y, w, h })
+      it.el.style.transform = `translate(${it.x.toFixed(1)}px,${y.toFixed(1)}px) translate(-50%,-100%)`
+    }
+  }
   const mt = meter()
 
   function size() {
@@ -98,6 +145,7 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
     if (Math.abs(camera.fov - cur.fov) > 0.01) { camera.fov = cur.fov; camera.updateProjectionMatrix() }
     for (const f of ticks) f(t, dt)
     if (bloomOn) composer.render(dt); else R.render(scene, camera)
+    syncLabels()
     // máy quá chậm: tắt bloom (giữ cảnh mượt), mức giảm độ nét đã do quality.ts lo
     if (dt * 1000 > 40) slow++; else slow = Math.max(0, slow - 1)
     if (slow > 40 && bloomOn) { bloomOn = false; R.setPixelRatio(Math.min(R.getPixelRatio(), 1)) }
@@ -116,7 +164,7 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
       return { x: (v.x * 0.5 + 0.5) * W, y: (-v.y * 0.5 + 0.5) * H, behind: v.z > 1 }
     },
     visible: () => vis,
-    dispose() { cancelAnimationFrame(raf); offQ(); ro.disconnect(); io.disconnect(); rt.dispose(); R.dispose(); scene.traverse((m: any) => { if (m.geometry) m.geometry.dispose() }) },
+    dispose() { overlay.remove(); cancelAnimationFrame(raf); offQ(); ro.disconnect(); io.disconnect(); rt.dispose(); R.dispose(); scene.traverse((m: any) => { if (m.geometry) m.geometry.dispose() }) },
   }
 }
 
@@ -142,27 +190,13 @@ export function iconTex(name: string, color = '#EAF2FF', size = 256): T.CanvasTe
   return t
 }
 
-function rrect(x: CanvasRenderingContext2D, a: number, b: number, w: number, h: number, r: number) {
-  x.beginPath(); x.moveTo(a + r, b); x.arcTo(a + w, b, a + w, b + h, r); x.arcTo(a + w, b + h, a, b + h, r); x.arcTo(a, b + h, a, b, r); x.arcTo(a, b, a + w, b, r); x.closePath()
-}
 
-/** Nhãn kính có viền neon, luôn quay mặt về camera. `h` là chiều cao thế giới. */
-export function label(text: string, color: number, h = 1.5, sub = ''): T.Sprite {
-  const c = document.createElement('canvas'); const x = c.getContext('2d') as CanvasRenderingContext2D
-  x.font = `900 52px ${FONT}`; const tw = Math.ceil(x.measureText(text).width)
-  x.font = `700 30px ${FONT}`; const sw = sub ? Math.ceil(x.measureText(sub).width) : 0
-  const W = Math.max(tw, sw) + 96, H = sub ? 148 : 100
-  c.width = W; c.height = H
-  const col = '#' + new T.Color(color).getHexString()
-  x.fillStyle = 'rgba(7,16,43,.78)'; rrect(x, 4, 4, W - 8, H - 8, 30); x.fill()
-  x.strokeStyle = col; x.lineWidth = 5; rrect(x, 4, 4, W - 8, H - 8, 30); x.stroke()
-  x.textAlign = 'center'; x.textBaseline = 'middle'
-  x.fillStyle = '#FFFFFF'; x.font = `900 52px ${FONT}`; x.fillText(text, W / 2, sub ? 52 : H / 2 + 3)
-  if (sub) { x.fillStyle = col; x.font = `700 30px ${FONT}`; x.fillText(sub, W / 2, 108) }
-  const t = new T.CanvasTexture(c); t.encoding = T.sRGBEncoding
-  const sp = new T.Sprite(new T.SpriteMaterial({ map: t, transparent: true, depthWrite: false, toneMapped: false, fog: false }))
-  sp.scale.set(h * W / H, h, 1); sp.renderOrder = 10
-  return sp
+/** Nhãn của một khu vực trong cảnh. Vẽ bằng HTML phủ lên canvas (chữ luôn nét, không bị nhoè vì hiệu ứng phát sáng);
+ *  vật thể trả về chỉ là điểm neo, sân khấu (createStage) tự đặt nhãn theo vị trí của nó mỗi khung hình. */
+export function label(text: string, color: number, _h = 1.5, sub = ''): T.Object3D {
+  const o = new T.Object3D()
+  o.userData.lbl = { text, sub, color: '#' + new T.Color(color).getHexString() }
+  return o
 }
 
 /* ---------------- vật liệu phát sáng ---------------- */

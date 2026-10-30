@@ -3,7 +3,7 @@ import en from '../lib/en.json'
 import { setMode } from '../three/mode'
 import { isSceneStyle, type SceneStyle } from '../three/sceneTypes'
 import { transition } from '../lib/transition'
-import { DEFAULTS, DEF_SETTINGS, type Content, type Faq, type Lang, type LegalDoc, type OvItem, type Pair, type Partner, type QuotePlan } from '../lib/content'
+import { DEFAULTS, DEF_SETTINGS, type Content, type Faq, type Lang, type LegalDoc, type OvItem, type Pair, type Partner, type QuotePlan, type Client } from '../lib/content'
 
 const EN = en as Record<string, string>
 const CACHE_KEY = '3rd-cms-v1'
@@ -51,6 +51,7 @@ export const useSite = defineStore('site', {
       return isSceneStyle(v) ? v : 'classic'
     },
     faqItems(s): Faq[] { return s.cms?.faq ?? DEFAULTS.faq },
+    clients(s): Client[] { return s.cms?.clients ?? DEFAULTS.clients },
     quotePlans(s): QuotePlan[] { return s.cms?.quote?.plans?.length ? s.cms.quote.plans : DEFAULTS.quote.plans },
     partners(s): Partner[] { return s.cms?.partners?.length ? s.cms.partners : DEFAULTS.partners },
   },

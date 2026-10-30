@@ -8,6 +8,7 @@ import './styles/fonts.css'
 import './styles/site.css'
 import './styles/backgrounds.css'
 import { restoreScroll, trackScroll } from './lib/scrollRestore'
+import { editRequested, initEditMode } from './lib/editMode'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -34,7 +35,8 @@ trackScroll()
 const wait = new Promise<void>((r) => setTimeout(r, 8000))
 Promise.race([router.isReady().catch(() => {}), wait]).finally(() => {
   app.mount('#app')
-  restoreScroll()
+  if (editRequested()) site.load().then(() => initEditMode(site as never, router))
+  else restoreScroll()
   setTimeout(() => { try { sessionStorage.removeItem('3rd-reload') } catch { /* bỏ qua */ } }, 6000)
   const boot = document.getElementById('boot')
   if (boot) { requestAnimationFrame(() => { boot.classList.add('off'); setTimeout(() => boot.remove(), 600) }) }

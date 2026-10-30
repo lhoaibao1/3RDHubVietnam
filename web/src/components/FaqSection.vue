@@ -18,7 +18,7 @@ const items = computed(() => site.faqItems.filter((f) => f.home))
         <RouterLink class="more" to="/hoi-dap">Xem chi tiết →</RouterLink>
         <div class="fqc"><BrandIcon /><div><small>Hotline</small><b>{{ site.S('hotline') }}</b></div></div>
       </div>
-      <div class="fq">
+      <div class="fq" data-cms="faq">
         <AnimDetails v-for="(f, i) in items" :key="f.id" :summary="site.pick(f.q)" :text="site.pick(f.a)" :open="i === 0" />
       </div>
     </div>
