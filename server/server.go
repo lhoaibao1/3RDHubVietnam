@@ -38,6 +38,7 @@ type App struct {
 	defaults Defaults
 	rl       *limiter
 	tr       *translator
+	hub      *hubClient
 }
 
 func loadDefaults() (Defaults, error) {
@@ -294,6 +295,10 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.apiContent(w, r)
 	case p == "/api/lead" && r.Method == http.MethodPost:
 		a.apiLead(w, r)
+	case p == "/api/products" && get:
+		a.apiProducts(w, r)
+	case p == "/api/register" && r.Method == http.MethodPost:
+		a.apiRegister(w, r)
 	case p == "/healthz" && get:
 		a.send(w, r, 200, []byte("ok"), "text/plain; charset=utf-8", noStore)
 	case strings.HasPrefix(p, "/uploads/") && get:

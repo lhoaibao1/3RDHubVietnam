@@ -17,6 +17,9 @@ type Config struct {
 	AdminPass   string // mật khẩu quản trị ban đầu (chỉ dùng lần chạy đầu)
 	CMSHosts    []string
 	SessionTTL  int64
+	HubBase     string // 3RDHub: https://uat-app.3rdvn.io.vn (thử) hoặc https://app.3rdvn.io.vn (thật)
+	HubKey      string // khoá site lấy trong 3RDHub, chỉ nằm ở backend
+	HubMock     bool   // HUB_MOCK=1: dùng bản giả của 3RDHub (hub_mock.go)
 }
 
 func env(key, def string) string {
@@ -36,6 +39,9 @@ func loadConfig() Config {
 		SiteDir:     os.Getenv("SITE_DIR"),
 		AdminPass:   os.Getenv("CMS_ADMIN_PASSWORD"),
 		SessionTTL:  12 * 3600,
+		HubBase:     env("HUB_API_BASE", ""),
+		HubKey:      strings.TrimSpace(os.Getenv("HUB_SITE_KEY")),
+		HubMock:     env("HUB_MOCK", "") == "1",
 	}
 	if ttl, err := strconv.Atoi(os.Getenv("SESSION_TTL")); err == nil && ttl > 0 {
 		c.SessionTTL = int64(ttl)

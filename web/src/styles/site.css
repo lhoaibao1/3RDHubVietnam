@@ -829,3 +829,35 @@ html.vt-theme::view-transition-new(root){z-index:2}
 /* Ẩn thanh cuộn của trình duyệt, vẫn cuộn bình thường */
 html,body{scrollbar-width:none;-ms-overflow-style:none}
 html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
+
+/* Trang Đăng ký sản phẩm (/dang-ky) */
+.rgpg{padding-top:clamp(96px,12vw,130px);padding-bottom:40px}
+.rgwrap{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(20px,4vw,56px);align-items:start}
+.rgintro h1{margin:10px 0 14px}
+.rgform{box-shadow:0 24px 50px -36px rgba(20,20,50,.5)}
+.rgform h2,.rgdone h2{font-size:26px;margin:0}
+.rgform select{font:inherit;font-weight:600;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);width:100%;min-width:0;appearance:auto}
+.rgform select:focus{outline:none;border-color:var(--or)}
+.rgform [aria-invalid="true"]{border-color:#D93A4A}
+.rgform :focus-visible{outline:3px solid var(--or);outline-offset:2px}
+.rgerr{color:#D93A4A;font-size:14px;font-weight:700;margin:-6px 0 0;min-height:0}
+.rgerr:empty{display:none}
+.rghp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.rgck{display:flex!important;gap:12px;align-items:flex-start;font-weight:600!important;line-height:1.5}
+.rgck input{flex:none;width:22px!important;height:22px;margin-top:1px;accent-color:var(--or);padding:0}
+.rgck a{color:var(--or);font-weight:800}
+.rgform .btn{min-height:50px}
+.rgform .btn:disabled{opacity:.6;cursor:not-allowed}
+.rgdone{display:grid;gap:12px;padding:clamp(20px,3vw,32px)}
+.rgdone h2:focus{outline:none}
+.rgprod{font-weight:800;color:var(--ink2);margin:0}
+.rgzalo{display:grid;gap:14px;background:var(--bg);border-radius:20px;padding:clamp(16px,2.5vw,24px);margin-top:6px}
+.rgzalo h3{margin:0;font-size:19px}
+.rgcode{display:grid;gap:4px;justify-items:start}
+.rgcode span{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.rgcode b{font-size:clamp(40px,10vw,56px);line-height:1;letter-spacing:.04em;color:var(--or);font-variant-numeric:tabular-nums;user-select:all}
+.rgzalo .acts{display:flex;flex-wrap:wrap;gap:10px;margin:0}
+.rgcopied{margin:-6px 0 0;font-size:14px;font-weight:700;color:var(--ok);min-height:1.2em}
+.rgsteps{margin:0;padding-left:22px;display:grid;gap:6px;font-weight:600}
+.rgnote{margin:0;font-size:14.5px;color:var(--ink2)}
+@media(max-width:900px){.rgwrap{grid-template-columns:minmax(0,1fr)}.rgzalo .acts .btn{flex:1 1 140px}}

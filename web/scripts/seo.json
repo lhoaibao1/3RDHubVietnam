@@ -89,6 +89,14 @@
       "sub": "Thuê năm, self-host hoặc mua source.",
       "tint": "#FFB238",
       "shot": "/baogia"
+    },
+    "dang-ky": {
+      "title": "Đăng ký sản phẩm | 3RDHub Vietnam",
+      "desc": "Đăng ký sản phẩm tài chính qua 3RDHub Vietnam: để lại thông tin để được tư vấn, nhận mã theo dõi hồ sơ qua Zalo.",
+      "head": "Đăng ký sản phẩm.",
+      "sub": "Nhận mã theo dõi hồ sơ qua Zalo.",
+      "tint": "#12A06A",
+      "shot": "/dang-ky"
     }
   }
 }
