@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { NAV, okUrl } from '@/lib/content'
 import { BRANDS } from '@/lib/icons.generated'
 import { useSite } from '@/stores/site'
@@ -16,6 +17,13 @@ const year = new Date().getFullYear()
 const bct = computed(() => { const u = site.S('bct_url'); return /^https:\/\/online\.gov\.vn\//.test(u) ? u : '' })
 // máy chủ ảnh của Bộ không trả được ảnh thì dùng bản sao trên website
 function bctFallback(e: Event) { const i = e.target as HTMLImageElement; if (!i.src.endsWith('/img/bct-da-thong-bao.png')) i.src = '/img/bct-da-thong-bao.png' }
+// Huy hiệu DMCA: liên kết kèm refurl (việc script DMCABadgeHelper của DMCA vẫn làm), không nạp script bên thứ ba
+const route = useRoute()
+const dmca = computed(() => {
+  const id = site.S('dmca_id')
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) return ''
+  return 'https://www.dmca.com/Protection/Status.aspx?ID=' + id + '&refurl=' + encodeURIComponent(location.origin + route.fullPath)
+})
 const copy = computed(() => site.t('© {year} {name}. Bảo lưu mọi quyền.').replace('{year}', String(year)).replace('{name}', site.SL('company_name')))
 const note = computed(() => site.t('Nội dung, thương hiệu và hình ảnh trên website thuộc quyền sở hữu của {name} và các chủ sở hữu tương ứng. Không sao chép khi chưa có sự đồng ý bằng văn bản.').replace('{name}', site.SL('company_name')))
 const top = () => scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
@@ -64,7 +72,10 @@ const top = () => scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-moti
     <div class="w ftbot">
       <p class="ftcopy">{{ copy }}</p>
       <p class="ftnote">{{ note }}</p>
+      <div v-if="bct || dmca" class="ftbadges">
+      <a v-if="dmca" class="ftdmca" :href="dmca" target="_blank" rel="noopener" :title="'DMCA.com Protection Status'"><img :src="'https://images.dmca.com/Badges/dmca-badge-w100-5x1-10.png?ID=' + site.S('dmca_id')" alt="DMCA.com Protection Status" width="100" height="20" loading="lazy"></a>
       <a v-if="bct" class="ftbct" :href="bct" target="_blank" rel="noopener" title="Đã xác nhận với Bộ Công Thương"><img src="https://fileserver.online.gov.vn/uploads/Resources/iconxacnhan/DaThongBao.png" alt="Đã thông báo Bộ Công Thương" width="118" height="44" loading="lazy" @error="bctFallback"></a>
+      </div>
       <button type="button" class="fttop" :aria-label="$t('Lên đầu trang')" @click="top"><Icon name="arrow-up" /></button>
     </div>
   </footer>

@@ -26,6 +26,7 @@ const links: Field[] = [
   { key: 'instagram', label: 'Instagram', hint: 'https://instagram.com/...', type: 'url' },
   { key: 'linkedin', label: 'LinkedIn', hint: 'https://linkedin.com/company/...', type: 'url' },
   { key: 'bct_url', label: 'Đường dẫn tra cứu Bộ Công Thương', hint: 'Logo "Đã thông báo Bộ Công Thương" ở chân trang liên kết tới đây (https://online.gov.vn/...). Để trống thì ẩn logo', type: 'url' },
+  { key: 'dmca_id', label: 'Mã huy hiệu DMCA', hint: 'Phần sau ID= trong mã nhúng của DMCA.com, ví dụ 05128573-eeec-4272-ad2b-a37ecfee4803. Để trống thì ẩn huy hiệu' },
 ]
 const seo: Field[] = [
   { key: 'site_title', label: 'Tiêu đề website', hint: 'Hiện trên tab trình duyệt. Mặc định: 3RDHub Vietnam' },
