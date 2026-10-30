@@ -27,10 +27,10 @@
       "shot": "/advertiser"
     },
     "san-pham": {
-      "title": "Sản phẩm | 3RDHub Vietnam",
-      "desc": "Hệ thống affiliate riêng mang thương hiệu của bạn hoặc bản quyền hệ thống 3RDHub: website cho cộng tác viên, hệ thống quản trị, kết nối đối tác, triển khai trong sáu bước.",
-      "head": "Hệ thống affiliate riêng, mang thương hiệu của bạn.",
-      "sub": "Xây theo yêu cầu hoặc nhận bản quyền 3RDHub.",
+      "title": "3RDVN HUB, phần mềm vận hành phân phối | 3RDHub Vietnam",
+      "desc": "3RDVN HUB quản trị chiến dịch, nhân sự, đơn hàng và hoa hồng: 9 nhóm chức năng, giao diện thật, đấu nối API với đối tác. Thuê năm, self-host hoặc mua source.",
+      "head": "3RDVN HUB, kết nối nguồn lực, tăng tốc tăng trưởng.",
+      "sub": "Phần mềm vận hành phân phối.",
       "tint": "#1BA6D9",
       "shot": "/san-pham"
     },
@@ -84,9 +84,9 @@
     },
     "baogia": {
       "title": "Báo giá | 3RDHub Vietnam",
-      "desc": "Báo giá hệ thống affiliate riêng, bản quyền 3RDHub và gói vận hành, nâng cấp. Chọn gói gần nhất với nhu cầu, để lại thông tin để nhận báo giá theo đúng phạm vi.",
+      "desc": "Báo giá 3RDVN HUB: thuê năm 15tr, self-host 25tr, mua source 35tr. So sánh từng hạng mục và đăng ký dùng thử.",
       "head": "Báo giá theo đúng phạm vi của bạn.",
-      "sub": "Hệ thống affiliate riêng, bản quyền 3RDHub, vận hành và nâng cấp.",
+      "sub": "Thuê năm, self-host hoặc mua source.",
       "tint": "#FFB238",
       "shot": "/baogia"
     }

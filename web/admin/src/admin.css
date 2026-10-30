@@ -176,3 +176,8 @@ body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 .lv-en summary{cursor:pointer;font-weight:800;padding:6px 0}
 .lv-en small{display:block;color:var(--ink2);margin-top:6px}
 @media(max-width:1100px){.lv-grid{grid-template-columns:1fr}.lv-side{position:static}}
+
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.cmpedit{display:grid;gap:6px;overflow-x:auto}
+.crow{display:grid;gap:6px;align-items:center;min-width:620px}
+.crow.chead b{font-size:13px;color:var(--ink2)}

@@ -459,116 +459,386 @@
  "quote": {
   "plans": [
    {
-    "id": "custom",
+    "id": "thue-nam",
     "name": {
-     "vi": "Hệ thống affiliate riêng",
-     "en": "Custom affiliate system"
+     "vi": "Thuê năm",
+     "en": "Annual rental"
     },
     "price": {
-     "vi": "Liên hệ báo giá",
-     "en": "Contact us for a quote"
+     "vi": "15tr",
+     "en": "15M VND"
     },
     "unit": {
-     "vi": "Theo phạm vi dự án",
-     "en": "Based on project scope"
+     "vi": "/ năm",
+     "en": "/ year"
     },
     "desc": {
-     "vi": "Xây nền tảng mang thương hiệu của bạn theo đúng quy trình nghiệp vụ.",
-     "en": "A platform built under your brand around your own workflow."
+     "vi": "Đã gồm máy chủ. Bản chuẩn.",
+     "en": "Server included. Standard edition."
     },
     "hot": false,
     "features": [
      {
-      "vi": "Website cho cộng tác viên",
-      "en": "Website for affiliates"
+      "vi": "Đủ module vận hành ở mục chức năng",
+      "en": "All operating modules listed above"
      },
      {
-      "vi": "Hệ thống quản trị chiến dịch, báo cáo, đối soát",
-      "en": "Admin system for campaigns, reports and reconciliation"
+      "vi": "Không custom luồng",
+      "en": "No custom workflows"
      },
      {
-      "vi": "Postback, API key và môi trường test",
-      "en": "Postback, API keys and a test environment"
-     },
-     {
-      "vi": "Thương hiệu và tên miền riêng",
-      "en": "Your own brand and domain"
-     },
-     {
-      "vi": "Bàn giao mã nguồn và tài liệu",
-      "en": "Source code and documentation handover"
+      "vi": "API lần 1 không tính phí",
+      "en": "First API integration free"
      }
     ]
    },
    {
-    "id": "license",
+    "id": "self-host",
     "name": {
-     "vi": "Bản quyền 3RDHub",
-     "en": "3RDHub licence"
+     "vi": "Self-host",
+     "en": "Self-host"
     },
     "price": {
-     "vi": "Liên hệ báo giá",
-     "en": "Contact us for a quote"
+     "vi": "25tr",
+     "en": "25M VND"
     },
     "unit": {
-     "vi": "Theo gói tính năng",
-     "en": "Based on feature package"
+     "vi": "/ lần",
+     "en": "/ one-off"
     },
     "desc": {
-     "vi": "Triển khai nhanh trên nền tảng đã chạy thực tế, đổi thương hiệu theo bạn.",
-     "en": "Launch fast on a platform already running in production, rebranded for you."
-    },
-    "hot": true,
-    "features": [
-     {
-      "vi": "Dùng lại hệ thống 3RDHub đang vận hành",
-      "en": "Reuse the 3RDHub system already in operation"
-     },
-     {
-      "vi": "Đổi thương hiệu, cấu hình theo yêu cầu",
-      "en": "Rebrand and configure to your needs"
-     },
-     {
-      "vi": "Triển khai và đào tạo đội vận hành",
-      "en": "Deployment and operator training"
-     },
-     {
-      "vi": "Bổ sung tính năng theo từng giai đoạn",
-      "en": "Features added in phases"
-     }
-    ]
-   },
-   {
-    "id": "care",
-    "name": {
-     "vi": "Vận hành và nâng cấp",
-     "en": "Operations and upgrades"
-    },
-    "price": {
-     "vi": "Liên hệ báo giá",
-     "en": "Contact us for a quote"
-    },
-    "unit": {
-     "vi": "Theo tháng hoặc theo năm",
-     "en": "Monthly or yearly"
-    },
-    "desc": {
-     "vi": "Giữ hệ thống ổn định và phát triển thêm khi quy mô tăng.",
-     "en": "Keep the system stable and keep it growing with your scale."
+     "vi": "Chưa gồm máy. Không giao code.",
+     "en": "Server not included. Source code not handed over."
     },
     "hot": false,
     "features": [
      {
-      "vi": "Giám sát và sao lưu định kỳ",
-      "en": "Monitoring and regular backups"
+      "vi": "Đủ module + tùy biến brief lúc ký",
+      "en": "All modules + customisation agreed at signing"
      },
      {
-      "vi": "Hỗ trợ kỹ thuật theo thoả thuận",
-      "en": "Technical support as agreed"
+      "vi": "Bảo trì 3 tháng",
+      "en": "3 months of maintenance"
      },
      {
-      "vi": "Nâng cấp và bổ sung tính năng",
-      "en": "Upgrades and new features"
+      "vi": "Data tại doanh nghiệp",
+      "en": "Data stays with your business"
+     }
+    ]
+   },
+   {
+    "id": "mua-source",
+    "name": {
+     "vi": "Mua source",
+     "en": "Buy the source"
+    },
+    "price": {
+     "vi": "35tr",
+     "en": "35M VND"
+    },
+    "unit": {
+     "vi": "/ lần",
+     "en": "/ one-off"
+    },
+    "desc": {
+     "vi": "Giao repo. Tự chủ sau giao.",
+     "en": "Repository handed over. Fully yours afterwards."
+    },
+    "hot": false,
+    "features": [
+     {
+      "vi": "Đủ module + document cài",
+      "en": "All modules + installation docs"
+     },
+     {
+      "vi": "Buổi bàn giao",
+      "en": "Handover session"
+     },
+     {
+      "vi": "Tự sửa sau giao",
+      "en": "Modify it yourself after handover"
+     }
+    ]
+   }
+  ],
+  "rows": [
+   {
+    "label": {
+     "vi": "Trang chủ + đơn + UTM + chiến dịch",
+     "en": "Dashboard + orders + UTM + campaigns"
+    },
+    "cells": [
+     {
+      "vi": "Có",
+      "en": "Yes"
+     },
+     {
+      "vi": "Có",
+      "en": "Yes"
+     },
+     {
+      "vi": "Có",
+      "en": "Yes"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "Tạo link mã NV / QR",
+     "en": "Staff-code links / QR"
+    },
+    "cells": [
+     {
+      "vi": "Có",
+      "en": "Yes"
+     },
+     {
+      "vi": "Có",
+      "en": "Yes"
+     },
+     {
+      "vi": "Có",
+      "en": "Yes"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "Lead MKT, mất đơn, UPL",
+     "en": "Marketing leads, missing orders, UPL"
+    },
+    "cells": [
+     {
+      "vi": "Có",
+      "en": "Yes"
+     },
+     {
+      "vi": "Có",
+      "en": "Yes"
+     },
+     {
+      "vi": "Có",
+      "en": "Yes"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "Hoa hồng + đối soát + thanh toán",
+     "en": "Commission + reconciliation + payments"
+    },
+    "cells": [
+     {
+      "vi": "Có",
+      "en": "Yes"
+     },
+     {
+      "vi": "Có",
+      "en": "Yes"
+     },
+     {
+      "vi": "Có",
+      "en": "Yes"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "Thành viên + RBAC",
+     "en": "Members + RBAC"
+    },
+    "cells": [
+     {
+      "vi": "Có",
+      "en": "Yes"
+     },
+     {
+      "vi": "Có",
+      "en": "Yes"
+     },
+     {
+      "vi": "Có",
+      "en": "Yes"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "White-label logo/màu",
+     "en": "White-label logo/colours"
+    },
+    "cells": [
+     {
+      "vi": "Cơ bản",
+      "en": "Basic"
+     },
+     {
+      "vi": "Theo brief lúc ký",
+      "en": "Per brief at signing"
+     },
+     {
+      "vi": "Tự sửa sau giao",
+      "en": "Edit it yourself after handover"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "Sửa luồng / UI / DB",
+     "en": "Change workflow / UI / DB"
+    },
+    "cells": [
+     {
+      "vi": "Không",
+      "en": "No"
+     },
+     {
+      "vi": "Chốt khi ký",
+      "en": "Agreed at signing"
+     },
+     {
+      "vi": "Tự làm",
+      "en": "Do it yourself"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "Máy chủ",
+     "en": "Server"
+    },
+    "cells": [
+     {
+      "vi": "Đã gồm",
+      "en": "Included"
+     },
+     {
+      "vi": "Tự lo",
+      "en": "Your own"
+     },
+     {
+      "vi": "Tự lo",
+      "en": "Your own"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "Mã nguồn",
+     "en": "Source code"
+    },
+    "cells": [
+     {
+      "vi": "Không giao",
+      "en": "Not handed over"
+     },
+     {
+      "vi": "Không giao",
+      "en": "Not handed over"
+     },
+     {
+      "vi": "Bàn giao",
+      "en": "Handed over"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "Data nằm đâu",
+     "en": "Where data lives"
+    },
+    "cells": [
+     {
+      "vi": "Máy 3RDVN, tách tenant",
+      "en": "3RDVN servers, separate tenant"
+     },
+     {
+      "vi": "Máy doanh nghiệp",
+      "en": "Your servers"
+     },
+     {
+      "vi": "Máy doanh nghiệp",
+      "en": "Your servers"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "API lần 1",
+     "en": "First API integration"
+    },
+    "cells": [
+     {
+      "vi": "Không tính phí",
+      "en": "Free"
+     },
+     {
+      "vi": "Không tính phí",
+      "en": "Free"
+     },
+     {
+      "vi": "Trong bàn giao",
+      "en": "Included in handover"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "API lần 2",
+     "en": "Second API integration"
+    },
+    "cells": [
+     {
+      "vi": "Báo giá hạng mục",
+      "en": "Quoted per item"
+     },
+     {
+      "vi": "Báo giá hạng mục",
+      "en": "Quoted per item"
+     },
+     {
+      "vi": "Tự làm / HĐ riêng",
+      "en": "Yourself / separate contract"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "Hỗ trợ",
+     "en": "Support"
+    },
+    "cells": [
+     {
+      "vi": "Trong năm thuê",
+      "en": "During the rental year"
+     },
+     {
+      "vi": "3 tháng",
+      "en": "3 months"
+     },
+     {
+      "vi": "Buổi bàn giao",
+      "en": "Handover session"
+     }
+    ]
+   },
+   {
+    "label": {
+     "vi": "License",
+     "en": "Licence"
+    },
+    "cells": [
+     {
+      "vi": "Khóa domain, gia hạn năm",
+      "en": "Domain-locked, renewed yearly"
+     },
+     {
+      "vi": "Khóa domain máy khách",
+      "en": "Locked to client domain"
+     },
+     {
+      "vi": "Theo HĐ",
+      "en": "Per contract"
      }
     ]
    }
@@ -576,14 +846,361 @@
  },
  "clients": [
   {
-   "id": "3rdhub",
-   "name": "3RDHub Vietnam",
-   "logo": "",
-   "url": "https://3rdhubvietnam.tech",
+   "id": "accesstrade",
+   "name": "AccessTrade",
+   "logo": "/uploads/seed-accesstrade.webp",
+   "url": "",
    "desc": {
-    "vi": "Nền tảng tiếp thị liên kết tài chính do 3RDVN Technology tự xây và đang vận hành.",
-    "en": "The financial affiliate platform 3RDVN Technology built and runs itself."
+    "vi": "",
+    "en": ""
+   }
+  },
+  {
+   "id": "hyperlead",
+   "name": "HyperLead",
+   "logo": "/uploads/seed-hyperlead.webp",
+   "url": "",
+   "desc": {
+    "vi": "",
+    "en": ""
+   }
+  },
+  {
+   "id": "dinos",
+   "name": "Dinos",
+   "logo": "/uploads/seed-dinos.webp",
+   "url": "",
+   "desc": {
+    "vi": "",
+    "en": ""
+   }
+  },
+  {
+   "id": "permate",
+   "name": "Permate",
+   "logo": "/uploads/seed-permate.webp",
+   "url": "",
+   "desc": {
+    "vi": "",
+    "en": ""
+   }
+  },
+  {
+   "id": "mobivision",
+   "name": "Mobivision",
+   "logo": "/uploads/seed-mobivision.webp",
+   "url": "",
+   "desc": {
+    "vi": "",
+    "en": ""
+   }
+  },
+  {
+   "id": "hoangthien",
+   "name": "Hoàng Thiên Finance",
+   "logo": "/uploads/seed-hoangthien.webp",
+   "url": "",
+   "desc": {
+    "vi": "",
+    "en": ""
+   }
+  },
+  {
+   "id": "saigonbpo",
+   "name": "SAIGONBPO",
+   "logo": "/uploads/seed-saigonbpo.webp",
+   "url": "",
+   "desc": {
+    "vi": "",
+    "en": ""
+   }
+  },
+  {
+   "id": "fecredit",
+   "name": "FE Credit",
+   "logo": "/uploads/seed-fecredit.webp",
+   "url": "",
+   "desc": {
+    "vi": "",
+    "en": ""
+   }
+  },
+  {
+   "id": "vpbank",
+   "name": "VPBank",
+   "logo": "/uploads/seed-vpbank.webp",
+   "url": "",
+   "desc": {
+    "vi": "",
+    "en": ""
+   }
+  },
+  {
+   "id": "tinvay",
+   "name": "TinVay",
+   "logo": "/uploads/seed-tinvay.webp",
+   "url": "",
+   "desc": {
+    "vi": "",
+    "en": ""
    }
   }
- ]
+ ],
+ "product": {
+  "modules": [
+   {
+    "id": "dieu-hanh",
+    "code": {
+     "vi": "01 · ĐIỀU HÀNH",
+     "en": "01 · OPERATIONS"
+    },
+    "title": {
+     "vi": "Trang chủ KPI",
+     "en": "KPI dashboard"
+    },
+    "items": [
+     {
+      "vi": "Hoa hồng phát sinh / tạm duyệt",
+      "en": "Commission earned / pending approval"
+     },
+     {
+      "vi": "Giá trị đơn và hold",
+      "en": "Order value and holds"
+     },
+     {
+      "vi": "Biểu đồ theo ngày",
+      "en": "Daily charts"
+     },
+     {
+      "vi": "Top chiến dịch",
+      "en": "Top campaigns"
+     }
+    ]
+   },
+   {
+    "id": "san-pham",
+    "code": {
+     "vi": "02 · SẢN PHẨM",
+     "en": "02 · PRODUCTS"
+    },
+    "title": {
+     "vi": "Chiến dịch & link",
+     "en": "Campaigns & links"
+    },
+    "items": [
+     {
+      "vi": "Danh mục sản phẩm, mức HH",
+      "en": "Product catalogue and commission rates"
+     },
+     {
+      "vi": "Bật / tắt chiến dịch",
+      "en": "Turn campaigns on / off"
+     },
+     {
+      "vi": "Tạo link theo mã NV",
+      "en": "Links by staff code"
+     },
+     {
+      "vi": "Short link, QR, kho link đã tạo",
+      "en": "Short links, QR codes, link library"
+     }
+    ]
+   },
+   {
+    "id": "don",
+    "code": {
+     "vi": "03 · ĐƠN",
+     "en": "03 · ORDERS"
+    },
+    "title": {
+     "vi": "Báo cáo đơn hàng",
+     "en": "Order reports"
+    },
+    "items": [
+     {
+      "vi": "Danh sách đơn, trạng thái, NV, SĐT",
+      "en": "Orders with status, staff and phone"
+     },
+     {
+      "vi": "Lọc chiến dịch / ngày",
+      "en": "Filter by campaign / date"
+     },
+     {
+      "vi": "Xuất PDF, Excel",
+      "en": "Export to PDF, Excel"
+     },
+     {
+      "vi": "Báo mất đơn — ticket đối soát",
+      "en": "Missing-order tickets for reconciliation"
+     }
+    ]
+   },
+   {
+    "id": "nguon",
+    "code": {
+     "vi": "04 · NGUỒN",
+     "en": "04 · SOURCES"
+    },
+    "title": {
+     "vi": "Traffic · UTM · DeepLink",
+     "en": "Traffic · UTM · DeepLink"
+    },
+    "items": [
+     {
+      "vi": "Click, CVR, EPC",
+      "en": "Clicks, CVR, EPC"
+     },
+     {
+      "vi": "Cắt UTM source / medium / campaign",
+      "en": "Split by UTM source / medium / campaign"
+     },
+     {
+      "vi": "Lead đi theo deeplink",
+      "en": "Leads follow the deeplink"
+     },
+     {
+      "vi": "Báo cáo theo chiến dịch",
+      "en": "Reports by campaign"
+     }
+    ]
+   },
+   {
+    "id": "mkt",
+    "code": {
+     "vi": "05 · MKT",
+     "en": "05 · MARKETING"
+    },
+    "title": {
+     "vi": "Lead MKT",
+     "en": "Marketing leads"
+    },
+    "items": [
+     {
+      "vi": "Form tư vấn",
+      "en": "Consultation forms"
+     },
+     {
+      "vi": "Chia lead, gán xử lý",
+      "en": "Distribute and assign leads"
+     },
+     {
+      "vi": "Báo cáo MKT",
+      "en": "Marketing reports"
+     },
+     {
+      "vi": "Click landing nội bộ",
+      "en": "Internal landing clicks"
+     }
+    ]
+   },
+   {
+    "id": "upl",
+    "code": {
+     "vi": "06 · UPL",
+     "en": "06 · UPL"
+    },
+    "title": {
+     "vi": "Báo cáo UPL",
+     "en": "UPL reports"
+    },
+    "items": [
+     {
+      "vi": "Hồ sơ UPL",
+      "en": "UPL applications"
+     },
+     {
+      "vi": "Import file",
+      "en": "File import"
+     },
+     {
+      "vi": "Đối chiếu trạng thái",
+      "en": "Status matching"
+     }
+    ]
+   },
+   {
+    "id": "tai-chinh",
+    "code": {
+     "vi": "07 · TÀI CHÍNH",
+     "en": "07 · FINANCE"
+    },
+    "title": {
+     "vi": "Hoa hồng & thanh toán",
+     "en": "Commission & payments"
+    },
+    "items": [
+     {
+      "vi": "CPS hoặc % theo sản phẩm",
+      "en": "CPS or % per product"
+     },
+     {
+      "vi": "Hold không tính lương",
+      "en": "Holds excluded from payouts"
+     },
+     {
+      "vi": "Kỳ đối soát doanh thu",
+      "en": "Revenue reconciliation periods"
+     },
+     {
+      "vi": "Phiếu chi, lịch sử thanh toán",
+      "en": "Payment vouchers and history"
+     }
+    ]
+   },
+   {
+    "id": "nhan-su",
+    "code": {
+     "vi": "08 · NHÂN SỰ",
+     "en": "08 · PEOPLE"
+    },
+    "title": {
+     "vi": "Thành viên & quyền",
+     "en": "Members & roles"
+    },
+    "items": [
+     {
+      "vi": "Admin, Sale Admin, DSA / TSA, Publisher",
+      "en": "Admin, Sale Admin, DSA / TSA, Publisher"
+     },
+     {
+      "vi": "Phân quyền theo tab",
+      "en": "Permissions per tab"
+     },
+     {
+      "vi": "Audit đăng nhập",
+      "en": "Login audit"
+     }
+    ]
+   },
+   {
+    "id": "he-thong",
+    "code": {
+     "vi": "09 · HỆ THỐNG",
+     "en": "09 · SYSTEM"
+    },
+    "title": {
+     "vi": "Dự án · brand · license",
+     "en": "Projects · brand · licence"
+    },
+    "items": [
+     {
+      "vi": "Cấu hình campaign, postback",
+      "en": "Campaign and postback settings"
+     },
+     {
+      "vi": "Logo, màu, splash, tên công ty",
+      "en": "Logo, colours, splash, company name"
+     },
+     {
+      "vi": "License khóa domain + hạn",
+      "en": "Licence locked to domain with expiry"
+     },
+     {
+      "vi": "Cổng nhận đơn / token ingest",
+      "en": "Order intake gateway / ingest token"
+     }
+    ]
+   }
+  ]
+ }
 }

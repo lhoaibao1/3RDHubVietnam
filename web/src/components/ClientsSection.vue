@@ -10,7 +10,7 @@ const initials = (n: string) => n.split(/\s+/).slice(0, 2).map((w) => w[0]).join
   <section v-if="site.clients.length" class="ps clients" data-cms="clients">
     <div class="k2">Khách hàng</div>
     <h2>Khách hàng của chúng tôi</h2>
-    <p class="sub">Những doanh nghiệp đang dùng hệ thống do 3RDVN Technology xây dựng và vận hành.</p>
+    <p class="sub">Doanh nghiệp và đối tác đã đấu nối API, vận hành cùng hệ thống 3RDVN.</p>
     <div class="clist">
       <article v-for="c in site.clients" :key="c.id" class="cl">
         <span class="lg"><img v-if="c.logo" :src="c.logo" :alt="c.name"><b v-else>{{ initials(c.name) }}</b></span>

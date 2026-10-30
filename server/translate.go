@@ -245,6 +245,41 @@ func (a *App) autoTranslate(ctx context.Context, c *Content, prev Content) (done
 		o, has := cp[x.ID]
 		jobs = append(jobs, pairJob(&x.Desc, pairPtr(has, &o.Desc)))
 	}
+	for ri := range c.Quote.Rows {
+		r := &c.Quote.Rows[ri]
+		var pr *QuoteRow
+		if ri < len(prev.Quote.Rows) && prev.Quote.Rows[ri].Label.VI == r.Label.VI {
+			pr = &prev.Quote.Rows[ri]
+		}
+		var pl *Pair
+		if pr != nil {
+			pl = &pr.Label
+		}
+		jobs = append(jobs, pairJob(&r.Label, pl))
+		for ci := range r.Cells {
+			var pc *Pair
+			if pr != nil && ci < len(pr.Cells) {
+				pc = &pr.Cells[ci]
+			}
+			jobs = append(jobs, pairJob(&r.Cells[ci], pc))
+		}
+	}
+	pm := map[string]Module{}
+	for _, m := range prev.Product.Modules {
+		pm[m.ID] = m
+	}
+	for mi := range c.Product.Modules {
+		m := &c.Product.Modules[mi]
+		o, has := pm[m.ID]
+		jobs = append(jobs, pairJob(&m.Code, pairPtr(has, &o.Code)), pairJob(&m.Title, pairPtr(has, &o.Title)))
+		for ii := range m.Items {
+			var pi *Pair
+			if has && ii < len(o.Items) {
+				pi = &o.Items[ii]
+			}
+			jobs = append(jobs, pairJob(&m.Items[ii], pi))
+		}
+	}
 	qp := map[string]QuotePlan{}
 	for _, p := range prev.Quote.Plans {
 		qp[p.ID] = p

@@ -351,7 +351,7 @@ func (a *App) apiContent(w http.ResponseWriter, r *http.Request) {
 		a.handleErr(w, r, err)
 		return
 	}
-	body := jsonBytes(map[string]any{"v": upd, "ov": c.Ov, "faq": c.Faq, "partners": c.Partners, "settings": c.Settings, "legal": c.Legal, "quote": c.Quote, "clients": c.Clients})
+	body := jsonBytes(map[string]any{"v": upd, "ov": c.Ov, "faq": c.Faq, "partners": c.Partners, "settings": c.Settings, "legal": c.Legal, "quote": c.Quote, "clients": c.Clients, "product": c.Product})
 	sum := sha1.Sum(body)
 	etag := `"` + hex.EncodeToString(sum[:])[:20] + `"`
 	h := map[string]string{"ETag": etag, "Cache-Control": "no-cache"}

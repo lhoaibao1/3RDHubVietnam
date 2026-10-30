@@ -7,7 +7,10 @@ export interface Faq { id: string; cat: Pair; q: Pair; a: Pair; home?: boolean }
 export interface Partner { id?: string; name: string; url?: string; logo: string; group: Pair }
 export interface LegalDoc { title: Pair; updated: Pair; body: Pair }
 export interface QuotePlan { id: string; name: Pair; price: Pair; unit: Pair; desc: Pair; features: Pair[]; hot?: boolean }
-export interface Quote { plans: QuotePlan[] }
+export interface QuoteRow { label: Pair; cells: Pair[] }
+export interface Quote { plans: QuotePlan[]; rows?: QuoteRow[] }
+export interface Module { id: string; code: Pair; title: Pair; items: Pair[] }
+export interface Product { modules: Module[] }
 export interface Client { id: string; name: string; logo: string; url?: string; desc: Pair }
 export interface Content {
   v?: number
@@ -18,10 +21,11 @@ export interface Content {
   legal: Record<string, LegalDoc>
   quote?: Quote
   clients?: Client[]
+  product?: Product
 }
 
 /** Nội dung mặc định (cùng nguồn với server/seed/defaults.json) để hiện ngay trước khi tải /api/content. */
-export const DEFAULTS = defaults as unknown as { faq: Faq[]; partners: Partner[]; settings: Record<string, string>; legal: Record<string, LegalDoc>; quote: Quote; clients: Client[] }
+export const DEFAULTS = defaults as unknown as { faq: Faq[]; partners: Partner[]; settings: Record<string, string>; legal: Record<string, LegalDoc>; quote: Quote; clients: Client[]; product: Product }
 
 export const DEF_SETTINGS: Record<string, string> = {
   signup_url: 'https://app.3rdvn.io.vn/auth/login?tab=signup',

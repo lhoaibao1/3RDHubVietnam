@@ -24,6 +24,10 @@ function remove(i: number) {
   if (confirm('Xoá gói "' + (plans.value[i].name.vi || 'chưa đặt tên') + '"?')) plans.value.splice(i, 1)
 }
 function addFeature(p: QuotePlan) { p.features.push(empty()) }
+const cols = computed(() => ({ gridTemplateColumns: 'minmax(180px,1.4fr) repeat(' + Math.max(1, plans.value.length) + ',minmax(120px,1fr)) 34px' }))
+const rows = computed(() => a.content!.quote!.rows!)
+function addRow() { rows.value.push({ label: empty(), cells: plans.value.map(() => empty()) }) }
+function cell(r: { cells: { vi: string; en?: string }[] }, k: number) { while (r.cells.length <= k) r.cells.push(empty()); return r.cells[k] }
 const en = (p: { en?: string }) => p.en ?? ''
 </script>
 
@@ -57,6 +61,19 @@ const en = (p: { en?: string }) => p.en ?? ''
       <div style="display:flex;gap:8px"><input :value="en(f)" type="text" placeholder="Tự dịch khi lưu" style="flex:1" @input="f.en = ($event.target as HTMLInputElement).value"><button class="ib" type="button" title="Xoá dòng" @click="p.features.splice(fi, 1)">✕</button></div>
     </div>
     <button class="btn gh sm" type="button" @click="addFeature(p)">+ Thêm dòng</button>
+  </div>
+  <div class="panel">
+    <h2>Bảng so sánh các gói</h2>
+    <p class="sub">Mỗi dòng là một hạng mục, mỗi cột ứng với một gói ở trên (theo đúng thứ tự). Ghi "Có" thì ô được tô xanh. Hiện ở trang Sản phẩm và Báo giá.</p>
+    <div class="cmpedit">
+      <div class="crow chead" :style="cols"><b>Hạng mục</b><b v-for="p in plans" :key="p.id">{{ p.name.vi || 'Gói' }}</b><span /></div>
+      <div v-for="(r, i) in rows" :key="i" class="crow" :style="cols">
+        <input v-model="r.label.vi" type="text" placeholder="Hạng mục">
+        <input v-for="(p, k) in plans" :key="p.id" v-model="cell(r, k).vi" type="text">
+        <button class="ib" type="button" title="Xoá dòng" @click="rows.splice(i, 1)">✕</button>
+      </div>
+    </div>
+    <button class="btn gh sm" type="button" style="margin-top:10px" @click="addRow">+ Thêm dòng</button>
   </div>
   <div v-if="!plans.length" class="empty">Chưa có gói nào. Bấm "+ Thêm gói" hoặc "Khôi phục mặc định".</div>
 </template>

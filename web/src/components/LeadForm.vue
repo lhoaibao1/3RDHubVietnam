@@ -11,10 +11,11 @@ const NEEDS: { n: string; home: string; page: string }[] = [
   { n: 'Xây hệ thống affiliate riêng', home: 'Xây hệ thống riêng', page: 'Hệ thống riêng' },
   { n: 'Nhận bản quyền 3RDHub', home: 'Nhận bản quyền 3RDHub', page: 'Bản quyền 3RDHub' },
   { n: 'Nhận báo giá hệ thống', home: 'Nhận báo giá', page: 'Báo giá' },
+  { n: 'Đăng ký dùng thử', home: 'Dùng thử 3RDVN HUB', page: 'Dùng thử' },
 ]
 const need = ref(NEEDS.find((o) => o.n === props.need)?.n || NEEDS[0].n)
 const f = reactive({ name: '', phone: '', company: '', msg: '', website: '' })
-watch(() => props.prefill, (v) => { if (v) { need.value = props.need || need.value; f.msg = site.t('Tôi quan tâm đến') + ' ' + v + '.' } })
+watch(() => [props.prefill, props.need], () => { const v = props.prefill; if (props.need) need.value = props.need; if (v) { f.msg = site.t('Tôi quan tâm đến') + ' ' + v + '.' } })
 const busy = ref(false)
 const msg = ref('')
 const msgClass = ref('')

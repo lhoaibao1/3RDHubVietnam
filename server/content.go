@@ -54,8 +54,27 @@ type QuotePlan struct {
 	Hot      bool   `json:"hot"`
 }
 
+// QuoteRow là một dòng của bảng so sánh các gói: Cells theo đúng thứ tự Plans.
+type QuoteRow struct {
+	Label Pair   `json:"label"`
+	Cells []Pair `json:"cells"`
+}
+
 type Quote struct {
 	Plans []QuotePlan `json:"plans"`
+	Rows  []QuoteRow  `json:"rows"`
+}
+
+// Module là một nhóm chức năng của phần mềm (trang Sản phẩm).
+type Module struct {
+	ID    string `json:"id"`
+	Code  Pair   `json:"code"`
+	Title Pair   `json:"title"`
+	Items []Pair `json:"items"`
+}
+
+type Product struct {
+	Modules []Module `json:"modules"`
 }
 
 type Faq struct {
@@ -97,6 +116,7 @@ type Content struct {
 	Legal    map[string]LegalDoc `json:"legal"`
 	Quote    Quote               `json:"quote"`
 	Clients  []Client            `json:"clients"`
+	Product  Product             `json:"product"`
 }
 
 // Defaults là nội dung mặc định nhúng trong chương trình (seed/defaults.json).
@@ -107,11 +127,18 @@ type Defaults struct {
 	Legal    map[string]LegalDoc `json:"legal"`
 	Quote    Quote               `json:"quote"`
 	Clients  []Client            `json:"clients"`
+	Product  Product             `json:"product"`
 }
 
 func (c *Content) normalize() {
 	if c.Clients == nil {
 		c.Clients = []Client{}
+	}
+	if c.Quote.Rows == nil {
+		c.Quote.Rows = []QuoteRow{}
+	}
+	if c.Product.Modules == nil {
+		c.Product.Modules = []Module{}
 	}
 	if c.Quote.Plans == nil {
 		c.Quote.Plans = []QuotePlan{}
@@ -134,7 +161,7 @@ func (c *Content) normalize() {
 }
 
 func defaultContent(d *Defaults) Content {
-	c := Content{Faq: d.Faq, Partners: d.Partners, Quote: d.Quote, Clients: d.Clients}
+	c := Content{Faq: d.Faq, Partners: d.Partners, Quote: d.Quote, Clients: d.Clients, Product: d.Product}
 	c.normalize()
 	return c
 }
@@ -461,6 +488,74 @@ func cleanContent(in any) (Content, error) {
 				}
 			}
 			out.Quote.Plans = append(out.Quote.Plans, pl)
+		}
+		rows, _ := q["rows"].([]any)
+		if len(rows) > 60 {
+			return out, bad("Bảng so sánh tối đa 60 dòng")
+		}
+		for _, raw := range rows {
+			m := asMap(raw)
+			if m == nil {
+				continue
+			}
+			lb, err := pairOf(m["label"], 200, "Hạng mục so sánh")
+			if err != nil {
+				return out, err
+			}
+			if strings.TrimSpace(lb.VI) == "" {
+				continue
+			}
+			row := QuoteRow{Label: lb, Cells: []Pair{}}
+			cs, _ := m["cells"].([]any)
+			for i, cv := range cs {
+				if i >= 12 {
+					break
+				}
+				p, err := pairOf(cv, 200, "Ô so sánh")
+				if err != nil {
+					return out, err
+				}
+				row.Cells = append(row.Cells, p)
+			}
+			out.Quote.Rows = append(out.Quote.Rows, row)
+		}
+	}
+
+	if pm := asMap(c["product"]); pm != nil {
+		mods, _ := pm["modules"].([]any)
+		if len(mods) > 30 {
+			return out, bad("Tối đa 30 nhóm chức năng")
+		}
+		for i, raw := range mods {
+			m := asMap(raw)
+			if m == nil {
+				continue
+			}
+			md := Module{ID: cleanID(m["id"], fmt.Sprintf("m%d", i+1)), Items: []Pair{}}
+			var err error
+			if md.Code, err = pairOf(m["code"], 80, "Mã nhóm"); err != nil {
+				return out, err
+			}
+			if md.Title, err = pairOf(m["title"], 160, "Tên nhóm chức năng"); err != nil {
+				return out, err
+			}
+			if strings.TrimSpace(md.Title.VI) == "" {
+				return out, bad("Nhóm chức năng số %d chưa có tên", i+1)
+			}
+			its, _ := m["items"].([]any)
+			if len(its) > 30 {
+				return out, bad("Mỗi nhóm tối đa 30 dòng")
+			}
+			for _, iv := range its {
+				p, err := pairOf(iv, 300, "Chức năng")
+				if err != nil {
+					return out, err
+				}
+				if strings.TrimSpace(p.VI) != "" {
+					md.Items = append(md.Items, p)
+				}
+			}
+			out.Product.Modules = append(out.Product.Modules, md)
 		}
 	}
 

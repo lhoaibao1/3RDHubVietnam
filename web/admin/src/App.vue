@@ -11,6 +11,7 @@ import FaqView from './views/FaqView.vue'
 import PartnersView from './views/PartnersView.vue'
 import ClientsView from './views/ClientsView.vue'
 import QuoteView from './views/QuoteView.vue'
+import ModulesView from './views/ModulesView.vue'
 import strings from './strings.json'
 import LookView from './views/LookView.vue'
 import EmailView from './views/EmailView.vue'
@@ -23,10 +24,11 @@ const a = useAdmin()
 a.boot()
 
 const ALL_GROUPS = (strings as { groups: string[] }).groups
-const VIEWS: Record<string, unknown> = { dash: DashView, live: LiveView, faq: FaqView, partners: PartnersView, clients: ClientsView, quote: QuoteView, legal: LegalView, leads: LeadsView, history: HistoryView, look: LookView, email: EmailView }
+const VIEWS: Record<string, unknown> = { dash: DashView, live: LiveView, faq: FaqView, partners: PartnersView, clients: ClientsView, quote: QuoteView, product: ModulesView, legal: LegalView, leads: LeadsView, history: HistoryView, look: LookView, email: EmailView }
 const ICONS: Record<TabKey, string> = {
   dash: '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
   live: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4z"/>',
+  product: '<path d="M21 8l-9-5-9 5v8l9 5 9-5zM3.3 7.5L12 12l8.7-4.5M12 22V12"/>',
   text: '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
   faq: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
   partners: '<path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M10 21v-4h4v4"/>',

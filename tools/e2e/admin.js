@@ -68,7 +68,7 @@ const assert = require('assert');
   await p.waitForFunction(() => document.querySelector('input[autocomplete=off]') && document.querySelector('input[autocomplete=off]').value !== '');
   assert.strictEqual(await p.locator('input[autocomplete=off]').first().inputValue(), 'mail.3rdhubvietnam.tech'); ok('SMTP: có sẵn cấu hình iNET, chưa có mật khẩu');
   await p.click('button[data-tab=quote]');
-  assert.strictEqual(await p.locator('.panel h2:has-text("Gói ")').count(), 3); ok('báo giá: có 3 gói mặc định để sửa');
+  assert.strictEqual(await p.locator('.panel h2', { hasText: /^Gói \d/ }).count(), 3); ok('báo giá: có 3 gói mặc định để sửa');
   // sửa trực tiếp trên trang: bấm vào chữ trong khung website, sửa ở cột bên phải, khung đổi chữ ngay
   await p.click('button[data-tab=live]');
   const fr = p.frameLocator('.lv-frame iframe');
