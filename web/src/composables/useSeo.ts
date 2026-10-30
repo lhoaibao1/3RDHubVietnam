@@ -22,6 +22,7 @@ export function useSeo() {
     let page = ''
     const legal = LEGAL_SLUGS[slug]
     if (slug === 'baogia') page = site.t('Báo giá')
+    else if (slug === 'chinh-sach') page = site.t('Chính sách và điều khoản')
     else if (legal) page = site.legal(legal).title
     else {
       const n = NAV.find((x) => x[0] === slug)

@@ -2,14 +2,16 @@
 import { computed, reactive } from 'vue'
 import { useAdmin } from '../store'
 import { fillTokens, renderLegal } from '@/lib/markdown'
-import { DEF_SETTINGS } from '@/lib/content'
+import { DEF_SETTINGS, LEGAL_DOCS } from '@/lib/content'
 import type { LegalDoc } from '@/lib/content'
 import AutoTextarea from '../components/AutoTextarea.vue'
 
 const a = useAdmin()
-const LEGALS = [['terms', 'Điều khoản sử dụng', 'dieu-khoan'], ['privacy', 'Chính sách bảo mật', 'bao-mat']] as const
+// Thứ tự theo hồ sơ thông báo website với Bộ Công Thương (dùng chung với website)
+const LABEL: Record<string, string> = { privacy: 'Chính sách bảo mật', complaints: 'Tiếp nhận, giải quyết khiếu nại', pricing: 'Chính sách giá', payment: 'Chính sách thanh toán', service: 'Điều kiện, hạn chế cung cấp dịch vụ', refund: 'Cung cấp, chấm dứt dịch vụ và hoàn tiền', support: 'Hỗ trợ trực tuyến', terms: 'Điều khoản sử dụng' }
+const LEGALS = LEGAL_DOCS.map((d) => [d.key, LABEL[d.key], d.slug] as const)
 const siteUrl = location.origin.replace('//cms.', '//')
-const view = reactive<Record<string, 'vi' | 'en'>>({ terms: 'vi', privacy: 'vi' })
+const view = reactive<Record<string, 'vi' | 'en'>>(Object.fromEntries(LEGAL_DOCS.map((d) => [d.key, 'vi'])))
 
 const empty = (): LegalDoc => ({ title: { vi: '', en: '' }, updated: { vi: '', en: '' }, body: { vi: '', en: '' } })
 /** Bản đang hiển thị: phần đã sửa, chỗ nào trống thì lấy bản mặc định. */
@@ -35,10 +37,11 @@ const docs = computed(() => LEGALS.map(([key, label, slug]) => ({ key, label, sl
 
 <template>
   <div class="panel help">
-    <h2>Trang Điều khoản và Chính sách bảo mật của website</h2>
-    <p class="sub">Hai trang này nằm riêng trên website (không dùng chung với app). Sửa xong bấm "Lưu và đăng lên website".</p>
+    <h2>Điều khoản và các chính sách của website</h2>
+    <p class="sub">8 trang chính sách theo hồ sơ thông báo website với Bộ Công Thương (bảo mật, khiếu nại, giá, thanh toán, điều kiện dịch vụ, cung cấp và hoàn tiền, hỗ trợ, điều khoản). Mỗi trang có nút Tải PDF trên website, tạo từ đúng nội dung ở đây; trang <a :href="siteUrl + '/chinh-sach'" target="_blank" rel="noopener">/chinh-sach</a> có nút tải tất cả trong một file. Sửa xong bấm "Lưu và đăng lên website".</p>
     <ul>
       <li><b>Định dạng</b>: dòng trống để tách đoạn; <b>## Tiêu đề</b> cho mục lớn, <b>### </b> cho mục nhỏ; <b>- </b> đầu dòng để tạo danh sách; <b>**chữ đậm**</b>; <b>[chữ hiển thị](https://...)</b> để chèn liên kết.</li>
+      <li v-pre>Mã <b>{{price_list}}</b> (trong Chính sách giá) tự thay bằng danh sách gói và giá hiện hành ở tab Báo giá.</li>
       <li v-pre>Các mã như <b>{{company_name}}</b>, <b>{{tax_id}}</b>, <b>{{address}}</b>, <b>{{email}}</b>, <b>{{hotline}}</b>, <b>{{parent_url}}</b> tự thay bằng thông tin trong mục Cài đặt.</li>
       <li>Nội dung mặc định là bản mẫu để bạn chỉnh. Nên để luật sư hoặc bộ phận pháp chế xem lại trước khi dùng chính thức.</li>
     </ul>
@@ -47,6 +50,7 @@ const docs = computed(() => LEGALS.map(([key, label, slug]) => ({ key, label, sl
     <div class="bar" style="margin:0 0 6px">
       <h2 style="margin:0;flex:1">{{ g.label }}</h2>
       <a class="btn gh sm" :href="siteUrl + '/' + g.slug" target="_blank" rel="noopener">Xem trên website ↗</a>
+      <a class="btn gh sm" :href="siteUrl + '/api/legal/' + g.key + '.pdf'" target="_blank" rel="noopener">PDF (bản đã lưu)</a>
       <button class="btn gh sm" type="button" @click="reset(g.key, g.label)">Về bản mặc định</button>
     </div>
     <div class="row2" style="margin-top:10px">

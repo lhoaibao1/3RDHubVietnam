@@ -132,7 +132,7 @@ export const useSite = defineStore('site', {
       if (this.lang === 'en') return p.en || EN[p.vi] || p.vi || ''
       return p.vi || ''
     },
-    legal(key: 'terms' | 'privacy'): { title: string; updated: string; body: string } {
+    legal(key: string): { title: string; updated: string; body: string } {
       const d: LegalDoc | undefined = this.cms?.legal?.[key]
       const def = DEFAULTS.legal?.[key]
       const f = (name: 'title' | 'updated' | 'body') => {

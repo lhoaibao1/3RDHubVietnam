@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { SLUGS } from './lib/content'
+import { LEGAL_DOCS, SLUGS } from './lib/content'
 
 const SLUG_RE = SLUGS.join('|')
 
@@ -10,8 +10,8 @@ export const router = createRouter({
     { path: `/:slug(${SLUG_RE})`, name: 'module', component: () => import('./pages/ModulePage.vue'), props: true },
     { path: '/baogia', name: 'quote', component: () => import('./pages/QuotePage.vue') },
     { path: '/dang-ky', name: 'register', component: () => import('./pages/RegisterPage.vue') },
-    { path: '/dieu-khoan', name: 'terms', component: () => import('./pages/LegalPage.vue'), props: { doc: 'terms' } },
-    { path: '/bao-mat', name: 'privacy', component: () => import('./pages/LegalPage.vue'), props: { doc: 'privacy' } },
+    ...LEGAL_DOCS.map((d) => ({ path: '/' + d.slug, name: d.key, component: () => import('./pages/LegalPage.vue'), props: { doc: d.key } })),
+    { path: '/chinh-sach', name: 'policies', component: () => import('./pages/PoliciesPage.vue') },
     { path: '/terms', redirect: '/dieu-khoan' },
     { path: '/privacy', redirect: '/bao-mat' },
     { path: '/:rest(.*)*', redirect: '/' },
@@ -26,5 +26,5 @@ export const router = createRouter({
 // Địa chỉ cũ kiểu "/#/mo-hinh" chuyển sang đường dẫn sạch "/mo-hinh".
 router.beforeEach((to) => {
   const m = /^#\/([a-z-]+)$/.exec(to.hash)
-  if (to.path === '/' && m && (SLUGS as readonly string[]).concat(['dieu-khoan', 'bao-mat']).includes(m[1])) return { path: '/' + m[1], replace: true }
+  if (to.path === '/' && m && (SLUGS as readonly string[]).concat(LEGAL_DOCS.map((d) => d.slug)).includes(m[1])) return { path: '/' + m[1], replace: true }
 })

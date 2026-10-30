@@ -17,7 +17,7 @@ export type TabKey = 'dash' | 'live' | 'text' | 'product' | 'faq' | 'partners' |
 export const SECTIONS: { title: string; tabs: [TabKey, string][] }[] = [
   { title: '', tabs: [['dash', 'Tổng quan']] },
   { title: 'Nội dung', tabs: [['live', 'Sửa trên trang'], ['text', 'Tìm chữ để sửa']] },
-  { title: 'Danh sách', tabs: [['product', 'Sản phẩm, dự án'], ['quote', 'Báo giá, so sánh gói'], ['faq', 'Hỏi đáp'], ['partners', 'Đối tác (logo)'], ['clients', 'Khách hàng'], ['legal', 'Điều khoản, bảo mật']] },
+  { title: 'Danh sách', tabs: [['product', 'Sản phẩm, dự án'], ['quote', 'Báo giá, so sánh gói'], ['faq', 'Hỏi đáp'], ['partners', 'Đối tác (logo)'], ['clients', 'Khách hàng'], ['legal', 'Điều khoản, chính sách']] },
   { title: 'Thông tin', tabs: [['company', 'Công ty, liên hệ, MXH'], ['seo', 'SEO, Google Analytics']] },
   { title: 'Hệ thống', tabs: [['look', 'Giao diện 3D'], ['email', 'Email & Zalo báo tin'], ['account', 'Mật khẩu']] },
   { title: 'Vận hành', tabs: [['leads', 'Yêu cầu khách'], ['history', 'Lịch sử']] },

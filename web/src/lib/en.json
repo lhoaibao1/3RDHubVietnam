@@ -645,5 +645,19 @@
 "Không gửi được vì mất kết nối mạng. Kiểm tra mạng rồi bấm Gửi đăng ký lần nữa.": "Could not send because the network is down. Check your connection and press Send registration again.",
 "Nhận tin về yêu cầu này qua Zalo": "Get updates on this request via Zalo",
 "Bạn sẽ nhận tin xác nhận và các cập nhật tiếp theo qua Zalo.": "You will get a confirmation and further updates on Zalo.",
-"Nếu bạn không dùng Zalo, đội ngũ sẽ liên hệ theo số điện thoại đã gửi.": "If you don't use Zalo, our team will contact you by the phone number you sent."
+"Nếu bạn không dùng Zalo, đội ngũ sẽ liên hệ theo số điện thoại đã gửi.": "If you don't use Zalo, our team will contact you by the phone number you sent.",
+"Giá niêm yết bằng VNĐ, chưa bao gồm thuế GTGT (nếu có), không phát sinh phí ẩn. Xem": "Prices are listed in VND, excluding VAT (if applicable), with no hidden fees. See the",
+"Chính sách giá": "Pricing Policy",
+"và": "and",
+"Chính sách thanh toán": "Payment Policy",
+"Các chính sách": "Policies",
+"Tải PDF": "Download PDF",
+"Tất cả chính sách": "All policies",
+"Chính sách khác": "Other policies",
+"Chính sách và điều khoản": "Policies and terms",
+"Các chính sách áp dụng khi sử dụng website và dịch vụ của": "Policies that apply when using the website and services of",
+". Mỗi chính sách có thể xem trực tiếp hoặc tải về dạng PDF.": ". Each policy can be viewed online or downloaded as a PDF.",
+"Tải tất cả (1 file PDF)": "Download all (1 PDF file)",
+"Xem": "View",
+"PDF": "PDF"
 }

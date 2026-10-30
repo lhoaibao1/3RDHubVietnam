@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { LEGAL_SLUGS, NAV, okUrl } from '@/lib/content'
+import { NAV, okUrl } from '@/lib/content'
 import { BRANDS } from '@/lib/icons.generated'
 import { useSite } from '@/stores/site'
 import BrandMark from './BrandMark.vue'
@@ -14,7 +14,6 @@ const hours = computed(() => (site.lang === 'en' && site.S('working_hours_en')) 
 const year = new Date().getFullYear()
 const copy = computed(() => site.t('© {year} {name}. Bảo lưu mọi quyền.').replace('{year}', String(year)).replace('{name}', site.SL('company_name')))
 const note = computed(() => site.t('Nội dung, thương hiệu và hình ảnh trên website thuộc quyền sở hữu của {name} và các chủ sở hữu tương ứng. Không sao chép khi chưa có sự đồng ý bằng văn bản.').replace('{name}', site.SL('company_name')))
-const legal = Object.keys(LEGAL_SLUGS)
 const top = () => scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
 </script>
 
@@ -40,8 +39,9 @@ const top = () => scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-moti
       </nav>
       <nav class="ftc" aria-label="Pháp lý">
         <h3>Pháp lý</h3>
-        <RouterLink :to="'/' + legal[0]"><Icon name="file-text" />Điều khoản sử dụng</RouterLink>
-        <RouterLink :to="'/' + legal[1]"><Icon name="shield-check" />Chính sách bảo mật</RouterLink>
+        <RouterLink to="/dieu-khoan"><Icon name="file-text" />Điều khoản sử dụng</RouterLink>
+        <RouterLink to="/bao-mat"><Icon name="shield-check" />Chính sách bảo mật</RouterLink>
+        <RouterLink to="/chinh-sach"><Icon name="scroll-text" />Các chính sách</RouterLink>
         <button type="button" class="ftcookie" @click="openConsent"><Icon name="cookie" />Cài đặt cookie</button>
       </nav>
       <div class="ftc ftco">

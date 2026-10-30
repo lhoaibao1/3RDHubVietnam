@@ -316,6 +316,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.apiRegister(w, r)
 	case p == "/api/zalo/webhook" && !a.isAdminHost(r):
 		a.zaloWebhook(w, r)
+	case legalPDFRe.MatchString(p) && get:
+		a.apiLegalPDF(w, r)
 	case p == "/healthz" && get:
 		a.send(w, r, 200, []byte("ok"), "text/plain; charset=utf-8", noStore)
 	case strings.HasPrefix(p, "/uploads/") && get:

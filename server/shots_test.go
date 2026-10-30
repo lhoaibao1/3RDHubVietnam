@@ -50,3 +50,44 @@ func TestProductShots(t *testing.T) {
 		}
 	}
 }
+
+// PDF các chính sách: đủ 8 trang + bản tổng hợp, tiếng Việt và tiếng Anh, theo nội dung CMS.
+func TestLegalPDF(t *testing.T) {
+	a := testApp(t)
+	for _, d := range legalDocs {
+		for _, q := range []string{"", "?lang=en"} {
+			r := do(a, "GET", "3rdhubvietnam.tech", "/api/legal/"+d.Key+".pdf"+q, nil, nil)
+			if r.code != 200 || r.hdr.Get("Content-Type") != "application/pdf" || !strings.HasPrefix(string(r.body), "%PDF-") || !strings.Contains(r.hdr.Get("Content-Disposition"), d.Slug) {
+				t.Fatalf("%s%s: %d %s", d.Key, q, r.code, r.hdr)
+			}
+		}
+	}
+	all := do(a, "GET", "3rdhubvietnam.tech", "/api/legal/all.pdf", nil, nil)
+	if all.code != 200 || len(all.body) < 20000 {
+		t.Fatalf("all: %d %d", all.code, len(all.body))
+	}
+	if r := do(a, "GET", "3rdhubvietnam.tech", "/api/legal/khac.pdf", nil, nil); r.code != 404 {
+		t.Fatalf("khoá lạ: %d", r.code)
+	}
+	// nội dung: thay mã công ty, bảng giá đầy đủ VNĐ
+	c, _, _ := a.currentContent(t.Context())
+	_, _, body := a.legalText(c, "pricing", "vi")
+	if !strings.Contains(body, "15tr (15.000.000 VNĐ)") || strings.Contains(body, "{{") || !strings.Contains(body, "Công ty TNHH Công nghệ 3RDVN") {
+		t.Fatalf("pricing: %s", body[:400])
+	}
+	_, _, en := a.legalText(c, "support", "en")
+	if !strings.Contains(en, "3RDVN Technology Co., Ltd") || strings.Contains(en, "{{") {
+		t.Fatalf("support en: %s", en[:300])
+	}
+	// CMS sửa chính sách mới là PDF đổi theo
+	ck := login(t, a)
+	h := map[string]string{"Cookie": ck, "X-CMS": "1"}
+	doc := `{"legal":{"refund":{"title":{"vi":"Hoàn tiền (sửa)"},"updated":{"vi":"01/11/2026"},"body":{"vi":"## 1. Mục mới\nNội dung mới."}}}}`
+	if r := do(a, "PUT", cms, "/api/admin/content", []byte(`{"content":`+doc+`}`), h); r.code != 200 {
+		t.Fatalf("lưu: %d %s", r.code, r.body)
+	}
+	c, _, _ = a.currentContent(t.Context())
+	if tt, up, b := a.legalText(c, "refund", "vi"); tt != "Hoàn tiền (sửa)" || up != "01/11/2026" || !strings.Contains(b, "Nội dung mới") {
+		t.Fatalf("sau khi sửa: %s %s %s", tt, up, b)
+	}
+}

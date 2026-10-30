@@ -29,3 +29,16 @@ export function renderLegal(text: string): string {
   endList()
   return out.join('')
 }
+
+/** "15tr" -> "15tr (15.000.000 VNĐ)": giá viết tắt kèm số tiền đầy đủ (giống bản PDF trên máy chủ). */
+export function fullPrice(p: string, en: boolean): string {
+  const m = /^\s*(\d+(?:[.,]\d+)?)\s*(tr|triệu|m)\s*$/i.exec(p)
+  if (!m) return p
+  const v = Math.round(parseFloat(m[1].replace(',', '.')) * 1e6)
+  return p + ' (' + v.toLocaleString(en ? 'en-US' : 'de-DE') + (en ? ' VND)' : ' VNĐ)')
+}
+
+/** Danh sách gói hiện hành cho mã {{price_list}} trong Chính sách giá. */
+export function priceListMd(plans: { name: string; price: string; unit: string; desc: string }[], en: boolean): string {
+  return plans.map((p) => `- **${p.name}: ${fullPrice(p.price, en)}** ${p.unit}. ${p.desc.replace(/\.$/, '')}`).join('\n')
+}

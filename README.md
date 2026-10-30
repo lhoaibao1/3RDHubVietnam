@@ -122,6 +122,23 @@ Khách điền form, backend Go chuyển tiếp sang 3RDHub rồi trả về mã
 - Không ghi họ tên, số điện thoại vào log hay analytics. Chỉ ghi sự kiện `lead_submitted` kèm mã sản phẩm, và chỉ khi khách đã đồng ý cookie phân tích.
 - Kiểm thử: `go test` (`hub_test.go`) và `HUB_MOCK=1 HUB_SITE_KEY=<chuỗi bất kỳ>` chạy backend, rồi `HUB_SITE_KEY=<chuỗi đó> node tools/e2e/register.js`.
 
+## Chính sách cho hồ sơ thông báo website với Bộ Công Thương
+
+8 trang chính sách, sửa trong CMS (tab *Điều khoản, chính sách*), mỗi trang có nút **Tải PDF** (PDF tạo trên máy chủ từ đúng nội dung đang hiện, font Be Vietnam Pro, chữ chọn/copy được):
+
+| Mục trên hồ sơ | Trang | PDF |
+|---|---|---|
+| 1. Chính sách bảo mật | `/bao-mat` | `/api/legal/privacy.pdf` |
+| 2. Tiếp nhận, giải quyết khiếu nại | `/khieu-nai` | `/api/legal/complaints.pdf` |
+| 3. Chính sách giá (giá, thuế, phí) | `/chinh-sach-gia` (+ ghi chú dưới bảng giá `/baogia`) | `/api/legal/pricing.pdf` |
+| 4. Chính sách thanh toán | `/chinh-sach-thanh-toan` | `/api/legal/payment.pdf` |
+| 5. Điều kiện/hạn chế cung cấp dịch vụ | `/dieu-kien-dich-vu` | `/api/legal/service.pdf` |
+| 6. Cung cấp, chấm dứt dịch vụ và hoàn tiền | `/cung-cap-va-hoan-tien` | `/api/legal/refund.pdf` |
+| 7. Hỗ trợ trực tuyến | `/ho-tro` | `/api/legal/support.pdf` |
+| Điều khoản sử dụng | `/dieu-khoan` | `/api/legal/terms.pdf` |
+
+Trang `/chinh-sach` liệt kê tất cả và có nút tải **một file PDF gồm cả 8 chính sách** (`/api/legal/all.pdf`); thêm `?lang=en` để lấy bản tiếng Anh. Trong Chính sách giá, mã `{{price_list}}` tự thay bằng các gói và giá hiện hành ở tab Báo giá. Nội dung mặc định là bản mẫu: nên để kế toán/pháp chế xem lại (đặc biệt thuế GTGT, thời hạn thanh toán, điều kiện hoàn tiền) trước khi nộp hồ sơ.
+
 ## Zalo OA: tin cho khách của website (dùng chung OA với 3RDHub)
 
 OA "Công ty TNHH CÔNG NGHỆ 3RDVN" (`147468245835855615`) được kết nối trong 3RDHub; 3RDHub giữ refresh token và tự gia hạn.

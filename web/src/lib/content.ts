@@ -47,7 +47,21 @@ export const DEF_SETTINGS: Record<string, string> = {
 
 export const SLUGS = ['mo-hinh', 'advertiser', 'san-pham', 'cong-nghe', 'doi-tac', 'hoi-dap', 'lien-he'] as const
 export type Slug = (typeof SLUGS)[number]
-export const LEGAL_SLUGS: Record<string, 'terms' | 'privacy'> = { 'dieu-khoan': 'terms', 'bao-mat': 'privacy' }
+export type LegalKey = 'terms' | 'privacy' | 'complaints' | 'pricing' | 'payment' | 'service' | 'refund' | 'support'
+/** Các chính sách công bố trên website, theo thứ tự hồ sơ thông báo website với Bộ Công Thương. Nội dung sửa trong CMS (tab Điều khoản, chính sách). */
+export const LEGAL_DOCS: { key: LegalKey; slug: string; icon: string }[] = [
+  { key: 'privacy', slug: 'bao-mat', icon: 'shield-check' },
+  { key: 'complaints', slug: 'khieu-nai', icon: 'message-square-warning' },
+  { key: 'pricing', slug: 'chinh-sach-gia', icon: 'tag' },
+  { key: 'payment', slug: 'chinh-sach-thanh-toan', icon: 'credit-card' },
+  { key: 'service', slug: 'dieu-kien-dich-vu', icon: 'list-checks' },
+  { key: 'refund', slug: 'cung-cap-va-hoan-tien', icon: 'undo-2' },
+  { key: 'support', slug: 'ho-tro', icon: 'headset' },
+  { key: 'terms', slug: 'dieu-khoan', icon: 'file-text' },
+]
+export const LEGAL_SLUGS: Record<string, LegalKey> = Object.fromEntries(LEGAL_DOCS.map((d) => [d.slug, d.key]))
+/** Đường dẫn tải PDF của một chính sách (hoặc 'all': tất cả trong một file), tạo trên máy chủ từ nội dung CMS. */
+export const legalPdf = (key: LegalKey | 'all', lang: Lang) => '/api/legal/' + key + '.pdf' + (lang === 'en' ? '?lang=en' : '')
 
 export const NAV: [Slug, string, string][] = [
   ['mo-hinh', 'Mô hình', 'Hành trình một hồ sơ, hình thức hoa hồng, trạng thái đơn'],

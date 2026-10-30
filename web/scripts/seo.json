@@ -97,6 +97,62 @@
       "sub": "Nhận mã theo dõi hồ sơ qua Zalo.",
       "tint": "#12A06A",
       "shot": "/dang-ky"
+    },
+    "khieu-nai": {
+      "title": "Chính sách tiếp nhận và giải quyết khiếu nại | 3RDHub Vietnam",
+      "desc": "Kênh tiếp nhận, quy trình và thời hạn giải quyết khiếu nại của Công ty TNHH Công nghệ 3RDVN đối với dịch vụ và website 3RDHub Vietnam.",
+      "head": "Tiếp nhận và giải quyết khiếu nại.",
+      "sub": "Phản hồi trong 07 ngày làm việc.",
+      "tint": "#5B6279",
+      "shot": "/"
+    },
+    "chinh-sach-gia": {
+      "title": "Chính sách giá | 3RDHub Vietnam",
+      "desc": "Bảng giá niêm yết các gói 3RDVN HUB, đơn vị tiền tệ, thuế GTGT và các khoản phí khi sử dụng dịch vụ của Công ty TNHH Công nghệ 3RDVN.",
+      "head": "Chính sách giá.",
+      "sub": "Giá niêm yết, thuế và phí rõ ràng.",
+      "tint": "#5B6279",
+      "shot": "/"
+    },
+    "chinh-sach-thanh-toan": {
+      "title": "Chính sách thanh toán | 3RDHub Vietnam",
+      "desc": "Phương thức chuyển khoản, thời hạn thanh toán, hoá đơn và chi trả hoa hồng của Công ty TNHH Công nghệ 3RDVN.",
+      "head": "Chính sách thanh toán.",
+      "sub": "Phương thức và thời hạn thanh toán.",
+      "tint": "#5B6279",
+      "shot": "/"
+    },
+    "dieu-kien-dich-vu": {
+      "title": "Điều kiện và hạn chế cung cấp dịch vụ | 3RDHub Vietnam",
+      "desc": "Đối tượng, điều kiện kỹ thuật và các trường hợp hạn chế, từ chối cung cấp dịch vụ của Công ty TNHH Công nghệ 3RDVN.",
+      "head": "Điều kiện cung cấp dịch vụ.",
+      "sub": "Ai được dùng, khi nào bị hạn chế.",
+      "tint": "#5B6279",
+      "shot": "/"
+    },
+    "cung-cap-va-hoan-tien": {
+      "title": "Chính sách cung cấp, chấm dứt dịch vụ và hoàn tiền | 3RDHub Vietnam",
+      "desc": "Thời hạn kích hoạt, bàn giao, chấm dứt dịch vụ, điều kiện và thủ tục hoàn tiền của Công ty TNHH Công nghệ 3RDVN.",
+      "head": "Cung cấp, chấm dứt và hoàn tiền.",
+      "sub": "Điều kiện và thời hạn hoàn tiền.",
+      "tint": "#5B6279",
+      "shot": "/"
+    },
+    "ho-tro": {
+      "title": "Hỗ trợ trực tuyến | 3RDHub Vietnam",
+      "desc": "Hotline, email, Zalo OA, biểu mẫu liên hệ và thời gian hỗ trợ khách hàng của Công ty TNHH Công nghệ 3RDVN.",
+      "head": "Hỗ trợ trực tuyến.",
+      "sub": "Hotline, email, Zalo OA.",
+      "tint": "#5B6279",
+      "shot": "/"
+    },
+    "chinh-sach": {
+      "title": "Chính sách và điều khoản | 3RDHub Vietnam",
+      "desc": "Tất cả chính sách của website 3RDHub Vietnam: bảo mật, khiếu nại, giá, thanh toán, điều kiện dịch vụ, hoàn tiền, hỗ trợ và điều khoản. Tải PDF.",
+      "head": "Chính sách và điều khoản.",
+      "sub": "Xem hoặc tải PDF.",
+      "tint": "#5B6279",
+      "shot": "/"
     }
   }
 }
