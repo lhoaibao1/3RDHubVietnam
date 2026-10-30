@@ -18,33 +18,22 @@ import (
 )
 
 // Thông báo khi có người đăng ký trên website: email cho đội ngũ (có thể nhiều địa chỉ), email xác nhận cho khách,
-// tin nhắn Zalo Bot cho đội ngũ và tin ZNS (Zalo OA) gửi tới số điện thoại của khách. Mỗi kênh bật/tắt riêng trong CMS.
+// tin nhắn Zalo Bot cho đội ngũ. Mỗi kênh bật/tắt riêng trong CMS. Tin Zalo OA cho khách nằm ở zalooa.go
+// (mượn access token từ 3RDHub; trang này không tự làm mới token Zalo OA).
 
 /* ---------------- cấu hình Zalo ---------------- */
 
 type zaloCfg struct {
-	BotOn      bool   `json:"bot_on"`
-	BotToken   string `json:"bot_token,omitempty"` // mã hoá
-	BotChats   string `json:"bot_chats"`           // chat_id, cách nhau bởi dấu phẩy
-	ZnsOn      bool   `json:"zns_on"`
-	AppID      string `json:"app_id"`
-	Secret     string `json:"secret,omitempty"`  // mã hoá
-	Refresh    string `json:"refresh,omitempty"` // mã hoá; Zalo trả refresh token mới mỗi lần làm mới, luôn lưu lại
-	Access     string `json:"access,omitempty"`  // mã hoá
-	AccessExp  int64  `json:"access_exp,omitempty"`
-	TemplateID string `json:"template_id"`
-	Params     string `json:"params"` // JSON: tên tham số của mẫu ZNS -> nội dung, ví dụ {"customer_name":"{name}"}
+	BotOn    bool   `json:"bot_on"`
+	BotToken string `json:"bot_token,omitempty"` // mã hoá
+	BotChats string `json:"bot_chats"`           // chat_id, cách nhau bởi dấu phẩy
 }
 
 var (
-	zaloMu      sync.Mutex
-	zaloBotURL  = "https://bot-api.zaloplatforms.com"
-	zaloOAuth   = "https://oauth.zaloapp.com/v4/oa/access_token"
-	zaloZNSURL  = "https://business.openapi.zalo.me/message/template"
-	digitsRe    = regexp.MustCompile(`\D`)
-	zaloIDRe    = regexp.MustCompile(`^[A-Za-z0-9_.:-]{1,200}$`)
-	httpZalo    = &http.Client{Timeout: 15 * time.Second}
-	placeholder = regexp.MustCompile(`\{(name|phone|email|company|need|message|date|id)\}`)
+	zaloMu     sync.Mutex
+	zaloBotURL = "https://bot-api.zaloplatforms.com"
+	zaloIDRe   = regexp.MustCompile(`^[A-Za-z0-9_.:-]{1,200}$`)
+	httpZalo   = &http.Client{Timeout: 15 * time.Second}
 )
 
 func (a *App) loadZalo(ctx context.Context) zaloCfg {
@@ -57,14 +46,11 @@ func (a *App) loadZalo(ctx context.Context) zaloCfg {
 func publicZalo(c zaloCfg) map[string]any {
 	return map[string]any{
 		"bot_on": c.BotOn, "bot_chats": c.BotChats, "has_bot_token": c.BotToken != "",
-		"zns_on": c.ZnsOn, "app_id": c.AppID, "template_id": c.TemplateID, "params": c.Params,
-		"has_secret": c.Secret != "", "has_refresh": c.Refresh != "",
 	}
 }
 
 func cleanZalo(a *App, d map[string]any, c zaloCfg) (zaloCfg, error) {
 	c.BotOn = truthy(d["bot_on"])
-	c.ZnsOn = truthy(d["zns_on"])
 	var err error
 	if c.BotChats, err = strip(d["bot_chats"], 1000, "Chat ID"); err != nil {
 		return c, err
@@ -75,27 +61,6 @@ func cleanZalo(a *App, d map[string]any, c zaloCfg) (zaloCfg, error) {
 		}
 	}
 	c.BotChats = strings.Join(splitList(c.BotChats), ", ")
-	if c.AppID, err = strip(d["app_id"], 40, "App ID"); err != nil {
-		return c, err
-	}
-	if c.AppID != "" && !regexp.MustCompile(`^[0-9]{3,30}$`).MatchString(c.AppID) {
-		return c, bad("App ID chỉ gồm số")
-	}
-	if c.TemplateID, err = strip(d["template_id"], 60, "Template ID"); err != nil {
-		return c, err
-	}
-	if c.TemplateID != "" && !zaloIDRe.MatchString(c.TemplateID) {
-		return c, bad("Template ID không hợp lệ")
-	}
-	if c.Params, err = strip(d["params"], 2000, "Tham số mẫu ZNS"); err != nil {
-		return c, err
-	}
-	if c.Params != "" {
-		var m map[string]string
-		if json.Unmarshal([]byte(c.Params), &m) != nil {
-			return c, bad(`Tham số mẫu ZNS phải là JSON dạng {"ten_tham_so": "{name}"}`)
-		}
-	}
 	set := func(field, key string, max int) error {
 		v, _ := d[key].(string)
 		v = strings.TrimSpace(v)
@@ -109,23 +74,12 @@ func cleanZalo(a *App, d map[string]any, c zaloCfg) (zaloCfg, error) {
 		if err != nil {
 			return err
 		}
-		switch field {
-		case "bot":
+		if field == "bot" {
 			c.BotToken = enc
-		case "secret":
-			c.Secret = enc
-		case "refresh":
-			c.Refresh, c.Access, c.AccessExp = enc, "", 0
 		}
 		return nil
 	}
 	if err := set("bot", "bot_token", 300); err != nil {
-		return c, err
-	}
-	if err := set("secret", "secret", 200); err != nil {
-		return c, err
-	}
-	if err := set("refresh", "refresh_token", 2000); err != nil {
 		return c, err
 	}
 	return c, nil
@@ -178,116 +132,6 @@ func (a *App) zaloBotSend(ctx context.Context, c zaloCfg, text string) error {
 	}
 	if len(errs) > 0 {
 		return errors.New(strings.Join(errs, "; "))
-	}
-	return nil
-}
-
-/* ---------------- Zalo OA: ZNS ---------------- */
-
-// zaloAccess trả access token còn hạn, tự làm mới bằng refresh token (và lưu refresh token mới Zalo trả về).
-func (a *App) zaloAccess(ctx context.Context) (string, error) {
-	zaloMu.Lock()
-	defer zaloMu.Unlock()
-	c := a.loadZalo(ctx)
-	if c.Access != "" && c.AccessExp > time.Now().Unix()+120 {
-		return a.unseal(c.Access)
-	}
-	secret, _ := a.unseal(c.Secret)
-	refresh, _ := a.unseal(c.Refresh)
-	if c.AppID == "" || secret == "" || refresh == "" {
-		return "", errors.New("chưa đủ App ID, Secret key và Refresh token của Zalo OA")
-	}
-	f := url.Values{"app_id": {c.AppID}, "grant_type": {"refresh_token"}, "refresh_token": {refresh}}
-	req, _ := http.NewRequestWithContext(ctx, "POST", zaloOAuth, strings.NewReader(f.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("secret_key", secret)
-	resp, err := httpZalo.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("không gọi được Zalo OAuth: %w", err)
-	}
-	defer resp.Body.Close()
-	var r struct {
-		Access  string `json:"access_token"`
-		Refresh string `json:"refresh_token"`
-		Expires any    `json:"expires_in"`
-		Error   any    `json:"error"`
-		Message string `json:"message"`
-		ErrName string `json:"error_name"`
-	}
-	json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&r)
-	if r.Access == "" {
-		return "", fmt.Errorf("Zalo OA không cấp access token (%v %s%s). Lấy lại Refresh token mới trong trang developers.zalo.me", r.Error, r.Message, r.ErrName)
-	}
-	exp := int64(25 * 3600)
-	switch v := r.Expires.(type) {
-	case string:
-		fmt.Sscan(v, &exp)
-	case float64:
-		exp = int64(v)
-	}
-	if c.Access, err = a.seal(r.Access); err != nil {
-		return "", err
-	}
-	if r.Refresh != "" {
-		if c.Refresh, err = a.seal(r.Refresh); err != nil {
-			return "", err
-		}
-	}
-	c.AccessExp = time.Now().Unix() + exp
-	if err := kvSetPool(ctx, a.pool, "zalo", c); err != nil {
-		return "", err
-	}
-	return r.Access, nil
-}
-
-// phone84 đổi số Việt Nam về dạng 84xxxxxxxxx mà ZNS yêu cầu.
-func phone84(p string) string {
-	d := digitsRe.ReplaceAllString(p, "")
-	if strings.HasPrefix(d, "0") {
-		d = "84" + d[1:]
-	}
-	return d
-}
-
-func fillParams(tpl string, l leadRow) map[string]string {
-	m := map[string]string{}
-	json.Unmarshal([]byte(tpl), &m)
-	vals := map[string]string{"name": l.Name, "phone": l.Phone, "email": l.Email, "company": l.Company, "need": l.Need, "message": l.Message,
-		"date": time.Unix(l.TS, 0).In(vnZone()).Format("02/01/2006"), "id": fmt.Sprintf("%d", l.ID)}
-	for k, v := range m {
-		m[k] = placeholder.ReplaceAllStringFunc(v, func(s string) string { return vals[s[1:len(s)-1]] })
-		if r := []rune(m[k]); len(r) > 100 { // giới hạn độ dài tham số của ZNS
-			m[k] = string(r[:100])
-		}
-	}
-	return m
-}
-
-func (a *App) znsSend(ctx context.Context, l leadRow) error {
-	c := a.loadZalo(ctx)
-	if c.TemplateID == "" {
-		return errors.New("chưa có Template ID của mẫu ZNS")
-	}
-	tok, err := a.zaloAccess(ctx)
-	if err != nil {
-		return err
-	}
-	body, _ := json.Marshal(map[string]any{"phone": phone84(l.Phone), "template_id": c.TemplateID, "template_data": fillParams(c.Params, l), "tracking_id": fmt.Sprintf("lead-%d", l.ID)})
-	req, _ := http.NewRequestWithContext(ctx, "POST", zaloZNSURL, bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("access_token", tok)
-	resp, err := httpZalo.Do(req)
-	if err != nil {
-		return fmt.Errorf("không gọi được ZNS: %w", err)
-	}
-	defer resp.Body.Close()
-	var r struct {
-		Error   float64 `json:"error"`
-		Message string  `json:"message"`
-	}
-	json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&r)
-	if r.Error != 0 {
-		return fmt.Errorf("ZNS lỗi %v: %s", r.Error, r.Message)
 	}
 	return nil
 }
@@ -540,9 +384,6 @@ func (a *App) dispatchLead(l leadRow, base string) {
 	z := a.loadZalo(ctx)
 	if z.BotOn && z.BotToken != "" {
 		a.logNotify(ctx, "Zalo Bot", z.BotChats, a.zaloBotSend(ctx, z, botText(l, cms)))
-	}
-	if z.ZnsOn && z.Refresh != "" {
-		a.logNotify(ctx, "Zalo OA (ZNS)", phone84(l.Phone), a.znsSend(ctx, l))
 	}
 }
 

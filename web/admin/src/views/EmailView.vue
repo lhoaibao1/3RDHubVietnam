@@ -3,6 +3,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { api } from '../api'
 import { useAdmin } from '../store'
 import ZaloPanel from '../components/ZaloPanel.vue'
+import ZaloOAPanel from '../components/ZaloOAPanel.vue'
 
 // Cấu hình gửi email (SMTP). Lưu riêng, không đi kèm nội dung website; mật khẩu được mã hoá trên máy chủ và không bao giờ hiện lại.
 const a = useAdmin()
@@ -82,4 +83,5 @@ void a
     </div>
   </div>
   <ZaloPanel />
+  <ZaloOAPanel />
 </template>

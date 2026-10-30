@@ -226,8 +226,8 @@ func TestSMTPConfigAndSend(t *testing.T) {
 	if r := do(a, "PUT", cms, "/api/admin/smtp", []byte(mustJSON(body3)), h); r.code != 200 {
 		t.Fatalf("smtp 3: %d %s", r.code, r.body)
 	}
-	// Zalo Bot và ZNS giả lập
-	var botHits, znsHits []string
+	// Zalo Bot giả lập (ZNS đã gỡ: trang không tự làm mới token Zalo OA)
+	var botHits []string
 	var zmu sync.Mutex
 	zsrv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		b, _ := io.ReadAll(r.Body)
@@ -237,22 +237,15 @@ func TestSMTPConfigAndSend(t *testing.T) {
 		case strings.Contains(r.URL.Path, "/sendMessage"):
 			botHits = append(botHits, r.URL.Path+" "+string(b))
 			w.Write([]byte(`{"ok":true,"result":{}}`))
-		case strings.Contains(r.URL.Path, "/oauth"):
-			if r.Header.Get("secret_key") != "bi-mat-oa" {
-				w.Write([]byte(`{"error":-14014,"message":"secret sai"}`))
-				return
-			}
-			w.Write([]byte(`{"access_token":"acc-1","refresh_token":"ref-2","expires_in":"90000"}`))
-		case strings.Contains(r.URL.Path, "/zns"):
-			znsHits = append(znsHits, r.Header.Get("access_token")+" "+string(b))
-			w.Write([]byte(`{"error":0,"message":"Success"}`))
+		default:
+			t.Errorf("không được gọi %s", r.URL.Path)
 		}
 	}))
 	defer zsrv.Close()
-	zaloBotURL, zaloOAuth, zaloZNSURL = zsrv.URL, zsrv.URL+"/oauth", zsrv.URL+"/zns"
-	zb := map[string]any{"bot_on": true, "bot_token": "123:abc", "bot_chats": "chat-1, chat-2", "zns_on": true, "app_id": "4321", "secret": "bi-mat-oa", "refresh_token": "ref-1", "template_id": "tpl9", "params": `{"customer_name":"{name}","phone_number":"{phone}"}`}
+	zaloBotURL = zsrv.URL
+	zb := map[string]any{"bot_on": true, "bot_token": "123:abc", "bot_chats": "chat-1, chat-2"}
 	zr := do(a, "PUT", cms, "/api/admin/zalo", []byte(mustJSON(zb)), h)
-	if zr.code != 200 || strings.Contains(string(zr.body), "123:abc") || strings.Contains(string(zr.body), "bi-mat-oa") || zr.json(t)["has_bot_token"] != true {
+	if zr.code != 200 || strings.Contains(string(zr.body), "123:abc") || zr.json(t)["has_bot_token"] != true {
 		t.Fatalf("lưu zalo %d %s", zr.code, zr.body)
 	}
 	lead := `{"name":"Nguyễn Văn A","phone":"0901234567","email":"khach@example.vn","company":"Cty","need":"Báo giá","message":"Cần báo giá hệ thống"}`
@@ -268,9 +261,9 @@ func TestSMTPConfigAndSend(t *testing.T) {
 	}
 	for i := 0; i < 50; i++ {
 		zmu.Lock()
-		n := len(botHits) + len(znsHits)
+		n := len(botHits)
 		zmu.Unlock()
-		if n >= 3 {
+		if n >= 2 {
 			break
 		}
 		time.Sleep(100 * time.Millisecond)
@@ -279,14 +272,7 @@ func TestSMTPConfigAndSend(t *testing.T) {
 	if len(botHits) != 2 || !strings.Contains(botHits[0], "/bot123:abc/sendMessage") || !strings.Contains(botHits[0], "Nguyễn Văn A") {
 		t.Fatalf("zalo bot: %v", botHits)
 	}
-	if len(znsHits) != 1 || !strings.HasPrefix(znsHits[0], "acc-1 ") || !strings.Contains(znsHits[0], `"phone":"84901234567"`) || !strings.Contains(znsHits[0], `"customer_name":"Nguyễn Văn A"`) {
-		t.Fatalf("zns: %v", znsHits)
-	}
 	zmu.Unlock()
-	// refresh token mới phải được lưu (đã mã hoá)
-	if rt, _ := a.unseal(a.loadZalo(t.Context()).Refresh); rt != "ref-2" {
-		t.Fatalf("refresh token mới chưa lưu: %q", rt)
-	}
 	lg := do(a, "GET", cms, "/api/admin/notify-log", nil, h)
 	if !strings.Contains(string(lg.body), "Zalo Bot") || !strings.Contains(string(lg.body), "Email khách") {
 		t.Fatalf("nhật ký: %s", lg.body)

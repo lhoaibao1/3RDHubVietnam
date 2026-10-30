@@ -39,6 +39,7 @@ type App struct {
 	rl       *limiter
 	tr       *translator
 	hub      *hubClient
+	zoa      *zaloOA
 }
 
 func loadDefaults() (Defaults, error) {
@@ -95,6 +96,14 @@ func (a *App) initData(ctx context.Context) error {
 		if err := kvSetPool(ctx, a.pool, "admin_hash", hashPW(pw)); err != nil {
 			return err
 		}
+	}
+	// bỏ cấu hình ZNS cũ (App secret, refresh/access token Zalo OA) còn lưu từ bản trước: trang không còn tự làm mới token
+	var zraw map[string]json.RawMessage
+	if ok, _ := kvGet(ctx, a.pool, "zalo", &zraw); ok && (zraw["refresh"] != nil || zraw["secret"] != nil || zraw["access"] != nil) {
+		if err := kvSetPool(ctx, a.pool, "zalo", a.loadZalo(ctx)); err != nil {
+			return err
+		}
+		log.Printf("Đã xoá cấu hình ZNS cũ (token Zalo OA) khỏi CSDL")
 	}
 	entries, _ := seedFS.ReadDir("seed/logos")
 	for _, e := range entries {
@@ -299,6 +308,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.apiProducts(w, r)
 	case p == "/api/register" && r.Method == http.MethodPost:
 		a.apiRegister(w, r)
+	case p == "/api/zalo/webhook" && !a.isAdminHost(r):
+		a.zaloWebhook(w, r)
 	case p == "/healthz" && get:
 		a.send(w, r, 200, []byte("ok"), "text/plain; charset=utf-8", noStore)
 	case strings.HasPrefix(p, "/uploads/") && get:
@@ -430,7 +441,15 @@ func (a *App) apiLead(w http.ResponseWriter, r *http.Request) {
 		base = "https://" + r.Host
 	}
 	go a.dispatchLead(leadRow{ID: leadID, TS: time.Now().Unix(), Name: name, Phone: phone, Company: company, Need: need, Message: msg, Lang: lang, Email: email}, base)
-	a.sendJSON(w, r, 200, map[string]any{"ok": true}, nil)
+	res := map[string]any{"ok": true}
+	if a.zoa.ready() { // mã để khách nhắn vào Zalo OA; chỉ hiện cho khách khi đã bật ZALO_OA_PUBLIC=1
+		if code, exp, err := a.assignZaloCode(r.Context(), leadID); err == nil && a.zoa.public {
+			res["zalo"] = map[string]any{"code": code, "url": a.zoa.oaURL(), "expires_at": time.Unix(exp, 0).UTC().Format(time.RFC3339)}
+		} else if err != nil {
+			log.Printf("Zalo OA: không tạo được mã cho yêu cầu #%d: %v", leadID, err)
+		}
+	}
+	a.sendJSON(w, r, 200, res, nil)
 }
 
 var errNotFound = errors.New("not found")

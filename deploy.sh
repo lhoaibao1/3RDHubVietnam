@@ -230,6 +230,11 @@ $(proxy_block "$port")
         client_max_body_size 16k;
 $(proxy_block "$port")
     }
+    # Webhook của ứng dụng Zalo (tin khách nhắn OA); backend kiểm tra chữ ký X-ZEvent-Signature
+    location = /api/zalo/webhook {
+        client_max_body_size 64k;
+$(proxy_block "$port")
+    }
     location ^~ /uploads/ {
 $(proxy_block "$port")
     }

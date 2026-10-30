@@ -27,7 +27,7 @@ func newApp(ctx context.Context) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	a := &App{cfg: cfg, pool: pool, defaults: d, rl: newLimiter(), tr: newTranslator(), hub: newHubClient(cfg)}
+	a := &App{cfg: cfg, pool: pool, defaults: d, rl: newLimiter(), tr: newTranslator(), hub: newHubClient(cfg), zoa: newZaloOA(cfg)}
 	if err := a.initData(ctx); err != nil {
 		return nil, err
 	}
@@ -103,6 +103,7 @@ func serve(a *App) {
 			a.rl.gc()
 		}
 	}()
+	a.startZalo(context.Background())
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	go func() {

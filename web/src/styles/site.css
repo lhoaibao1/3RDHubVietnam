@@ -861,3 +861,15 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .rgsteps{margin:0;padding-left:22px;display:grid;gap:6px;font-weight:600}
 .rgnote{margin:0;font-size:14.5px;color:var(--ink2)}
 @media(max-width:900px){.rgwrap{grid-template-columns:minmax(0,1fr)}.rgzalo .acts .btn{flex:1 1 140px}}
+
+/* Mã Zalo OA sau khi gửi form */
+.lzalo{display:grid;gap:10px;padding:16px;border-radius:18px;background:var(--bg);box-shadow:inset 0 0 0 1.5px var(--line)}
+.lzt{font-size:16px}
+.lzc{display:grid;gap:2px}
+.lzc span{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+.lzc strong{font-size:clamp(32px,8vw,44px);line-height:1.05;letter-spacing:.04em;color:var(--or);user-select:all}
+.lza{display:flex;flex-wrap:wrap;gap:10px}
+.lza .btn{flex:1 1 140px}
+.lzok{margin:-4px 0 0;min-height:1.2em;font-size:14px;font-weight:700;color:var(--ok)}
+.lzalo ol{margin:0;padding-left:20px;display:grid;gap:4px;font-weight:600;font-size:14.5px}
+.lzalo small{color:var(--ink2)}
