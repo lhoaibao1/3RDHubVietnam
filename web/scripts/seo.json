@@ -8,7 +8,9 @@
       "head": "Tiếp thị liên kết, minh bạch từng đồng.",
       "sub": "Nền tảng kết nối Advertiser tài chính với mạng lưới publisher.",
       "tint": "#FF6A2B",
-      "shot": "/"
+      "shot": "/",
+      "title_en": "3RDHub Vietnam | Transparent affiliate marketing, every dong",
+      "desc_en": "3RDHub Vietnam is an affiliate marketing platform by 3RDVN Technology. Every click, every lead and every commission is recorded."
     },
     "mo-hinh": {
       "title": "Mô hình hoạt động | 3RDHub Vietnam",
@@ -16,7 +18,9 @@
       "head": "Một hồ sơ đi qua 3RDHub như thế nào.",
       "sub": "Advertiser, 3RDHub và publisher: mỗi bước đều có dữ liệu ghi lại.",
       "tint": "#FF6A2B",
-      "shot": "/mo-hinh"
+      "shot": "/mo-hinh",
+      "title_en": "How it works | 3RDHub Vietnam",
+      "desc_en": "How a lead moves through 3RDHub: Advertiser, 3RDHub and publisher, the five-step journey, CPL, CPS and CPA commissions and order statuses."
     },
     "advertiser": {
       "title": "Dành cho Advertiser | 3RDHub Vietnam",
@@ -24,7 +28,9 @@
       "head": "Chạy chiến dịch, chỉ trả cho kết quả.",
       "sub": "Mạng lưới publisher sẵn có, số liệu minh bạch.",
       "tint": "#7B4DFF",
-      "shot": "/advertiser"
+      "shot": "/advertiser",
+      "title_en": "For Advertisers | 3RDHub Vietnam",
+      "desc_en": "Put your campaign on the 3RDHub publisher network: pay only for results, CPL, CPS and CPA commissions, transparent click, lead and order data, from campaign to reconciliation."
     },
     "san-pham": {
       "title": "Sản phẩm: SaaS, Website/CMS, CRM/ERP, Mail Server | 3RDHub Vietnam",
@@ -32,7 +38,9 @@
       "head": "Phần mềm cho doanh nghiệp, từ SaaS đến hệ thống riêng.",
       "sub": "SaaS, Website/CMS, CRM/ERP, Mail Server.",
       "tint": "#1BA6D9",
-      "shot": "/san-pham"
+      "shot": "/san-pham",
+      "title_en": "Products: SaaS, Website/CMS, CRM/ERP, Mail Server | 3RDHub Vietnam",
+      "desc_en": "Projects by 3RDVN Technology: the 3RDVN HUB SaaS for distribution operations, Website/CMS design, CRM/ERP development and private Mail Server for businesses."
     },
     "cong-nghe": {
       "title": "Công nghệ | 3RDHub Vietnam",
@@ -40,7 +48,9 @@
       "head": "Kiến trúc phía sau mỗi lượt bấm.",
       "sub": "Vue.js, Go, PostgreSQL: nhanh, ổn định, dễ mở rộng.",
       "tint": "#00ADD8",
-      "shot": "/cong-nghe"
+      "shot": "/cong-nghe",
+      "title_en": "Technology | 3RDHub Vietnam",
+      "desc_en": "The architecture behind every click: Vue.js frontend, Go backend, PostgreSQL. Tracking flow, partner postbacks, API keys, test environment and logs."
     },
     "doi-tac": {
       "title": "Đối tác | 3RDHub Vietnam",
@@ -48,7 +58,9 @@
       "head": "Advertiser và đối tác đồng hành.",
       "sub": "Ngân hàng, công ty tài chính và mạng affiliate.",
       "tint": "#12A06A",
-      "shot": "/doi-tac"
+      "shot": "/doi-tac",
+      "title_en": "Partners | 3RDHub Vietnam",
+      "desc_en": "Banks, financial companies and affiliate networks working with 3RDVN Technology, and how partner integration works."
     },
     "hoi-dap": {
       "title": "Hỏi đáp | 3RDHub Vietnam",
@@ -56,7 +68,9 @@
       "head": "Câu hỏi thường gặp.",
       "sub": "Publisher, hoa hồng, tracking và Advertiser.",
       "tint": "#FFB238",
-      "shot": "/hoi-dap"
+      "shot": "/hoi-dap",
+      "title_en": "FAQ | 3RDHub Vietnam",
+      "desc_en": "Frequently asked questions about publishers, commissions and withdrawals, tracking and reports, and Advertiser cooperation on 3RDHub Vietnam."
     },
     "lien-he": {
       "title": "Liên hệ | 3RDHub Vietnam",
@@ -64,7 +78,9 @@
       "head": "Bạn là publisher hay Advertiser?",
       "sub": "Đăng ký ngay hoặc để lại yêu cầu tư vấn.",
       "tint": "#FF4D8D",
-      "shot": "/lien-he"
+      "shot": "/lien-he",
+      "title_en": "Contact | 3RDHub Vietnam",
+      "desc_en": "Publishers sign up directly in the app. Advertisers send a consultation request and the 3RDVN Technology team replies during business hours."
     },
     "dieu-khoan": {
       "title": "Điều khoản sử dụng | 3RDHub Vietnam",
@@ -72,7 +88,9 @@
       "head": "Điều khoản sử dụng.",
       "sub": "3RDHub Vietnam",
       "tint": "#5B6279",
-      "shot": "/"
+      "shot": "/",
+      "title_en": "Terms of Use | 3RDHub Vietnam",
+      "desc_en": "Terms of use of the 3RDHub Vietnam website, operated by 3RDVN Technology Co., Ltd."
     },
     "bao-mat": {
       "title": "Chính sách bảo mật | 3RDHub Vietnam",
@@ -80,7 +98,9 @@
       "head": "Chính sách bảo mật.",
       "sub": "3RDHub Vietnam",
       "tint": "#5B6279",
-      "shot": "/"
+      "shot": "/",
+      "title_en": "Privacy Policy | 3RDHub Vietnam",
+      "desc_en": "How 3RDHub Vietnam collects, uses and protects personal data in accordance with the Personal Data Protection Law."
     },
     "baogia": {
       "title": "Báo giá | 3RDHub Vietnam",
@@ -88,7 +108,9 @@
       "head": "Báo giá theo đúng phạm vi của bạn.",
       "sub": "Thuê năm, self-host hoặc mua source.",
       "tint": "#FFB238",
-      "shot": "/baogia"
+      "shot": "/baogia",
+      "title_en": "Pricing | 3RDHub Vietnam",
+      "desc_en": "3RDVN HUB pricing: rent 15M a year, self-host 25M, buy source 35M. Compare every item and sign up for a trial."
     },
     "dang-ky": {
       "title": "Đăng ký sản phẩm | 3RDHub Vietnam",
@@ -96,7 +118,9 @@
       "head": "Đăng ký sản phẩm.",
       "sub": "Nhận mã theo dõi hồ sơ qua Zalo.",
       "tint": "#12A06A",
-      "shot": "/dang-ky"
+      "shot": "/dang-ky",
+      "title_en": "Product registration | 3RDHub Vietnam",
+      "desc_en": "Register for financial products through 3RDHub Vietnam: leave your details to get advice and a tracking code via Zalo."
     },
     "khieu-nai": {
       "title": "Chính sách tiếp nhận và giải quyết khiếu nại | 3RDHub Vietnam",
@@ -104,7 +128,9 @@
       "head": "Tiếp nhận và giải quyết khiếu nại.",
       "sub": "Phản hồi trong 07 ngày làm việc.",
       "tint": "#5B6279",
-      "shot": "/"
+      "shot": "/",
+      "title_en": "Complaint handling policy | 3RDHub Vietnam",
+      "desc_en": "Channels, process and deadlines for handling complaints about the services and website of 3RDVN Technology Co., Ltd."
     },
     "chinh-sach-gia": {
       "title": "Chính sách giá | 3RDHub Vietnam",
@@ -112,7 +138,9 @@
       "head": "Chính sách giá.",
       "sub": "Giá niêm yết, thuế và phí rõ ràng.",
       "tint": "#5B6279",
-      "shot": "/"
+      "shot": "/",
+      "title_en": "Pricing policy | 3RDHub Vietnam",
+      "desc_en": "Listed prices of 3RDVN HUB plans, currency, VAT and fees when using the services of 3RDVN Technology Co., Ltd."
     },
     "chinh-sach-thanh-toan": {
       "title": "Chính sách thanh toán | 3RDHub Vietnam",
@@ -120,7 +148,9 @@
       "head": "Chính sách thanh toán.",
       "sub": "Phương thức và thời hạn thanh toán.",
       "tint": "#5B6279",
-      "shot": "/"
+      "shot": "/",
+      "title_en": "Payment policy | 3RDHub Vietnam",
+      "desc_en": "Bank transfer methods, payment terms, invoices and commission payouts of 3RDVN Technology Co., Ltd."
     },
     "dieu-kien-dich-vu": {
       "title": "Điều kiện và hạn chế cung cấp dịch vụ | 3RDHub Vietnam",
@@ -128,7 +158,9 @@
       "head": "Điều kiện cung cấp dịch vụ.",
       "sub": "Ai được dùng, khi nào bị hạn chế.",
       "tint": "#5B6279",
-      "shot": "/"
+      "shot": "/",
+      "title_en": "Service conditions and limitations | 3RDHub Vietnam",
+      "desc_en": "Eligible customers, technical requirements and the cases where 3RDVN Technology Co., Ltd. limits or refuses service."
     },
     "cung-cap-va-hoan-tien": {
       "title": "Chính sách cung cấp, chấm dứt dịch vụ và hoàn tiền | 3RDHub Vietnam",
@@ -136,7 +168,9 @@
       "head": "Cung cấp, chấm dứt và hoàn tiền.",
       "sub": "Điều kiện và thời hạn hoàn tiền.",
       "tint": "#5B6279",
-      "shot": "/"
+      "shot": "/",
+      "title_en": "Service delivery, termination and refund policy | 3RDHub Vietnam",
+      "desc_en": "Activation and handover times, service termination, refund conditions and procedure of 3RDVN Technology Co., Ltd."
     },
     "ho-tro": {
       "title": "Hỗ trợ trực tuyến | 3RDHub Vietnam",
@@ -144,7 +178,9 @@
       "head": "Hỗ trợ trực tuyến.",
       "sub": "Hotline, email, Zalo OA.",
       "tint": "#5B6279",
-      "shot": "/"
+      "shot": "/",
+      "title_en": "Online support | 3RDHub Vietnam",
+      "desc_en": "Hotline, email, Zalo OA, contact form and support hours of 3RDVN Technology Co., Ltd."
     },
     "chinh-sach": {
       "title": "Chính sách và điều khoản | 3RDHub Vietnam",
@@ -152,7 +188,9 @@
       "head": "Chính sách và điều khoản.",
       "sub": "Xem hoặc tải PDF.",
       "tint": "#5B6279",
-      "shot": "/"
+      "shot": "/",
+      "title_en": "Policies and terms | 3RDHub Vietnam",
+      "desc_en": "All policies of the 3RDHub Vietnam website: privacy, complaints, pricing, payment, service conditions, refunds, support and terms. PDF download."
     }
   }
 }

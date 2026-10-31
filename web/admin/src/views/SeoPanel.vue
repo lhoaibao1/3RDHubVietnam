@@ -7,7 +7,9 @@ import seo from '../../../scripts/seo.json'
 // Máy chủ chèn vào HTML ngay khi trả trang (Google, Facebook, Zalo đều đọc được), xem server/seo.go.
 const a = useAdmin()
 const S = () => a.content!.settings
-const PAGES = seo.pages as Record<string, { title: string; desc: string }>
+const PAGES = seo.pages as Record<string, { title: string; desc: string; title_en: string; desc_en: string }>
+const lg = ref<'vi' | 'en'>('vi') // ngôn ngữ đang sửa
+const K = (b: 'seot_' | 'seod_', p: { key: string }) => (lg.value === 'en' ? b + 'en_' : b) + p.key
 const pages = Object.entries(PAGES).map(([slug, p]) => ({ slug, key: slug || 'home', path: '/' + slug, ...p }))
 const siteBase = location.protocol + '//' + location.host.replace(/^cms\./, '')
 const host = siteBase.replace(/^https?:\/\//, '')
@@ -26,9 +28,9 @@ function setVerify(k: string, v: string) { const m = v.match(/content\s*=\s*["']
 const open = ref<string | null>(null)
 const q = ref('')
 const shown = computed(() => pages.filter((p) => !q.value || (p.title + p.slug).toLowerCase().includes(q.value.toLowerCase())))
-const title = (p: (typeof pages)[number]) => S()['seot_' + p.key] || (p.key === 'home' && S().site_title) || p.title
-const desc = (p: (typeof pages)[number]) => S()['seod_' + p.key] || (p.key === 'home' && (S().meta_description || '').replace(/\s+/g, ' ')) || p.desc
-const edited = (p: (typeof pages)[number]) => !!(S()['seot_' + p.key] || S()['seod_' + p.key])
+const title = (p: (typeof pages)[number]) => lg.value === 'en' ? S()[K('seot_', p)] || p.title_en : S()[K('seot_', p)] || (p.key === 'home' && S().site_title) || p.title
+const desc = (p: (typeof pages)[number]) => lg.value === 'en' ? S()[K('seod_', p)] || p.desc_en : S()[K('seod_', p)] || (p.key === 'home' && (S().meta_description || '').replace(/\s+/g, ' ')) || p.desc
+const edited = (p: (typeof pages)[number]) => !!(S()['seot_' + p.key] || S()['seod_' + p.key] || S()['seot_en_' + p.key] || S()['seod_en_' + p.key])
 const lenCls = (n: number, lo: number, hi: number) => (n === 0 ? '' : n < lo ? 'warn' : n > hi ? 'bad' : 'ok')
 </script>
 
@@ -56,6 +58,11 @@ const lenCls = (n: number, lo: number, hi: number) => (n === 0 ? '' : n < lo ? '
   <div class="panel">
     <h2>Tiêu đề và mô tả từng trang</h2>
     <p class="sub">Đây là dòng chữ xanh và đoạn mô tả hiện trên Google, và khi chia sẻ link lên Facebook, Zalo. Để trống thì dùng bản mặc định (hiện mờ trong ô). Nên viết tiêu đề 30 đến 60 ký tự, mô tả 120 đến 160 ký tự, có từ khoá khách hay tìm.</p>
+    <div class="seolg" role="tablist" aria-label="Ngôn ngữ đang sửa">
+      <button type="button" role="tab" :aria-selected="lg === 'vi'" :class="{ on: lg === 'vi' }" @click="lg = 'vi'">Tiếng Việt <small>/vi</small></button>
+      <button type="button" role="tab" :aria-selected="lg === 'en'" :class="{ on: lg === 'en' }" @click="lg = 'en'">English <small>/en</small></button>
+    </div>
+    <p v-if="lg === 'en'" class="sub">Bản tiếng Anh hiện khi khách mở link <code>/en/...</code> (và cho Google tiếng Anh). Để trống bản English thì hệ thống <b>tự dịch từ tiếng Việt khi bạn bấm Lưu</b>; bạn tự gõ thì được giữ nguyên.</p>
     <input v-model="q" type="search" class="seoq" placeholder="Tìm trang...">
     <div class="seopages">
       <div v-for="p in shown" :key="p.key" class="seop" :class="{ on: open === p.key }">
@@ -68,11 +75,11 @@ const lenCls = (n: number, lo: number, hi: number) => (n === 0 ? '' : n < lo ? '
           <em v-if="edited(p)">đã sửa</em>
         </button>
         <div v-if="open === p.key" class="seof">
-          <label class="f">Tiêu đề <small :class="lenCls((S()['seot_' + p.key] || '').length, 30, 60)">{{ (S()['seot_' + p.key] || '').length }}/60</small>
-            <input type="text" maxlength="120" :value="S()['seot_' + p.key] || ''" :placeholder="p.title" @input="setS('seot_' + p.key, ($event.target as HTMLInputElement).value)"></label>
-          <label class="f">Mô tả <small :class="lenCls((S()['seod_' + p.key] || '').length, 120, 160)">{{ (S()['seod_' + p.key] || '').length }}/160</small>
-            <textarea rows="3" maxlength="320" :value="S()['seod_' + p.key] || ''" :placeholder="p.desc" @input="setS('seod_' + p.key, ($event.target as HTMLTextAreaElement).value.replace(/\s*\n\s*/g, ' '))"></textarea></label>
-          <a class="btn gh sm" :href="siteBase + p.path" target="_blank" rel="noopener">Mở trang</a>
+          <label class="f">Tiêu đề <small :class="lenCls((S()[K('seot_', p)] || '').length, 30, 60)">{{ (S()[K('seot_', p)] || '').length }}/60</small>
+            <input type="text" maxlength="120" :value="S()[K('seot_', p)] || ''" :placeholder="lg === 'en' ? p.title_en : p.title" @input="setS(K('seot_', p), ($event.target as HTMLInputElement).value)"></label>
+          <label class="f">Mô tả <small :class="lenCls((S()[K('seod_', p)] || '').length, 120, 160)">{{ (S()[K('seod_', p)] || '').length }}/160</small>
+            <textarea rows="3" maxlength="320" :value="S()[K('seod_', p)] || ''" :placeholder="lg === 'en' ? p.desc_en : p.desc" @input="setS(K('seod_', p), ($event.target as HTMLTextAreaElement).value.replace(/\s*\n\s*/g, ' '))"></textarea></label>
+          <a class="btn gh sm" :href="siteBase + '/' + lg + p.path" target="_blank" rel="noopener">Mở trang</a>
         </div>
       </div>
     </div>

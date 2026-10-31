@@ -30,7 +30,7 @@ const assert = require('assert');
   assert.ok(!/Đã lưu/.test(toast), 'mô tả có dấu < > phải bị từ chối');
   await p.waitForSelector('.toast', { state: 'detached' }).catch(() => {});
   await p.locator('.seop.on textarea').fill('Mô tả "mới" cho trang sản phẩm');
-  await p.click('.savebar .save'); await p.waitForTimeout(1000);
+  await p.click('.savebar .save'); await p.waitForSelector('.toast', { timeout: 30000 }); await p.waitForTimeout(500);
   const st = await (await p.request.get(SITE + '/api/content')).json();
   assert.strictEqual(st.settings['seod_san-pham'], 'Mô tả "mới" cho trang sản phẩm');
   ok('mô tả có dấu < > bị từ chối, sửa lại thì lưu được');

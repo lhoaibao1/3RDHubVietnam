@@ -65,6 +65,9 @@ func loadDefaults() (Defaults, error) {
 func (a *App) initData(ctx context.Context) error {
 	if a.zoa != nil {
 		a.zoa.app = a
+		if a.cfg.SiteURL != "" {
+			seoSite = strings.TrimRight(a.cfg.SiteURL, "/")
+		}
 	}
 	if err := os.MkdirAll(a.uploads(), 0o755); err != nil {
 		return err
@@ -388,6 +391,10 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case a.cfg.SiteDir != "" && get && !strings.HasPrefix(p, "/api/"):
 		// /vi/san-pham và /en/san-pham dùng chung trang dựng sẵn (như nginx), ngôn ngữ do giao diện xử lý
 		name := strings.TrimPrefix(langPrefixRe.ReplaceAllString(p, "/"), "/")
+		lang := "vi"
+		if strings.HasPrefix(p, "/en") {
+			lang = "en"
+		}
 		if name == "" {
 			name = "index.html"
 		}
@@ -403,7 +410,7 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			// trang dựng sẵn: xử lý các khối SEO như nginx SSI ở máy chủ thật
 			if b, err := os.ReadFile(filepath.Join(a.cfg.SiteDir, name)); err == nil {
 				c, _, _ := a.currentContent(r.Context())
-				a.send(w, r, 200, applySSI(c, b), "text/html; charset=utf-8", map[string]string{"Cache-Control": "no-cache"})
+				a.send(w, r, 200, applySSI(c, b, lang), "text/html; charset=utf-8", map[string]string{"Cache-Control": "no-cache"})
 				return
 			}
 		}

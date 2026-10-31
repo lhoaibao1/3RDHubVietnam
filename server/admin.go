@@ -255,6 +255,7 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 		// tự dịch Việt -> Anh những đoạn English còn trống hoặc đã cũ (người dùng không cần tự dịch)
 		prev, _, _ := a.currentContent(ctx)
 		tdone, tfail := a.autoTranslate(ctx, &c, prev)
+		a.translateSEO(ctx, &c, prev)
 		if err := a.saveContent(ctx, c, note); err != nil {
 			return err
 		}

@@ -359,6 +359,8 @@ $(proxy_block "$port" limit)
   local strike="@rh_429"; cms_installed && strike="/__rh_strike"
   cat <<CONF
 # 3RDHub Vietnam: website (Vue, build sẵn). Tạo bởi deploy.sh $STAMP
+# ngôn ngữ theo đường dẫn (/en/... hay /vi/...), truyền cho /api/seo/ để tiêu đề/mô tả đúng tiếng
+map \$request_uri \$rh_lg { ~^/en(?:[/?]|\$) en; default vi; }
 # ---- chống tấn công: giới hạn tốc độ theo IP thật và theo chữ ký trình duyệt; danh sách cấm do CMS quản lý ($GUARD_DIR)
 geo \$rh_allow    { default 0; include $GUARD_DIR/allow-ip.conf; }
 geo \$rh_ban_ip   { default 0; include $GUARD_DIR/ban-ip.conf; }

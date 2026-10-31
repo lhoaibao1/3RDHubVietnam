@@ -5,7 +5,7 @@ import { LEGAL_SLUGS, NAV } from '@/lib/content'
 import { consent } from '@/composables/useConsent'
 import seo from '../../scripts/seo.json'
 
-const PAGES = seo.pages as Record<string, { title: string; desc: string }>
+const PAGES = seo.pages as Record<string, { title: string; desc: string; title_en: string; desc_en: string }>
 
 const GA_RE = /^[A-Za-z]{1,3}-[A-Za-z0-9-]{4,20}$/
 let gaOn = false
@@ -37,8 +37,13 @@ export function useSeo() {
     const known = slug in PAGES
     const vi = site.lang === 'vi'
     const homeTitle = key === 'home' ? site.cms?.settings?.site_title || '' : ''
-    const title = (vi && known && (site.S('seot_' + key) || homeTitle)) || (vi && known ? def.title : page ? `${page} · ${base}` : base)
-    const desc = (site.S('seod_' + key) || (key === 'home' ? site.S('meta_description') : '') || def.desc).replace(/\s+/g, ' ').trim()
+    // tiêu đề/mô tả riêng theo ngôn ngữ (CMS, tab SEO); chưa sửa thì dùng mặc định của ngôn ngữ đó
+    const title = !known
+      ? page ? `${page} · ${base}` : base
+      : vi ? site.S('seot_' + key) || homeTitle || def.title : site.S('seot_en_' + key) || def.title_en
+    const desc = (vi
+      ? site.S('seod_' + key) || (key === 'home' ? site.S('meta_description') : '') || def.desc
+      : site.S('seod_en_' + key) || def.desc_en || def.desc).replace(/\s+/g, ' ').trim()
     document.title = title
     setMeta('meta[name=description]', desc)
     setMeta('meta[property="og:description"]', desc)

@@ -46,7 +46,7 @@ function seedBody(slug, p) {
 }
 
 /** Tiêu đề và mô tả nằm trong khối SSI: nginx thay bằng bản sửa trong CMS (nếu có), không thì giữ bản dựng sẵn này. */
-const ssi = (name, kind, page, inner) => `<!--# block name="${name}" -->${inner}<!--# endblock --><!--# include virtual="/api/seo/${kind}?p=${page}" stub="${name}" -->`
+const ssi = (name, kind, page, inner) => `<!--# block name="${name}" -->${inner}<!--# endblock --><!--# include virtual="/api/seo/${kind}?p=${page}&l=$rh_lg" stub="${name}" -->`
 
 const urls = []
 for (const [slug, p] of Object.entries(seo.pages)) {
@@ -59,17 +59,18 @@ for (const [slug, p] of Object.entries(seo.pages)) {
   h = set(h, /<meta name="description" content="[^"]*">\n?/, '')
   h = set(h, /<meta property="og:title" content="[^"]*">\n?/, '')
   h = set(h, /<meta property="og:description" content="[^"]*">\n?/, '')
-  h = set(h, /<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="${url}">\n<meta property="og:locale" content="vi_VN">\n<meta property="og:locale:alternate" content="en_US">`)
+  h = set(h, /<meta property="og:url" content="[^"]*">\n?/, '')
   h = set(h, /<meta property="og:image" content="[^"]*">/, `<meta property="og:image" content="${img}">\n<meta property="og:image:alt" content="${esc(p.head)}">`)
   h = set(h, /<meta name="twitter:image" content="[^"]*">/, `<meta name="twitter:image" content="${img}">`)
   const t = esc(p.title), d = esc(p.desc)
   const head = [
     ssi('st', 't', page, `<title>${t}</title>\n<meta property="og:title" content="${t}">\n<meta name="twitter:title" content="${t}">`),
     ssi('sd', 'd', page, `<meta name="description" content="${d}">\n<meta property="og:description" content="${d}">\n<meta name="twitter:description" content="${d}">`),
+    // địa chỉ chuẩn và ngôn ngữ: /en/... được máy chủ đổi sang bản tiếng Anh
+    ssi('sc', 'c', page, `<link rel="canonical" href="${url}">\n<meta property="og:url" content="${url}">\n<meta property="og:locale" content="vi_VN">\n<meta property="og:locale:alternate" content="en_US">`),
     ssi('sv', 'v', page, ''),
     ssi('sl', 'l', page, ''),
     `<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">`,
-    `<link rel="canonical" href="${url}">`,
     `<link rel="alternate" hreflang="vi" href="${url}">`,
     `<link rel="alternate" hreflang="en" href="${enUrl}">`,
     `<link rel="alternate" hreflang="x-default" href="${url}">`,
