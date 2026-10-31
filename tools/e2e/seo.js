@@ -55,10 +55,10 @@ const assert = require('assert');
     ok(base + ': HTML gốc có tiêu đề, mô tả, mã xác minh mới; FAQPage; trang khác giữ mặc định');
   }
   const sm = await (await p.request.get(SITE + '/sitemap.xml')).text();
-  assert.strictEqual((sm.match(/<loc>/g) || []).length, 19); assert.strictEqual((sm.match(/<image:loc>/g) || []).length, 19);
+  assert.strictEqual((sm.match(/<loc>/g) || []).length, 38); assert.strictEqual((sm.match(/<image:loc>/g) || []).length, 38);
   const rb = await (await p.request.get(SITE + '/robots.txt')).text();
   assert.ok(rb.includes('Sitemap: ') && rb.includes('Disallow: /api/'));
-  ok('sitemap 19 trang kèm ảnh, robots.txt');
+  ok('sitemap 19 trang x 2 ngôn ngữ kèm ảnh, robots.txt');
 
   // khi chạy JS: tiêu đề tab đúng theo CMS
   const w = await p.context().newPage();

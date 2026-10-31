@@ -236,6 +236,8 @@ func (a *App) fail(w http.ResponseWriter, r *http.Request, code int, msg string)
 	a.sendJSON(w, r, code, map[string]any{"ok": false, "error": msg}, map[string]string{"Cache-Control": "no-store", "Connection": "close"})
 }
 
+var langPrefixRe = regexp.MustCompile(`^/(?:vi|en)(?:/|$)`)
+
 var noStore = map[string]string{"Cache-Control": "no-store"}
 
 var errTooBig = valErr{"Dữ liệu gửi lên quá lớn"}
@@ -371,7 +373,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			a.fail(w, r, 404, "Không tìm thấy")
 		}
 	case a.cfg.SiteDir != "" && get && !strings.HasPrefix(p, "/api/"):
-		name := strings.TrimPrefix(p, "/")
+		// /vi/san-pham và /en/san-pham dùng chung trang dựng sẵn (như nginx), ngôn ngữ do giao diện xử lý
+		name := strings.TrimPrefix(langPrefixRe.ReplaceAllString(p, "/"), "/")
 		if name == "" {
 			name = "index.html"
 		}

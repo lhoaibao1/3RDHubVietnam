@@ -1,0 +1,26 @@
+// Thử địa chỉ có ngôn ngữ: /san-pham -> /vi/san-pham theo trình duyệt, đổi ngôn ngữ đổi địa chỉ, menu giữ /en, Back, tải lại, sáng/tối theo trình duyệt.
+// Chạy backend với CSDL trống rồi: node tools/e2e/lang.js (SITE_URL tuỳ chọn)
+const { chromium } = require('playwright'); const assert = require('assert')
+;(async () => {
+  const b = await chromium.launch()
+  const mk = async (locale, scheme) => { const c = await b.newContext({ locale, colorScheme: scheme, viewport: { width: 1280, height: 800 } }); await c.addInitScript(() => localStorage.setItem('3rd-consent', JSON.stringify({ analytics: false, at: Date.now() }))); const p = await c.newPage(); p.setDefaultTimeout(60000); return [c, p] }
+  const S = process.env.SITE_URL || 'http://127.0.0.1:8787'
+  let [c, p] = await mk('vi-VN', 'dark')
+  await p.goto(S + '/san-pham'); await p.waitForURL('**/vi/san-pham'); await p.waitForTimeout(800)
+  assert.strictEqual(await p.evaluate(() => document.documentElement.dataset.theme), 'dark'); console.log('✔ trình duyệt vi + tối: /san-pham → /vi/san-pham, giao diện tối')
+  await p.click('.langbtn'); await p.waitForURL('**/en/san-pham'); await p.waitForTimeout(500)
+  assert.strictEqual(await p.evaluate(() => document.documentElement.lang), 'en')
+  assert.ok((await p.textContent('.nav')).includes('Products')); console.log('✔ bấm đổi ngôn ngữ: địa chỉ thành /en/san-pham, chữ tiếng Anh')
+  await p.click('.nav a[href*="cong-nghe"]'); await p.waitForURL('**/en/cong-nghe'); console.log('✔ bấm menu giữ /en: ' + p.url())
+  await p.reload(); await p.waitForTimeout(800); assert.ok(p.url().endsWith('/en/cong-nghe')); assert.strictEqual(await p.evaluate(() => document.documentElement.lang), 'en'); console.log('✔ tải lại giữ nguyên /en/cong-nghe')
+  await p.goBack(); await p.waitForTimeout(500); assert.ok(p.url().endsWith('/en/san-pham')); console.log('✔ nút Back: ' + p.url())
+  const can = await p.evaluate(() => document.querySelector('link[rel=canonical]').href + ' | ' + [...document.querySelectorAll('link[hreflang]')].map(l => l.hreflang + '=' + l.href.replace(location.origin, '')).join(','))
+  console.log('  ' + can)
+  await c.close()
+  ;[c, p] = await mk('en-US', 'light')
+  await p.goto(S + '/'); await p.waitForURL('**/en'); assert.strictEqual(await p.evaluate(() => document.documentElement.dataset.theme), 'light'); console.log('✔ trình duyệt en + sáng: / → /en')
+  await p.goto(S + '/vi/hoi-dap'); await p.waitForTimeout(800); assert.strictEqual(await p.evaluate(() => document.documentElement.lang), 'vi'); console.log('✔ vào thẳng /vi/hoi-dap thì hiện tiếng Việt dù trình duyệt tiếng Anh')
+  await p.goto(S + '/'); await p.waitForURL('**/vi'); console.log('✔ lần sau nhớ lựa chọn: / → /vi')
+  const r = await (await p.request.get(S + '/en/lien-he')).text(); assert.ok(r.includes('<title>')); console.log('✔ máy chủ trả trang cho /en/lien-he')
+  await b.close()
+})().catch(e => { console.error(e); process.exit(1) })

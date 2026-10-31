@@ -1,4 +1,4 @@
-import { createApp, watchEffect } from 'vue'
+import { createApp, watch, watchEffect } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import { router } from './router'
@@ -27,6 +27,10 @@ document.documentElement.style.colorScheme = site.theme
 site.load()
 // Hiệu ứng cuộn và nền từng khu vực chọn trong CMS
 const bgStyle = document.createElement('style'); bgStyle.id = 'bgx'; document.head.appendChild(bgStyle)
+watch(() => site.lang, (l) => {
+  const r = router.currentRoute.value
+  if (r.params.lang && r.params.lang !== l) router.replace({ path: r.path.replace(/^\/(vi|en)(?=\/|$)/, '/' + l), query: r.query, hash: r.hash })
+})
 watchEffect(() => {
   document.documentElement.dataset.fx = site.scrollFx
   bgStyle.textContent = bgCss(site.cms?.settings)

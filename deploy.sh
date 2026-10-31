@@ -283,6 +283,13 @@ server {
     add_header X-Content-Type-Options nosniff always;
     add_header Referrer-Policy strict-origin-when-cross-origin always;
 $api
+    # /vi/... và /en/... dùng chung trang dựng sẵn; ngôn ngữ do giao diện xử lý
+    location ~ ^/(?:vi|en)(?<rest>/.*)?\$ {
+        try_files \$rest.html /index.html;
+        expires -1;
+        ssi on;
+        ssi_silent_errors on;
+    }
     location / {
         try_files \$uri \$uri.html \$uri/ /index.html;
         expires -1;

@@ -21,7 +21,7 @@ export function useSeo() {
   const route = useRoute()
   watchEffect(() => {
     const base = site.S('site_title') || '3RDHub Vietnam'
-    const slug = String(route.params.slug || route.path.replace(/^\//, ''))
+    const slug = String(route.params.slug || route.path.replace(/^\/(vi|en)(?=\/|$)/, '').replace(/^\//, ''))
     let page = ''
     const legal = LEGAL_SLUGS[slug]
     if (slug === 'baogia') page = site.t('Báo giá')
@@ -43,6 +43,20 @@ export function useSeo() {
     setMeta('meta[name=description]', desc)
     setMeta('meta[property="og:description"]', desc)
     setMeta('meta[property="og:title"]', title)
+    // địa chỉ chuẩn và các bản ngôn ngữ (Google đọc được vì chạy JavaScript)
+    const rest = slug ? '/' + slug : ''
+    const origin = location.origin
+    const link = (sel: string, rel: string, attrs: Record<string, string>) => {
+      let el = document.head.querySelector<HTMLLinkElement>(sel)
+      if (!el) { el = document.createElement('link'); el.rel = rel; document.head.appendChild(el) }
+      for (const k in attrs) el.setAttribute(k, attrs[k])
+    }
+    link('link[rel=canonical]', 'canonical', { href: `${origin}/${site.lang}${rest}` })
+    link('link[rel=alternate][hreflang=vi]', 'alternate', { hreflang: 'vi', href: `${origin}/vi${rest}` })
+    link('link[rel=alternate][hreflang=en]', 'alternate', { hreflang: 'en', href: `${origin}/en${rest}` })
+    link('link[rel=alternate][hreflang=x-default]', 'alternate', { hreflang: 'x-default', href: `${origin}/vi${rest}` })
+    setMeta('meta[property="og:url"]', `${origin}/${site.lang}${rest}`)
+    setMeta('meta[property="og:locale"]', site.lang === 'en' ? 'en_US' : 'vi_VN')
     const ga = site.S('analytics_id')
     // Google Analytics chỉ nạp khi khách đã đồng ý cookie phân tích
     if (ga && !gaOn && GA_RE.test(ga) && consent.saved?.analytics) {

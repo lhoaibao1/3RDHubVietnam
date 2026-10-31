@@ -15,10 +15,13 @@ export const PAL = { cyan: 0x27D3FF, blue: 0x3B6BFF, violet: 0x8A5BFF, orange: 0
 export const FONT = '"Nunito",system-ui,sans-serif'
 export const lin = (h: number) => new T.Color(h).convertSRGBToLinear()
 
+export type StageOpt = { fov?: number; fog?: [number, number]; sky?: [string, string, string]; bloom?: number; offsetX?: number; fogColor?: number; day?: boolean }
 export interface Key { pos: [number, number, number]; look: [number, number, number]; fov?: number }
 export interface Stage {
   scene: T.Scene
   camera: T.PerspectiveCamera
+  /** Đổi kiểu trời, sương, hậu kỳ khi chuyển giữa bản ban đêm và bản ban ngày của một kiểu cảnh. */
+  restyle(o: StageOpt): void
   /** Pha lại màu vật liệu theo chế độ sáng/tối (gọi sau khi thêm nội dung mới vào cảnh). */
   regrade(): void
   /** Gọi mỗi khung hình với thời gian (giây). */
@@ -79,18 +82,23 @@ function gradeMat(m: any, g: Grade) {
   m.needsUpdate = true
 }
 
-export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: [number, number]; sky?: [string, string, string]; bloom?: number; offsetX?: number; fogColor?: number; day?: boolean }): Stage {
+export function createStage(canvas: HTMLCanvasElement, o: StageOpt): Stage {
   /* điện thoại: tắt hậu kỳ phát sáng cho nhẹ máy, đỡ nóng và tốn pin (bù lại bật khử răng cưa) */
   const phone = innerWidth <= 640
-  const R = new T.WebGLRenderer({ canvas, antialias: o.bloom === 0 || phone, alpha: false, powerPreference: 'high-performance' })
+  const R = new T.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' })
   R.outputEncoding = T.sRGBEncoding
   const scene = new T.Scene()
-  const sky = o.sky || ['#040A1C', '#0A1B45', '#0E2A63']
-  const fogN = o.fog || [40, 130]
-  const nativeSky = skyTex(sky[0], sky[1], sky[2])
-  const nativeFog = lin(o.fogColor == null ? 0x0A1B45 : o.fogColor)
-  scene.background = nativeSky
-  scene.fog = new T.Fog(nativeFog.clone(), fogN[0], fogN[1])
+  let nativeSky: T.Texture | null = null
+  const nativeFog = new T.Color()
+  scene.fog = new T.Fog(0x000000, 40, 130)
+  /** Trời, sương theo kiểu cảnh hiện tại (gọi lại khi đổi giữa bản ban đêm và bản ban ngày). */
+  function applyBase() {
+    const sky = o.sky || ['#040A1C', '#0A1B45', '#0E2A63']
+    nativeSky?.dispose(); nativeSky = skyTex(sky[0], sky[1], sky[2])
+    nativeFog.copy(lin(o.fogColor == null ? 0x0A1B45 : o.fogColor))
+    const f = scene.fog as T.Fog, fogN = o.fog || [40, 130]; f.near = fogN[0]; f.far = fogN[1]
+  }
+  applyBase()
   /* đèn phụ chỉ bật khi cảnh đang ở chế độ ngược với bản gốc */
   const fill = new T.HemisphereLight(0xFFFFFF, 0xDCE3F2, 0); scene.add(fill)
   const sun = new T.DirectionalLight(0xFFF4E6, 0); sun.position.set(-20, 40, 30); scene.add(sun)
@@ -115,7 +123,7 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
   let rt = new T.WebGLMultisampleRenderTarget(2, 2, { format: T.RGBAFormat }); rt.samples = dpr() >= 1.75 ? 2 : 4
   const composer = new EffectComposer(R, rt)
   composer.addPass(new RenderPass(scene, camera))
-  const bloomS = o.bloom == null ? 0.85 : o.bloom
+  let bloomS = o.bloom == null ? 0.85 : o.bloom
   const bloom = new UnrealBloomPass(new T.Vector2(2, 2), bloomS, 0.65, 0.22)
   composer.addPass(bloom)
   composer.addPass(new ShaderPass(GammaCorrectionShader))
@@ -222,6 +230,11 @@ export function createStage(canvas: HTMLCanvasElement, o: { fov?: number; fog?: 
   return {
     scene, camera,
     regrade() { gradeAt = 2 },
+    restyle(n) {
+      o.sky = n.sky; o.fog = n.fog; o.fogColor = n.fogColor; o.bloom = n.bloom; o.day = n.day; o.offsetX = n.offsetX
+      applyBase(); bloomS = o.bloom == null ? 0.85 : o.bloom; bloomOn = o.bloom !== 0 && !phone
+      bloom.strength = bloomS; setGrade(getMode()); size()
+    },
     onTick(fn) { ticks.push(fn) },
     fly(key, fast) {
       tgt.pos.set(...key.pos); tgt.look.set(...key.look); tgt.fov = key.fov || o.fov || 30; flying = 2.5

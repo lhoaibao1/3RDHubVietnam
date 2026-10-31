@@ -225,30 +225,77 @@ function orbit(): Skin {
     },
   }
 }
+/* ---------- bản ban ngày dùng chung ----------
+   Cảnh nền tối chỉ "pha trắng" thì mờ như ma. Ở chế độ sáng, các kiểu này dùng bản ban ngày thật sự: nền trời và sàn sáng,
+   vật thể đặc, màu tươi như kiểu Voxel, vẫn giữ nguyên bố cục và nội dung cảnh. */
+const lighten = (c: number, t: number) => mixHex(c, 0xFFFFFF, t)
+function dayMat(role: Role, c: number): T.Material {
+  const col = role === 'glass' ? lighten(c, 0.55) : role === 'dark' ? 0x4A5A8C : role === 'metal' ? 0xC3CDE6 : role === 'gold' ? PAL.gold : c
+  if (role === 'glow') return new T.MeshBasicMaterial({ color: lin(lighten(c, 0.1)), toneMapped: false })
+  return new T.MeshStandardMaterial({ color: lin(col), roughness: role === 'metal' ? 0.45 : 0.78, metalness: role === 'metal' || role === 'gold' ? 0.5 : 0.02, emissive: role === 'gold' ? lin(PAL.gold) : new T.Color(0), emissiveIntensity: 0.12 })
+}
+function dayWin(seed: number, cols: number, rows: number, c?: number): T.Material {
+  const cv = document.createElement('canvas'); cv.width = cols * 16; cv.height = rows * 8; const x = cv.getContext('2d') as CanvasRenderingContext2D
+  x.fillStyle = '#' + new T.Color(lighten(c || 0xE9EEFF, 0.4)).getHexString(); x.fillRect(0, 0, cv.width, cv.height)
+  let s = seed; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280)
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { x.fillStyle = r() < 0.18 ? '#FFD36B' : '#7FC8FF'; x.fillRect(i * 16 + 3, j * 8 + 2, 10, 4) }
+  const t = new T.CanvasTexture(cv); t.encoding = T.sRGBEncoding; t.magFilter = T.NearestFilter
+  return new T.MeshStandardMaterial({ map: t, roughness: 0.8, metalness: 0 })
+}
+function dayPad(w: number, d: number, c: number): T.Group {
+  const g = new T.Group()
+  const p = new T.Mesh(new T.BoxGeometry(w, 0.7, d), new T.MeshStandardMaterial({ color: lin(lighten(c, 0.62)), roughness: 0.9 })); p.position.y = 0.35; g.add(p)
+  const top = new T.Mesh(new T.BoxGeometry(w - 0.5, 0.12, d - 0.5), new T.MeshStandardMaterial({ color: lin(lighten(c, 0.82)), roughness: 0.9 })); top.position.y = 0.72; g.add(top)
+  return g
+}
+/** Dãy nhà pastel phía sau (thành phố ban ngày) và đám mây khối. */
+function daySkyline(root: T.Group, seed: number, tones: number[], far = 70) {
+  const wm = dayWin(seed, 5, 18, 0xEEF2FF)
+  let s = seed; const rn = () => ((s = (s * 9301 + 49297) % 233280) / 233280)
+  for (let i = 0; i < 36; i++) {
+    const x = -105 + i * 6 + rn() * 2.4, h = 10 + rn() * 34, z = -far - rn() * 40
+    const m = new T.Mesh(new T.BoxGeometry(4.4 + rn() * 3, h, 4.4 + rn() * 3), new T.MeshStandardMaterial({ color: lin(lighten(tones[i % tones.length], 0.55)), roughness: 0.9 }))
+    m.position.set(x, h / 2, z); root.add(m)
+    const win = new T.Mesh(new T.BoxGeometry(3.6, h * 0.9, 0.1), wm); win.position.set(x, h / 2, z + 3.6); root.add(win)
+  }
+}
+function dayClouds(root: T.Group, seed = 4) {
+  let s = seed; const rn = () => ((s = (s * 9301 + 49297) % 233280) / 233280)
+  const clouds: T.Group[] = []
+  for (let i = 0; i < 7; i++) {
+    const g = new T.Group(); for (let j = 0; j < 4; j++) { const b = new T.Mesh(new T.BoxGeometry(5 + rn() * 5, 2 + rn() * 2, 4 + rn() * 3), new T.MeshBasicMaterial({ color: 0xFFFFFF, toneMapped: false })); b.position.set(j * 4 - 6, rn() * 1.5, rn() * 2); g.add(b) }
+    g.position.set(-80 + i * 28, 30 + (i % 3) * 6, -60 - (i % 2) * 20); root.add(g); clouds.push(g)
+  }
+  return (t: number) => clouds.forEach((c, i) => { c.position.x += 0.01 + i * 0.002; if (c.position.x > 110) c.position.x = -110 })
+}
+function dayVariant(base: Skin): Skin {
+  const tones: Record<string, number[]> = { neon: [PAL.pink, PAL.violet, PAL.cyan, PAL.orange], blueprint: [0x7FB0FF, 0xBFD4FF, 0x9BC4FF], orbit: [0x9BC4FF, 0xC9B8FF, 0xFFC8A8], isometric: [PAL.cyan, PAL.violet, PAL.orange], factory: [PAL.orange, PAL.cyan, PAL.mint], ecosystem: [PAL.violet, PAL.cyan, PAL.pink] }
+  return {
+    ...base, day: true, lines: 0.55, mat: dayMat, ec: (c) => c, win: dayWin, pad: dayPad,
+    stage: { fov: base.stage.fov, fog: [90, 270], bloom: 0, sky: ['#A9D2FF', '#DCEBFF', '#FFF1E4'], fogColor: 0xDCEBFF, offsetX: base.stage.offsetX },
+    setup(st, root) {
+      const sc = st.scene
+      sc.environment = null
+      sc.add(new T.HemisphereLight(0xFFFFFF, 0xC4D2EC, 1.0))
+      const key = new T.DirectionalLight(0xFFF1DC, 1.2); key.position.set(-20, 40, 25); sc.add(key)
+      const paper = base.id === 'blueprint'
+      const ft = checker(paper ? '#FFFFFF' : '#F1F5FF', paper ? '#F2F7FF' : '#E6EDFB', paper ? 'rgba(60,110,220,.55)' : 'rgba(110,140,215,.30)'); ft.repeat.set(40, 40)
+      const floor = new T.Mesh(new T.PlaneGeometry(260, 260), new T.MeshStandardMaterial({ map: ft, roughness: 1 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -0.02; root.add(floor)
+      if (base.id === 'orbit') { const tick = dayClouds(root, 7); return (t) => tick(t) }
+      if (base.id !== 'blueprint') daySkyline(root, 11, tones[base.id] || [PAL.cyan, PAL.violet, PAL.orange])
+      const tick = dayClouds(root, 5)
+      return (t) => tick(t)
+    },
+  }
+}
+
 function voxel(): Skin {
-  const lighten = (c: number, t: number) => mixHex(c, 0xFFFFFF, t)
   return {
     id: 'voxel', stage: { fov: 28, fog: [90, 260], bloom: 0, sky: ['#6FC3FF', '#B7E3FF', '#FFF4E2'], fogColor: 0xDFF1FF, offsetX: 0.17 }, dir: [0.35, 0.6, 1], k: 3.5, fov: 28, lines: 0, day: true,
-    mat(role, c) {
-      const col = role === 'glass' ? lighten(c, 0.55) : role === 'dark' ? 0x4A5A8C : role === 'metal' ? 0xC3CDE6 : role === 'gold' ? PAL.gold : c
-      if (role === 'glow') return new T.MeshBasicMaterial({ color: lin(lighten(c, 0.1)), toneMapped: false })
-      return new T.MeshStandardMaterial({ color: lin(col), roughness: role === 'metal' ? 0.45 : 0.85, metalness: role === 'metal' || role === 'gold' ? 0.5 : 0.02, emissive: role === 'gold' ? lin(PAL.gold) : new T.Color(0), emissiveIntensity: 0.12 })
-    },
+    mat: dayMat,
     ec: (c) => c,
-    win(seed, cols, rows, c) {
-      const cv = document.createElement('canvas'); cv.width = cols * 16; cv.height = rows * 8; const x = cv.getContext('2d') as CanvasRenderingContext2D
-      x.fillStyle = '#' + new T.Color(lighten(c || 0xE9EEFF, 0.4)).getHexString(); x.fillRect(0, 0, cv.width, cv.height)
-      let s = seed; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280)
-      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { x.fillStyle = r() < 0.18 ? '#FFD36B' : '#7FC8FF'; x.fillRect(i * 16 + 3, j * 8 + 2, 10, 4) }
-      const t = new T.CanvasTexture(cv); t.encoding = T.sRGBEncoding; t.magFilter = T.NearestFilter
-      return new T.MeshStandardMaterial({ map: t, roughness: 0.8, metalness: 0 })
-    },
-    pad(w, d, c) {
-      const g = new T.Group()
-      const p = new T.Mesh(new T.BoxGeometry(w, 0.7, d), new T.MeshStandardMaterial({ color: lin(lighten(c, 0.62)), roughness: 0.9 })); p.position.y = 0.35; g.add(p)
-      const top = new T.Mesh(new T.BoxGeometry(w - 0.5, 0.12, d - 0.5), new T.MeshStandardMaterial({ color: lin(lighten(c, 0.82)), roughness: 0.9 })); top.position.y = 0.72; g.add(top)
-      return g
-    },
+    win: dayWin,
+    pad: dayPad,
     setup(st, root) {
       const sc = st.scene
       sc.add(new T.HemisphereLight(0xFFFFFF, 0xB8D8A0, 0.95))
@@ -363,4 +410,5 @@ function neonCity(): Skin {
 }
 
 const MAKERS: Record<SkinId, () => Skin> = { isometric, factory, ecosystem, orbit, voxel, blueprint, neon: neonCity }
-export const makeSkin = (id: SkinId): Skin => MAKERS[id]()
+/** Chế độ sáng: các kiểu nền tối dùng bản ban ngày riêng; kiểu Voxel vốn là ban ngày. */
+export const makeSkin = (id: SkinId, mode: 'light' | 'dark' = 'dark'): Skin => { const sk = MAKERS[id](); return mode === 'light' && !sk.day ? dayVariant(sk) : sk }

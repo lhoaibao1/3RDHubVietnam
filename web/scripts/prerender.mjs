@@ -35,12 +35,12 @@ function seedBody(slug, p) {
   if (slug === 'hoi-dap') x = '<dl>' + DEF.faq.map((f) => `<dt>${esc(f.q.vi)}</dt><dd>${esc(plain(f.a.vi))}</dd>`).join('') + '</dl>'
   else if (slug === 'san-pham') x = DEF.product.projects.map((pr) => `<section><h2>${esc(pr.name.vi)}</h2><p>${esc(pr.tag.vi)}</p><p>${esc(pr.desc.vi)}</p>${(pr.points || []).length ? '<ul>' + pr.points.map((t) => `<li>${esc(t.vi)}</li>`).join('') + '</ul>' : ''}</section>`).join('')
   else if (slug === 'baogia') x = '<ul>' + DEF.quote.plans.map((pl) => `<li><b>${esc(pl.name.vi)}</b>: ${esc(pl.price.vi)} ${esc(pl.unit.vi)}. ${esc(pl.desc.vi)}</li>`).join('') + '</ul>'
-  else if (slug === '') x = '<ul>' + DEF.product.projects.map((pr) => `<li><a href="/san-pham">${esc(pr.name.vi)}</a>: ${esc(pr.tag.vi)}</li>`).join('') + '</ul>'
+  else if (slug === '') x = '<ul>' + DEF.product.projects.map((pr) => `<li><a href="/vi/san-pham">${esc(pr.name.vi)}</a>: ${esc(pr.tag.vi)}</li>`).join('') + '</ul>'
   else {
     const lg = Object.values(DEF.legal || {}).find((d) => d && d.slug === slug)
     if (lg) x = `<p>${esc(plain(lg.body?.vi || '').slice(0, 1200))}</p>`
   }
-  const nav = Object.entries(seo.pages).map(([s2, q]) => `<li><a href="/${s2}">${esc(q.title.replace(/ \| 3RDHub Vietnam$/, ''))}</a></li>`).join('')
+  const nav = Object.entries(seo.pages).map(([s2, q]) => `<li><a href="/vi${s2 ? '/' + s2 : ''}">${esc(q.title.replace(/ \| 3RDHub Vietnam$/, ''))}</a></li>`).join('')
   return `<main class="seedpg"><h1>${esc(p.head)}</h1><p>${esc(p.desc)}</p>${x}<nav aria-label="Các trang"><ul>${nav}</ul></nav>` +
     `<p>Công ty TNHH Công nghệ 3RDVN, mã số thuế 4001342613, Tổ 10 Tỉnh Thủy, Phường Quảng Phú, Thành phố Đà Nẵng. Hotline (+84) 398 192 414.</p></main>`
 }
@@ -50,7 +50,8 @@ const ssi = (name, kind, page, inner) => `<!--# block name="${name}" -->${inner}
 
 const urls = []
 for (const [slug, p] of Object.entries(seo.pages)) {
-  const url = SITE + (slug ? '/' + slug : '/')
+  const url = SITE + '/vi' + (slug ? '/' + slug : '')
+  const enUrl = SITE + '/en' + (slug ? '/' + slug : '')
   const img = SITE + '/og/' + (slug || 'home') + '.png'
   const page = slug || 'home'
   let h = html
@@ -70,6 +71,7 @@ for (const [slug, p] of Object.entries(seo.pages)) {
     `<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">`,
     `<link rel="canonical" href="${url}">`,
     `<link rel="alternate" hreflang="vi" href="${url}">`,
+    `<link rel="alternate" hreflang="en" href="${enUrl}">`,
     `<link rel="alternate" hreflang="x-default" href="${url}">`,
   ]
   const crumbs = [{ '@type': 'ListItem', position: 1, name: 'Trang chủ', item: SITE + '/' }]
@@ -82,10 +84,12 @@ for (const [slug, p] of Object.entries(seo.pages)) {
   h = h.replace('</head>', head.join('\n') + `\n<script type="application/ld+json">${JSON.stringify(ld).replace(/</g, '\\u003c')}</script>\n</head>`)
   h = set(h, /<div id="app">/, `<div id="app">${seedBody(slug, p)}`)
   writeFileSync(OUT + (slug ? slug + '.html' : 'index.html'), h)
-  urls.push({ url, img, alt: p.head, prio: PRIO[slug] || '0.3' })
+  urls.push({ url, enUrl, img, alt: p.head, prio: PRIO[slug] || '0.3' })
 }
 
 const today = new Date().toISOString().slice(0, 10)
-writeFileSync(OUT + 'sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.map((u) => `  <url><loc>${u.url}</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>${u.prio}</priority><image:image><image:loc>${u.img}</image:loc></image:image></url>`).join('\n')}\n</urlset>\n`)
+const alt = (u) => `<xhtml:link rel="alternate" hreflang="vi" href="${u.url}"/><xhtml:link rel="alternate" hreflang="en" href="${u.enUrl}"/><xhtml:link rel="alternate" hreflang="x-default" href="${u.url}"/>`
+const entry = (loc, u) => `  <url><loc>${loc}</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>${u.prio}</priority>${alt(u)}<image:image><image:loc>${u.img}</image:loc></image:image></url>`
+writeFileSync(OUT + 'sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls.flatMap((u) => [entry(u.url, u), entry(u.enUrl, u)]).join('\n')}\n</urlset>\n`)
 writeFileSync(OUT + 'robots.txt', `User-agent: *\nAllow: /\nAllow: /api/legal/\nDisallow: /api/\n\nSitemap: ${SITE}/sitemap.xml\n`)
 console.log('prerender:', urls.length, 'trang,', 'sitemap.xml, robots.txt')
