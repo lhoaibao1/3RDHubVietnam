@@ -25,7 +25,7 @@ func testApp(t *testing.T) *App {
 		t.Fatal(err)
 	}
 	t.Cleanup(pool.Close)
-	for _, tb := range []string{"kv", "revisions", "leads", "tr_cache", "zalo_outbox", "zalo_seen", "guard_bans", "schema_migrations"} {
+	for _, tb := range []string{"kv", "revisions", "leads", "tr_cache", "zalo_outbox", "zalo_seen", "guard_bans", "stats_hits", "schema_migrations"} {
 		pool.Exec(ctx, "DROP TABLE IF EXISTS "+tb)
 	}
 	if err := migrate(ctx, pool); err != nil {

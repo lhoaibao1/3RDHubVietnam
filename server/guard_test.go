@@ -87,7 +87,7 @@ func TestGuardNeverBansProtected(t *testing.T) {
 	cfg.Allow = []string{"9.9.9.0/24"}
 	for _, ip := range []string{"104.16.1.1", "172.67.5.5", "2606:4700::1", "10.0.0.5", "127.0.0.1", "192.168.1.1", "9.9.9.9"} {
 		for i := 0; i < 50; i++ {
-			a.guardRecord(testCtx(), mustAddr(ip), "ua|vi||", "ua", "/", cfg)
+			a.guardRecord(testCtx(), mustAddr(ip), "ua|vi||", "ua", "/", "", "", cfg)
 		}
 	}
 	if n := len(bansOf(t, a)); n != 0 {
@@ -114,7 +114,7 @@ func TestGuardFingerprintBan(t *testing.T) {
 	cfg.FPStrikes = 30
 	for r := 0; r < 5; r++ {
 		for i := 1; i <= 6; i++ {
-			a.guardRecord(testCtx(), mustAddr("198.51.100."+itoa(i)), ua+"|vi-VN|gzip||", ua, "/", cfg)
+			a.guardRecord(testCtx(), mustAddr("198.51.100."+itoa(i)), ua+"|vi-VN|gzip||", ua, "/", "", "", cfg)
 		}
 	}
 	m := bansOf(t, a)
@@ -147,7 +147,7 @@ func TestGuardFingerprintBan(t *testing.T) {
 }
 
 func TestGuardFiles(t *testing.T) {
-	f := guardFiles([]guardBan{{Kind: "ip", Value: "1.2.3.4"}, {Kind: "ip", Value: "2001:db8::/48"}, {Kind: "fp", Value: `a"b\c$|x`}}, []string{"5.6.7.8"})
+	f := guardFiles([]guardBan{{Kind: "ip", Value: "1.2.3.4"}, {Kind: "ip", Value: "2001:db8::/48"}, {Kind: "fp", Value: `a"b\c$|x`}}, guardCfg{Allow: []string{"5.6.7.8"}, Level: "standard"})
 	if !strings.Contains(f["ban-ip.conf"], "1.2.3.4/32 1;") || !strings.Contains(f["ban-ip.conf"], "2001:db8::/48 1;") || !strings.Contains(f["allow-ip.conf"], "5.6.7.8/32 1;") {
 		t.Fatalf("%v", f)
 	}

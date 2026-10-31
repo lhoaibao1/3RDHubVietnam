@@ -12,6 +12,7 @@ import './styles/fx.css'
 import { restoreScroll, trackScroll } from './lib/scrollRestore'
 import { editRequested, initEditMode } from './lib/editMode'
 import { bgCss } from './lib/look'
+import { markDevice } from './lib/device'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -45,6 +46,20 @@ function reloadOnce() {
 addEventListener('vite:preloadError', (e) => { e.preventDefault(); reloadOnce() })
 router.onError((err) => { if (/dynamically imported module|importing a module script|failed to fetch|loading chunk/i.test(String((err as Error)?.message))) reloadOnce() })
 trackScroll()
+// Đo lượt xem trang của chính website (không cookie, không IP; xem server/stats.go). Bỏ qua khi khách bật "Do Not Track" hoặc đang sửa trên trang.
+function trackView(path: string) {
+  try {
+    const q = new URLSearchParams(location.search)
+    if (navigator.doNotTrack === '1' || q.has('edit')) return
+    let first = false
+    try { first = !sessionStorage.getItem('3rd-s'); sessionStorage.setItem('3rd-s', '1') } catch { /* bỏ qua */ }
+    const body = JSON.stringify({ p: path.replace(/^\/(vi|en)(?=\/|$)/, '') || '/', l: site.lang, r: first ? document.referrer : '', u: first ? q.get('utm_source') || '' : '', w: innerWidth })
+    if (navigator.sendBeacon) navigator.sendBeacon('/api/hit', new Blob([body], { type: 'application/json' }))
+    else fetch('/api/hit', { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'application/json' } }).catch(() => {})
+  } catch { /* bỏ qua */ }
+}
+router.afterEach((to, from, failure) => { if (!failure) trackView(to.path) })
+setTimeout(markDevice, 1200) // sau khi trang đã hiện, không làm chậm lần tải đầu
 const wait = new Promise<void>((r) => setTimeout(r, 8000))
 Promise.race([router.isReady().catch(() => {}), wait]).finally(() => {
   app.mount('#app')

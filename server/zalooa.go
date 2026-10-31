@@ -3,7 +3,7 @@ package main
 // Tin Zalo OA cho khách của website (tin tư vấn, miễn phí), dùng chung Official Account với 3RDHub.
 //
 // - Access token MƯỢN từ 3RDHub (ZALO_OA_TOKEN_URL + ZALO_OA_SHARE_KEY). Trang này KHÔNG gọi oauth.zaloapp.com,
-//   không đổi code, không làm mới token: refresh token chỉ dùng được một lần và do 3RDHub giữ.
+//   (Từ bản này có thêm cách tự kết nối, không qua 3RDHub: xem zalo_own.go. Cách tự kết nối được ưu tiên khi đã kết nối.)
 // - Khách nhận một mã ngắn (3R-12345) sau khi đăng ký, nhắn mã đó vào OA. Webhook của ứng dụng Zalo (hoặc đọc
 //   tin gần nhất mỗi 45 giây nếu không dùng được webhook) ghép Zalo user id của khách với yêu cầu, rồi trả lời xác nhận.
 // - Zalo chỉ cho gửi tin tư vấn khi khách vừa tương tác với OA (hiện là 7 ngày, mã lỗi -230/-232/-213). Tin không gửi
@@ -50,6 +50,10 @@ func (e errOutsideWindow) Error() string {
 }
 
 type zaloOA struct {
+	app                *App // để đọc cấu hình tự kết nối (zalo_own.go)
+	ownMu              sync.Mutex
+	own                zaloOwn
+	ownLoaded          bool
 	tokenURL, shareKey string
 	appID, oaID        string
 	secret             string // OA Secret Key của ứng dụng Zalo, dùng xác thực chữ ký webhook
@@ -70,14 +74,18 @@ type zaloOA struct {
 func newZaloOA(c Config) *zaloOA {
 	if c.ZaloAPIBase != "" { // chỉ dùng khi thử với máy chủ Zalo giả
 		zaloOpenAPI = strings.TrimRight(c.ZaloAPIBase, "/")
+		zaloOAuthBase = zaloOpenAPI + "/oauth"
 	}
 	return &zaloOA{tokenURL: c.ZaloTokenURL, shareKey: c.ZaloShareKey, appID: c.ZaloAppID, oaID: c.ZaloOAID, secret: c.ZaloSecret,
 		public: c.ZaloPublic, poll: c.ZaloPoll, hc: &http.Client{Timeout: 15 * time.Second}}
 }
 
-func (z *zaloOA) ready() bool { return z != nil && z.tokenURL != "" && z.shareKey != "" }
+// ready: đã kết nối Zalo OA (tự kết nối trong CMS, hoặc cách cũ mượn token từ 3RDHub qua biến môi trường).
+func (z *zaloOA) ready() bool {
+	return z != nil && (z.ownConnected() || (z.tokenURL != "" && z.shareKey != ""))
+}
 
-func (z *zaloOA) oaURL() string { return "https://zalo.me/" + z.oaID }
+func (z *zaloOA) oaURL() string { return "https://zalo.me/" + z.oaIDv() }
 
 // token trả access token còn hạn (giữ trong bộ nhớ tới expires_at trừ 5 phút). force: bỏ bản đang giữ, hỏi lại 3RDHub.
 func (z *zaloOA) token(ctx context.Context, force bool) (string, error) {
@@ -86,7 +94,17 @@ func (z *zaloOA) token(ctx context.Context, force bool) (string, error) {
 	if !force && z.tok != "" && time.Now().Before(z.exp.Add(-5*time.Minute)) {
 		return z.tok, nil
 	}
-	tok, exp, oa, err := z.fetchToken(ctx)
+	var tok, oa string
+	var exp time.Time
+	var err error
+	if z.app != nil {
+		var used bool
+		if tok, exp, oa, used, err = z.app.zaloOwnToken(ctx, force); !used {
+			tok, exp, oa, err = z.fetchToken(ctx) // chưa tự kết nối: cách cũ (token mượn từ 3RDHub)
+		}
+	} else {
+		tok, exp, oa, err = z.fetchToken(ctx)
+	}
 	z.checked = time.Now()
 	if err != nil {
 		z.tok, z.tokErr = "", err.Error()
@@ -388,7 +406,8 @@ type zaloEvent struct {
 // verifyZalo kiểm tra X-ZEvent-Signature: mac=sha256(appId + body thô + timeStamp + OA Secret Key).
 // Thử thêm timestamp ±1 ms vì Zalo đôi khi ký bằng giá trị lệch 1 ms so với body.
 func (z *zaloOA) verify(sig string, raw []byte, ts string) bool {
-	if z.secret == "" || z.appID == "" {
+	appID, secret := z.appIDv(), z.secretv()
+	if secret == "" || appID == "" {
 		return false
 	}
 	got := strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(sig), "mac="))
@@ -397,7 +416,7 @@ func (z *zaloOA) verify(sig string, raw []byte, ts string) bool {
 		want = append(want, strconv.FormatInt(n+1, 10), strconv.FormatInt(n-1, 10))
 	}
 	for _, t := range want {
-		sum := sha256.Sum256([]byte(z.appID + string(raw) + t + z.secret))
+		sum := sha256.Sum256([]byte(appID + string(raw) + t + secret))
 		if subtle.ConstantTimeCompare([]byte(hex.EncodeToString(sum[:])), []byte(strings.ToLower(got))) == 1 {
 			return true
 		}
@@ -502,14 +521,16 @@ func (a *App) pollRecent(ctx context.Context) error {
 
 // startZalo chạy việc nền: đọc tin dự phòng (nếu bật) và dọn danh sách tin đã xử lý.
 func (a *App) startZalo(ctx context.Context) {
-	if !a.zoa.ready() {
-		return
-	}
 	go func() {
 		t := time.NewTicker(45 * time.Second)
 		defer t.Stop()
-		for {
-			if a.zoa.poll {
+		for tick := 0; ; tick++ {
+			if a.zoa.ownConnected() && tick%30 == 0 { // giữ token luôn mới (refresh token chỉ sống khoảng 3 tháng nếu không dùng)
+				c, cancel := context.WithTimeout(ctx, 20*time.Second)
+				a.zoa.token(c, false)
+				cancel()
+			}
+			if a.zoa.poll && a.zoa.ready() {
 				c, cancel := context.WithTimeout(ctx, 40*time.Second)
 				if err := a.pollRecent(c); err != nil {
 					log.Printf("Zalo OA: đọc tin gần nhất lỗi: %v", err)
@@ -543,10 +564,16 @@ func (a *App) zaloOAStatus(ctx context.Context) map[string]any {
 	a.pool.QueryRow(ctx, `SELECT COUNT(*) FROM leads WHERE zalo_uid<>''`).Scan(&linked)
 	a.pool.QueryRow(ctx, `SELECT COUNT(*) FROM zalo_outbox WHERE status='pending'`).Scan(&pending)
 	return map[string]any{
-		"configured": z.ready(), "public": z.public, "webhook": z.secret != "" && z.appID != "", "poll": z.poll,
-		"app_id": z.appID, "oa_id": z.oaID, "oa_url": z.oaURL(), "token": tok, "last_event_at": last,
+		"configured": z.ready(), "public": z.publicOn(), "webhook": z.secretv() != "" && z.appIDv() != "", "poll": z.poll, "legacy": z.tokenURL != "" && z.shareKey != "",
+		"app_id": z.appIDv(), "oa_id": z.oaIDv(), "oa_url": z.oaURL(), "token": tok, "last_event_at": last,
 		"linked": linked, "pending": pending, "confirm": a.zaloConfirmText(ctx), "confirm_default": defaultZaloConfirm,
 	}
+}
+
+func (a *App) zaloStatusFull(ctx context.Context, r *http.Request) map[string]any {
+	st := a.zaloOAStatus(ctx)
+	st["own"] = a.zaloOwnStatus(r)
+	return st
 }
 
 func unixOr0(t time.Time) int64 {
@@ -561,9 +588,17 @@ var zaloLeadRe = regexp.MustCompile(`^leads/(\d+)/zalo$`)
 // zaloAdmin xử lý các đường dẫn /api/admin/zalo-oa*, /api/admin/leads/{id}/zalo. ok=false: không phải đường dẫn của Zalo OA.
 func (a *App) zaloAdmin(ctx context.Context, w http.ResponseWriter, r *http.Request, sub string) (any, bool, error) {
 	m := r.Method
+	if v, hit, err := a.zaloOwnAdmin(ctx, r, sub); hit {
+		if err == nil {
+			if st, isSt := v.(map[string]any); isSt && st["url"] == nil {
+				v = a.zaloStatusFull(ctx, r)
+			}
+		}
+		return v, true, err
+	}
 	switch {
 	case sub == "zalo-oa" && m == http.MethodGet:
-		return a.zaloOAStatus(ctx), true, nil
+		return a.zaloStatusFull(ctx, r), true, nil
 	case sub == "zalo-oa" && m == http.MethodPut:
 		d, err := readJSON(r, 8192)
 		if err != nil {

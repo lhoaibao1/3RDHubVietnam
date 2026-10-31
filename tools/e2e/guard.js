@@ -12,7 +12,7 @@ const assert = require('assert');
   const ok = (m) => console.log('✔', m);
 
   // nginx báo 429: 12 lần từ một IP (ngưỡng 10) → tự cấm; 200 lần từ nhiều IP cùng một trình duyệt (mỗi IP ≥5 lần) → cấm trình duyệt
-  const hit = (ip, ua) => ctx.request.get(SITE + '/api/guard/strike', { headers: { 'X-Real-IP': ip, 'User-Agent': ua, 'Accept-Language': 'vi', 'X-Orig-URI': '/api/content' } });
+  const hit = (ip, ua, cookie = '') => ctx.request.get(SITE + '/api/guard/strike', { headers: { 'X-Real-IP': ip, 'User-Agent': ua, 'Accept-Language': 'vi', 'X-Orig-URI': '/api/content', ...(cookie ? { Cookie: cookie } : {}) } });
   for (let i = 0; i < 12; i++) assert.strictEqual((await hit('198.51.100.22', 'Flood/1.0')).status(), 429);
   for (let r = 0; r < 6; r++) for (let n = 1; n <= 5; n++) for (let k = 0; k < 6; k++) await hit('203.0.113.' + n, 'BotNet/2.0');
   ok('nginx báo 429: trả 429 và backend ghi nhận');
@@ -46,6 +46,23 @@ const assert = require('assert');
   await p.locator('tr', { hasText: '198.51.100.31' }).getByText('Cấm trình duyệt').click();
   await p.waitForFunction(() => /Trình duyệt\s*Scanner\/3\.1/.test(document.body.innerText.replace(/\n/g, '')));
   ok('cấm trình duyệt từ danh sách bị giới hạn');
+
+  // cấm thiết bị và model từ danh sách bị giới hạn (mã thiết bị do trình duyệt gửi qua cookie rh_dv)
+  await hit('198.51.100.41', 'Mozilla/5.0 (Linux; Android 14; SM-S911B Build/UP1A) Chrome/126 Mobile Safari/537.36', 'rh_dv=feedfacefeedfacefeed');
+  await p.waitForSelector('tr:has-text("198.51.100.41")', { timeout: 20000 });
+  await p.locator('tr', { hasText: '198.51.100.41' }).getByText('Cấm thiết bị').click();
+  await p.waitForFunction(() => /Thiết bị\s*feedfacefeedfacefeed/.test(document.body.innerText.replace(/\n/g, '')));
+  await p.locator('tr', { hasText: '198.51.100.41' }).getByText('Cấm model').click();
+  await p.waitForFunction(() => /Model máy\s*SM-S911B/.test(document.body.innerText.replace(/\n/g, '')));
+  ok('cấm thiết bị và model Android từ danh sách bị giới hạn');
+  await p.selectOption('.gform select >> nth=0', 'cc'); await p.fill('.gform input[type=text] >> nth=0', 'ru'); await p.click('.gform .btn');
+  await p.waitForFunction(() => /Quốc gia\s*RU/.test(document.body.innerText.replace(/\n/g, '')));
+  ok('cấm theo quốc gia');
+  await p.click('.gpre button >> nth=2'); await p.click('text=Lưu cài đặt'); await p.waitForTimeout(600);
+  const lv = await p.evaluate(async () => (await (await fetch('/api/admin/guard', { headers: { 'X-CMS': '1' } })).json()).config);
+  assert.strictEqual(lv.level, 'max'); assert.strictEqual(lv.ip_strikes, 3);
+  ok('chọn mức bảo vệ Tối đa');
+  await p.click('.gpre button >> nth=0');
 
   // cài đặt + luôn cho phép
   await p.fill('.gcfg input >> nth=0', '25');

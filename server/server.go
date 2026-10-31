@@ -63,6 +63,9 @@ func loadDefaults() (Defaults, error) {
 
 // initData tạo dữ liệu khởi tạo (khoá ký phiên, nội dung mặc định, mật khẩu admin, logo mẫu).
 func (a *App) initData(ctx context.Context) error {
+	if a.zoa != nil {
+		a.zoa.app = a
+	}
 	if err := os.MkdirAll(a.uploads(), 0o755); err != nil {
 		return err
 	}
@@ -338,8 +341,12 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.apiProducts(w, r)
 	case p == "/api/register" && r.Method == http.MethodPost:
 		a.apiRegister(w, r)
+	case p == "/api/hit" && !a.isAdminHost(r):
+		a.statsHit(w, r) // báo cáo lượt xem trang từ trình duyệt khách
 	case p == "/api/guard/strike" && !a.isAdminHost(r):
 		a.guardStrike(w, r) // nginx báo mỗi request bị giới hạn tốc độ (chỉ nhận từ 127.0.0.1)
+	case p == "/api/zalo/callback" && get && !a.isAdminHost(r):
+		a.zaloCallback(w, r) // Zalo chuyển về sau khi chủ OA đồng ý cấp quyền
 	case p == "/api/zalo/webhook" && !a.isAdminHost(r):
 		a.zaloWebhook(w, r)
 	case p == "/dmca-validation.html" && get && !a.isAdminHost(r):
@@ -508,7 +515,7 @@ func (a *App) apiLead(w http.ResponseWriter, r *http.Request) {
 	go a.dispatchLead(leadRow{ID: leadID, TS: time.Now().Unix(), Name: name, Phone: phone, Company: company, Need: need, Message: msg, Lang: lang, Email: email}, base)
 	res := map[string]any{"ok": true}
 	if a.zoa.ready() { // mã để khách nhắn vào Zalo OA; chỉ hiện cho khách khi đã bật ZALO_OA_PUBLIC=1
-		if code, exp, err := a.assignZaloCode(r.Context(), leadID); err == nil && a.zoa.public {
+		if code, exp, err := a.assignZaloCode(r.Context(), leadID); err == nil && a.zoa.publicOn() {
 			res["zalo"] = map[string]any{"code": code, "url": a.zoa.oaURL(), "expires_at": time.Unix(exp, 0).UTC().Format(time.RFC3339)}
 		} else if err != nil {
 			log.Printf("Zalo OA: không tạo được mã cho yêu cầu #%d: %v", leadID, err)

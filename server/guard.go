@@ -30,11 +30,17 @@ type guardCfg struct {
 	FPStrikes int      `json:"fp_strikes"` // số lần bị 429 trong 1 phút của cùng một chữ ký trình duyệt...
 	FPIPs     int      `json:"fp_ips"`     // ...từ ít nhất ngần này IP (mỗi IP bị ít nhất 5 lần) thì cấm chữ ký đó
 	FPBanMin  int      `json:"fp_ban_min"`
-	Allow     []string `json:"allow"` // IP/dải IP không bao giờ bị giới hạn hay cấm
+	Allow     []string `json:"allow"`      // IP/dải IP không bao giờ bị giới hạn hay cấm
+	Level     string   `json:"level"`      // standard | strong | max: tốc độ tối đa nginx cho phép (zones.conf)
+	ToolsOff  bool     `json:"tools_off"`  // true: không chặn công cụ tự động (curl, python, máy quét lỗ hổng...)
+	DVStrikes int      `json:"dv_strikes"` // một thiết bị bị giới hạn ngần này lần trong 5 phút từ ít nhất 2 IP thì cấm thiết bị
 }
 
+// Mức bảo vệ: số yêu cầu/giây mỗi IP, API, PDF và mỗi chữ ký trình duyệt mà nginx cho phép.
+var guardLevels = map[string][4]int{"standard": {20, 5, 1, 300}, "strong": {10, 3, 1, 150}, "max": {5, 2, 1, 60}}
+
 func defaultGuardCfg() guardCfg {
-	return guardCfg{Enabled: true, IPStrikes: 10, IPBanMin: 60, FPStrikes: 150, FPIPs: 5, FPBanMin: 30}
+	return guardCfg{Enabled: true, IPStrikes: 10, IPBanMin: 60, FPStrikes: 150, FPIPs: 5, FPBanMin: 30, Level: "standard", DVStrikes: 20}
 }
 
 // Dải IP của Cloudflare (dự phòng khi chưa có file cloudflare.conf do deploy.sh ghi). Không bao giờ cấm các IP này:
@@ -50,6 +56,8 @@ type gSeen struct {
 	UA    string
 	Path  string
 	FP    string
+	DV    string      // mã thiết bị (cookie rh_dv do trình duyệt tính)
+	Model string      // model máy (Android) nếu có
 	hits  []time.Time // trong cửa sổ 1 phút
 }
 
@@ -58,7 +66,14 @@ type gFP struct {
 	ips  map[string][]time.Time
 }
 
+type gDV struct {
+	hits []time.Time
+	ips  map[string]time.Time
+}
+
 type guard struct {
+	dvs     map[string]*gDV
+	dvBans  map[string]map[string]bool // mã thiết bị → các IP đã bị cấm từng dùng thiết bị này
 	mu      sync.Mutex
 	dir     string
 	seen    map[string]*gSeen
@@ -73,7 +88,7 @@ type guard struct {
 }
 
 func newGuard(dir string) *guard {
-	g := &guard{dir: dir, seen: map[string]*gSeen{}, fps: map[string]*gFP{}, written: map[string]string{}}
+	g := &guard{dir: dir, seen: map[string]*gSeen{}, fps: map[string]*gFP{}, dvs: map[string]*gDV{}, dvBans: map[string]map[string]bool{}, written: map[string]string{}}
 	g.loadCF()
 	return g
 }
@@ -214,6 +229,13 @@ func normalizeGuardCfg(c guardCfg) guardCfg {
 	if c.FPBanMin == 0 {
 		c.FPBanMin = d.FPBanMin
 	}
+	if c.DVStrikes == 0 {
+		c.DVStrikes = d.DVStrikes
+	}
+	if _, ok := guardLevels[c.Level]; !ok {
+		c.Level = "standard"
+	}
+	c.DVStrikes = clampInt(c.DVStrikes, 5, 10000)
 	c.IPStrikes = clampInt(c.IPStrikes, 3, 1000)
 	c.IPBanMin = clampInt(c.IPBanMin, 1, 7*24*60)
 	c.FPStrikes = clampInt(c.FPStrikes, 20, 100000)
@@ -235,13 +257,30 @@ func (a *App) guardStrike(w http.ResponseWriter, r *http.Request) {
 	if cfg.Enabled {
 		ipStr := r.Header.Get("X-Real-IP")
 		if ap, err := netip.ParseAddr(ipStr); err == nil {
-			a.guardRecord(ctx, ap.Unmap(), fpOf(r.Header), r.Header.Get("User-Agent"), r.Header.Get("X-Orig-URI"), cfg)
+			var dv, model string
+			if c, err := r.Cookie("rh_dv"); err == nil && dvRe.MatchString(c.Value) {
+				dv = c.Value
+			}
+			if c, err := r.Cookie("rh_md"); err == nil && modelRe.MatchString(c.Value) {
+				model = c.Value
+			} else if m := androidModelRe.FindStringSubmatch(r.Header.Get("User-Agent")); m != nil {
+				model = m[1]
+			}
+			a.guardRecord(ctx, ap.Unmap(), fpOf(r.Header), r.Header.Get("User-Agent"), r.Header.Get("X-Orig-URI"), dv, model, cfg)
 		}
 	}
 	a.send(w, r, 429, []byte(guardPage), "text/html; charset=utf-8", hd)
 }
 
-func (a *App) guardRecord(ctx context.Context, ip netip.Addr, fp, ua, path string, cfg guardCfg) {
+var (
+	dvRe           = regexp.MustCompile(`^[0-9a-f]{20}$`)
+	modelRe        = regexp.MustCompile(`^[A-Za-z0-9 ._+/-]{2,40}$`)
+	androidModelRe = regexp.MustCompile(`Android[^;)]*; ([A-Za-z0-9 ._+-]{2,30}?)(?: Build/|\))`)
+	uaWordRe       = regexp.MustCompile(`^[\x20-\x7E]{3,80}$`)
+	ccRe           = regexp.MustCompile(`^[A-Z]{2}$`)
+)
+
+func (a *App) guardRecord(ctx context.Context, ip netip.Addr, fp, ua, path, dv, model string, cfg guardCfg) {
 	g := a.guardState()
 	now := time.Now()
 	if g.protectedIP(ip, cfg.Allow) != "" {
@@ -259,12 +298,32 @@ func (a *App) guardRecord(ctx context.Context, ip netip.Addr, fp, ua, path strin
 		g.seen[k] = s
 	}
 	s.Total++
-	s.Last, s.UA, s.FP = now, truncate(ua, 300), fp
+	s.Last, s.UA, s.FP, s.DV, s.Model = now, truncate(ua, 300), fp, dv, model
 	s.Path = truncate(path, 200)
 	s.hits = pruneTimes(append(s.hits, now), now, time.Minute)
 	if len(s.hits) >= cfg.IPStrikes {
 		banIP = true
 		s.hits = nil
+	}
+	// thiết bị: cùng một thiết bị (vân tay phần cứng) bị giới hạn nhiều lần từ nhiều IP khác nhau là đổi proxy để né
+	var banDV bool
+	if dv != "" {
+		d := g.dvs[dv]
+		if d == nil {
+			d = &gDV{ips: map[string]time.Time{}}
+			g.dvs[dv] = d
+		}
+		d.hits = pruneTimes(append(d.hits, now), now, 5*time.Minute)
+		d.ips[k] = now
+		for ip2, t := range d.ips {
+			if now.Sub(t) > 5*time.Minute {
+				delete(d.ips, ip2)
+			}
+		}
+		if len(d.hits) >= cfg.DVStrikes && len(d.ips) >= 2 {
+			banDV = true
+			delete(g.dvs, dv)
+		}
 	}
 	if fpBannable(fp) {
 		f := g.fps[fp]
@@ -288,8 +347,25 @@ func (a *App) guardRecord(ctx context.Context, ip netip.Addr, fp, ua, path strin
 		}
 	}
 	g.mu.Unlock()
+	if banDV {
+		a.guardBan(ctx, "dv", dv, truncate(model+" "+ua, 120), "Cùng một thiết bị bị giới hạn từ nhiều IP khác nhau (đổi proxy)", "auto", 24*time.Hour, true)
+	}
 	if banIP {
 		a.guardBan(ctx, "ip", k, "", fmt.Sprintf("Bị giới hạn tốc độ %d lần trong 1 phút", cfg.IPStrikes), "auto", time.Duration(cfg.IPBanMin)*time.Minute, true)
+		if dv != "" { // thiết bị này đã làm IP thứ 2 bị cấm: cấm luôn thiết bị
+			g.mu.Lock()
+			set := g.dvBans[dv]
+			if set == nil {
+				set = map[string]bool{}
+				g.dvBans[dv] = set
+			}
+			set[k] = true
+			two := len(set) >= 2
+			g.mu.Unlock()
+			if two {
+				a.guardBan(ctx, "dv", dv, truncate(model+" "+ua, 120), "Thiết bị này đã làm từ 2 IP bị cấm", "auto", 24*time.Hour, true)
+			}
+		}
 	}
 	if banFP {
 		a.guardBan(ctx, "fp", fp, ua, fmt.Sprintf("Nhiều IP cùng dùng một trình duyệt tấn công (≥ %d request/phút)", cfg.FPStrikes), "auto", time.Duration(cfg.FPBanMin)*time.Minute, true)
@@ -359,6 +435,25 @@ func (a *App) guardBan(ctx context.Context, kind, value, label, reason, source s
 		if !fpBannable(value) {
 			return bad("Chữ ký trình duyệt này có ký tự đặc biệt nên chưa cấm tự động được. Hãy cấm theo IP")
 		}
+	} else if kind == "dv" {
+		if value = strings.ToLower(strings.TrimSpace(value)); !dvRe.MatchString(value) {
+			return bad("Mã thiết bị gồm 20 ký tự 0-9, a-f (lấy trong danh sách bị giới hạn)")
+		}
+	} else if kind == "model" {
+		if value = strings.TrimSpace(value); !modelRe.MatchString(value) {
+			return bad("Model máy chỉ gồm chữ, số, dấu cách . _ + / - (2 đến 40 ký tự), ví dụ SM-S911B")
+		}
+	} else if kind == "ua" {
+		if value = strings.TrimSpace(value); !uaWordRe.MatchString(value) {
+			return bad("Từ khoá trình duyệt dài 3 đến 80 ký tự thường (không dấu tiếng Việt), ví dụ BadBot")
+		}
+	} else if kind == "cc" {
+		if value = strings.ToUpper(strings.TrimSpace(value)); !ccRe.MatchString(value) {
+			return bad("Mã quốc gia gồm 2 chữ cái, ví dụ RU, CN")
+		}
+		if value == "VN" {
+			return bad("Không thể cấm Việt Nam: đây là thị trường chính của website")
+		}
 	} else {
 		return bad("Loại cấm không hợp lệ")
 	}
@@ -391,7 +486,44 @@ func (a *App) guardBan(ctx context.Context, kind, value, label, reason, source s
 		return err
 	}
 	a.guardSyncSoon()
+	if kind == "ip" && source == "auto" {
+		a.guardEscalateSubnet(ctx, value, cfg)
+	}
 	return nil
+}
+
+// guardEscalateSubnet: từ 3 IP cùng dải /24 (IPv6: /64) bị cấm trong 24 giờ thì cấm cả dải 24 giờ
+// (dịch vụ proxy thuê thường cấp nhiều IP liền nhau).
+func (a *App) guardEscalateSubnet(ctx context.Context, value string, cfg guardCfg) {
+	p, err := parseNet(value)
+	if err != nil || !p.IsSingleIP() {
+		return
+	}
+	bits := 24
+	if p.Addr().Is6() {
+		bits = 64
+	}
+	net, err := p.Addr().Prefix(bits)
+	if err != nil {
+		return
+	}
+	rows, err := a.pool.Query(ctx, `SELECT value FROM guard_bans WHERE kind='ip' AND created>$1 AND value NOT LIKE '%/%'`, time.Now().Add(-24*time.Hour).Unix())
+	if err != nil {
+		return
+	}
+	n := 0
+	for rows.Next() {
+		var v string
+		if rows.Scan(&v) == nil {
+			if ad, e := netip.ParseAddr(v); e == nil && net.Contains(ad.Unmap()) {
+				n++
+			}
+		}
+	}
+	rows.Close()
+	if n >= 3 {
+		a.guardBan(ctx, "ip", net.String(), "", fmt.Sprintf("Có %d IP cùng dải bị cấm trong 24 giờ", n), "auto", 24*time.Hour, false)
+	}
 }
 
 func (g *guard) protectedPrefix(p netip.Prefix, allow []string) string {
@@ -457,17 +589,21 @@ func nginxQuote(s string) string {
 	return `"` + strings.NewReplacer(`\`, `\\`, `"`, `\"`).Replace(s) + `"`
 }
 
-// guardFiles dựng nội dung các file nginx đọc: allow-ip.conf, ban-ip.conf (geo) và ban-fp.conf (map, biểu thức chính quy).
-func guardFiles(bans []guardBan, allow []string) map[string]string {
-	var allowB, ipB strings.Builder
-	allowB.WriteString("# do 3RDHub CMS ghi, đừng sửa tay\n127.0.0.1 1;\n::1 1;\n")
-	for _, s := range allow {
+// guardFiles dựng nội dung các file nginx đọc (geo/map). Khoá có ký tự đặc biệt được thoát cho cả nginx lẫn biểu thức chính quy.
+func guardFiles(bans []guardBan, cfg guardCfg) map[string]string {
+	hdr := "# do 3RDHub CMS ghi, đừng sửa tay\n"
+	var allowB, ipB, dvB, ccB strings.Builder
+	allowB.WriteString(hdr + "127.0.0.1 1;\n::1 1;\n")
+	for _, s := range cfg.Allow {
 		if p, err := parseNet(s); err == nil {
 			allowB.WriteString(p.String() + " 1;\n")
 		}
 	}
-	ipB.WriteString("# do 3RDHub CMS ghi, đừng sửa tay\n")
-	var fps []string
+	ipB.WriteString(hdr)
+	dvB.WriteString(hdr)
+	ccB.WriteString(hdr)
+	var fps, models, uas []string
+	seenCC := map[string]bool{}
 	for _, b := range bans {
 		switch b.Kind {
 		case "ip":
@@ -478,14 +614,49 @@ func guardFiles(bans []guardBan, allow []string) map[string]string {
 			if fpBannable(b.Value) && len(fps) < 200 {
 				fps = append(fps, regexp.QuoteMeta(b.Value))
 			}
+		case "dv":
+			if dvRe.MatchString(b.Value) {
+				dvB.WriteString(`"` + b.Value + "\" 1;\n")
+			}
+		case "model":
+			if modelRe.MatchString(b.Value) && len(models) < 200 {
+				models = append(models, regexp.QuoteMeta(b.Value))
+			}
+		case "ua":
+			if uaWordRe.MatchString(b.Value) && len(uas) < 200 {
+				uas = append(uas, regexp.QuoteMeta(b.Value))
+			}
+		case "cc":
+			if ccRe.MatchString(b.Value) && !seenCC[b.Value] {
+				seenCC[b.Value] = true
+				ccB.WriteString(`"` + b.Value + "\" 1;\n")
+			}
 		}
 	}
-	sort.Strings(fps)
-	fpB := "# do 3RDHub CMS ghi, đừng sửa tay\n"
-	if len(fps) > 0 {
-		fpB += nginxQuote("~^(?:"+strings.Join(fps, "|")+")$") + " 1;\n"
+	rx := func(prefix, pre, post string, list []string) string {
+		out := hdr
+		if len(list) > 0 {
+			sort.Strings(list)
+			out += nginxQuote(prefix+pre+"(?:"+strings.Join(list, "|")+")"+post) + " 1;\n"
+		}
+		return out
 	}
-	return map[string]string{"allow-ip.conf": allowB.String(), "ban-ip.conf": ipB.String(), "ban-fp.conf": fpB}
+	tools := hdr + "default 0;\n"
+	if !cfg.ToolsOff {
+		tools += "1 1;\n"
+	}
+	lv := guardLevels[cfg.Level]
+	if lv == [4]int{} {
+		lv = guardLevels["standard"]
+	}
+	zones := fmt.Sprintf("%slimit_req_zone $rh_ipkey zone=rh_ip:20m rate=%dr/s;\nlimit_req_zone $rh_ipkey zone=rh_api:10m rate=%dr/s;\nlimit_req_zone $rh_ipkey zone=rh_pdf:5m rate=%dr/s;\nlimit_req_zone $rh_fpkey zone=rh_fp:20m rate=%dr/s;\nlimit_conn_zone $rh_ipkey zone=rh_conn:10m;\n", hdr, lv[0], lv[1], lv[2], lv[3])
+	return map[string]string{
+		"allow-ip.conf": allowB.String(), "ban-ip.conf": ipB.String(), "ban-dv.conf": dvB.String(), "ban-cc.conf": ccB.String(),
+		"ban-fp.conf":     rx("~", "^", "$", fps),
+		"ban-model.conf":  rx("~*", "(?:^|[^A-Za-z0-9-])", "(?:$|[^A-Za-z0-9-])", models),
+		"ban-ua.conf":     rx("~*", "", "", uas),
+		"tool-block.conf": tools, "zones.conf": zones,
+	}
 }
 
 func (a *App) guardSyncSoon() {
@@ -515,7 +686,7 @@ func (a *App) guardSync(ctx context.Context) {
 	bans, err := a.guardActiveBans(ctx, false)
 	cfg := a.guardConfig(ctx)
 	if err == nil {
-		files := guardFiles(bans, cfg.Allow)
+		files := guardFiles(bans, cfg)
 		changed := false
 		g.mu.Lock()
 		for name, content := range files {
@@ -568,6 +739,9 @@ func (a *App) startGuard(ctx context.Context) {
 			g.trimLocked(now)
 			g.mu.Unlock()
 			g.loadCF()
+			if now.Minute() == 7 {
+				a.statsPrune(context.Background())
+			}
 			a.guardSync(context.Background()) // lệnh cấm hết hạn thì tự rút khỏi file
 		}
 	}()
@@ -582,6 +756,8 @@ type guardSeenOut struct {
 	UA     string `json:"ua"`
 	Path   string `json:"path"`
 	FP     string `json:"fp"`
+	DV     string `json:"dv"`
+	Model  string `json:"model"`
 	CanFP  bool   `json:"can_fp"`
 	Banned bool   `json:"banned"`
 }
@@ -600,7 +776,7 @@ func (a *App) guardStatus(ctx context.Context, r *http.Request) (map[string]any,
 	g.mu.Lock()
 	recent := []guardSeenOut{}
 	for ip, s := range g.seen {
-		recent = append(recent, guardSeenOut{IP: ip, Count: s.Total, Last: s.Last.Unix(), UA: s.UA, Path: s.Path, FP: s.FP, CanFP: fpBannable(s.FP), Banned: banned["ip|"+ip] || banned["fp|"+s.FP]})
+		recent = append(recent, guardSeenOut{IP: ip, Count: s.Total, Last: s.Last.Unix(), UA: s.UA, Path: s.Path, FP: s.FP, DV: s.DV, Model: s.Model, CanFP: fpBannable(s.FP), Banned: banned["ip|"+ip] || banned["fp|"+s.FP] || (s.DV != "" && banned["dv|"+s.DV]) || (s.Model != "" && banned["model|"+s.Model])})
 	}
 	synced, syncErr := g.synced, g.syncErr
 	dirOK := g.dir != ""
@@ -655,7 +831,8 @@ func (a *App) guardAdmin(ctx context.Context, w http.ResponseWriter, r *http.Req
 			f, _ := d[k].(float64)
 			return int(f)
 		}
-		c := guardCfg{Enabled: d["enabled"] != false, IPStrikes: num("ip_strikes"), IPBanMin: num("ip_ban_min"), FPStrikes: num("fp_strikes"), FPIPs: num("fp_ips"), FPBanMin: num("fp_ban_min")}
+		level, _ := d["level"].(string)
+		c := guardCfg{Enabled: d["enabled"] != false, IPStrikes: num("ip_strikes"), IPBanMin: num("ip_ban_min"), FPStrikes: num("fp_strikes"), FPIPs: num("fp_ips"), FPBanMin: num("fp_ban_min"), DVStrikes: num("dv_strikes"), Level: level, ToolsOff: d["tools_off"] == true}
 		if c.Allow, err = cleanAllow(d["allow"]); err != nil {
 			return nil, true, err
 		}
@@ -680,10 +857,10 @@ func (a *App) guardAdmin(ctx context.Context, w http.ResponseWriter, r *http.Req
 		reason, _ := strip(d["reason"], 200, "Lý do")
 		label, _ := strip(d["label"], 200, "Tên")
 		hours, _ := d["hours"].(float64)
+		if value = strings.TrimSpace(value); value == "" {
+			return nil, true, bad("Nhập giá trị cần cấm")
+		}
 		if kind == "ip" {
-			if value = strings.TrimSpace(value); value == "" {
-				return nil, true, bad("Nhập IP hoặc dải IP cần cấm")
-			}
 			if p, e := parseNet(value); e == nil && p.Contains(mustAddr(clientIP(r))) {
 				return nil, true, bad("Không thể cấm IP của chính bạn (%s)", clientIP(r))
 			}

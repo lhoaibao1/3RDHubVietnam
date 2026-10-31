@@ -33,11 +33,11 @@ grep -q 'location ^~ /assets/' "$T/etc/nginx/sites-available/test.local.conf" ||
 grep -q 'ssi on;' "$T/etc/nginx/sites-available/test.local.conf" && [ "$(grep -c 'location ^~ /api/seo/' "$T/etc/nginx/sites-available/test.local.conf")" = 1 ] || fail "vhost thiếu SSI/SEO hoặc trùng location /api/seo/"
 grep -q 'if ($host = www.test.local) { return 301 https://test.local$request_uri; }' "$T/etc/nginx/sites-available/test.local.conf" || fail "thiếu chuyển www về tên miền chính"
 V="$T/etc/nginx/sites-available/test.local.conf"
-for k in 'limit_req_zone $rh_ipkey zone=rh_ip' 'map "$rh_allow$rh_ban_ip$rh_ban_fp" $rh_banned' 'error_page 429 = /__rh_strike;' 'if ($rh_banned) { return 403; }' 'location = /__rh_strike' 'limit_req zone=rh_pdf' "include $T/etc/nginx/3rdhub-guard/cloudflare.conf;"; do
+for k in 'map "$rh_allow$rh_ban_ip$rh_ban_fp$rh_ban_dv$rh_ban_model$rh_ban_ua$rh_ban_cc$rh_toolfinal" $rh_banned' "include $T/etc/nginx/3rdhub-guard/zones.conf;" 'map $http_cf_ipcountry $rh_ban_cc' 'error_page 429 = /__rh_strike;' 'if ($rh_banned) { return 403; }' 'location = /__rh_strike' 'limit_req zone=rh_pdf' "include $T/etc/nginx/3rdhub-guard/cloudflare.conf;"; do
   grep -qF -- "$k" "$V" || fail "vhost thiếu khối chống tấn công: $k"
 done
 G="$T/etc/nginx/3rdhub-guard"
-for f in allow-ip.conf ban-ip.conf ban-fp.conf cloudflare.conf reload; do [ -f "$G/$f" ] || fail "thiếu $G/$f"; done
+for f in allow-ip.conf ban-ip.conf ban-fp.conf ban-dv.conf ban-model.conf ban-ua.conf ban-cc.conf tool-block.conf zones.conf cloudflare.conf reload; do [ -f "$G/$f" ] || fail "thiếu $G/$f"; done
 grep -q 'set_real_ip_from 173.245.48.0/20;' "$G/cloudflare.conf" || grep -q 'set_real_ip_from 104.16.0.0/13;' "$G/cloudflare.conf" || fail "cloudflare.conf thiếu dải IP"
 grep -q 'real_ip_header CF-Connecting-IP;' "$G/cloudflare.conf" || fail "cloudflare.conf thiếu real_ip_header"
 grep -q 'PathChanged='"$G"'/reload' "$T/etc/systemd/system/3rdhub-guard.path" || fail "thiếu 3rdhub-guard.path"

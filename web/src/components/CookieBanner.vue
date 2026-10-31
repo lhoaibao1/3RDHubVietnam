@@ -16,7 +16,7 @@ onMounted(() => { setTimeout(() => { ready.value = true }, 1200) })
         <p>Chúng tôi dùng bộ nhớ trình duyệt để ghi nhớ ngôn ngữ và giao diện sáng/tối. Cookie phân tích (nếu có) chỉ bật khi bạn đồng ý, giúp chúng tôi hiểu cách website được dùng để cải thiện.
           <RouterLink to="/bao-mat">Xem chính sách bảo mật</RouterLink></p>
         <div v-if="consent.detail" class="cbd">
-          <label class="cbr"><input type="checkbox" checked disabled><span><b>Cần thiết</b><small>Ghi nhớ ngôn ngữ, giao diện, lưu đệm nội dung. Luôn bật.</small></span></label>
+          <label class="cbr"><input type="checkbox" checked disabled><span><b>Cần thiết</b><small>Ghi nhớ ngôn ngữ, giao diện, lưu đệm nội dung, và một mã thiết bị ẩn danh để chống tấn công mạng. Luôn bật.</small></span></label>
           <label class="cbr"><input v-model="analytics" type="checkbox"><span><b>Phân tích</b><small>Thống kê lượt truy cập dạng tổng hợp (Google Analytics).</small></span></label>
         </div>
       </div>

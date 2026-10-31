@@ -207,7 +207,11 @@ ensure_guard() {
   local f
   [ -f "$GUARD_DIR/allow-ip.conf" ] || printf '# do 3RDHub CMS ghi, đừng sửa tay\n127.0.0.1 1;\n::1 1;\n' > "$GUARD_DIR/allow-ip.conf"
   [ -f "$GUARD_DIR/ban-ip.conf" ] || printf '# do 3RDHub CMS ghi, đừng sửa tay\n' > "$GUARD_DIR/ban-ip.conf"
-  [ -f "$GUARD_DIR/ban-fp.conf" ] || printf '# do 3RDHub CMS ghi, đừng sửa tay\n' > "$GUARD_DIR/ban-fp.conf"
+  for f in ban-fp.conf ban-dv.conf ban-model.conf ban-ua.conf ban-cc.conf; do
+    [ -f "$GUARD_DIR/$f" ] || printf '# do 3RDHub CMS ghi, đừng sửa tay\n' > "$GUARD_DIR/$f"
+  done
+  [ -f "$GUARD_DIR/tool-block.conf" ] || printf '# do 3RDHub CMS ghi, đừng sửa tay\ndefault 0;\n1 1;\n' > "$GUARD_DIR/tool-block.conf"
+  [ -f "$GUARD_DIR/zones.conf" ] || printf '# do 3RDHub CMS ghi, đừng sửa tay\nlimit_req_zone $rh_ipkey zone=rh_ip:20m rate=20r/s;\nlimit_req_zone $rh_ipkey zone=rh_api:10m rate=5r/s;\nlimit_req_zone $rh_ipkey zone=rh_pdf:5m rate=1r/s;\nlimit_req_zone $rh_fpkey zone=rh_fp:20m rate=300r/s;\nlimit_conn_zone $rh_ipkey zone=rh_conn:10m;\n' > "$GUARD_DIR/zones.conf"
   [ -f "$GUARD_DIR/reload" ] || date -u +%FT%TZ > "$GUARD_DIR/reload"
   # dải IP Cloudflare: lấy bản mới nhất (làm mới mỗi 7 ngày), không được thì dùng danh sách có sẵn trong script
   if [ ! -s "$GUARD_DIR/cloudflare.conf" ] || [ -n "$(find "$GUARD_DIR/cloudflare.conf" -mtime +7 2>/dev/null)" ]; then
@@ -304,6 +308,15 @@ $(proxy_block "$port" limit)
         client_max_body_size 64k;
 $(proxy_block "$port" limit)
     }
+    # đo lượt xem trang (không cookie, không lưu IP): trình duyệt khách báo về backend
+    location = /api/hit {
+        client_max_body_size 2k;
+$(proxy_block "$port" limit)
+    }
+    # Zalo chuyển trình duyệt của chủ OA về đây sau khi cấp quyền (kết nối Zalo OA trong CMS)
+    location = /api/zalo/callback {
+$(proxy_block "$port" limit)
+    }
     # file xác minh website của DMCA.com (mã sửa trong CMS)
     location = /dmca-validation.html {
 $(proxy_block "$port" limit)
@@ -350,14 +363,20 @@ $(proxy_block "$port" limit)
 geo \$rh_allow    { default 0; include $GUARD_DIR/allow-ip.conf; }
 geo \$rh_ban_ip   { default 0; include $GUARD_DIR/ban-ip.conf; }
 map "\$http_user_agent|\$http_accept_language|\$http_accept_encoding|\$http_sec_ch_ua|\$http_sec_ch_ua_platform" \$rh_ban_fp { default 0; include $GUARD_DIR/ban-fp.conf; }
-map "\$rh_allow\$rh_ban_ip\$rh_ban_fp" \$rh_banned { default 0; ~^0(?:10|01|11)\$ 1; }
+map \$cookie_rh_dv \$rh_ban_dv { default 0; include $GUARD_DIR/ban-dv.conf; }
+map "\$http_user_agent|\$cookie_rh_md|\$http_sec_ch_ua_model" \$rh_ban_model { default 0; include $GUARD_DIR/ban-model.conf; }
+map \$http_user_agent \$rh_ban_ua { default 0; include $GUARD_DIR/ban-ua.conf; }
+map \$http_cf_ipcountry \$rh_ban_cc { default 0; include $GUARD_DIR/ban-cc.conf; }
+# công cụ tự động (không phải trình duyệt): thư viện gọi HTTP, máy quét lỗ hổng, trình duyệt không giao diện; bật/tắt trong CMS
+map "x\$http_user_agent" \$rh_tool { default 0; "x" 1; ~*(python-requests|python-urllib|python/|aiohttp|httpx|go-http-client|curl/|wget/|libwww-perl|scrapy|java/|apache-httpclient|okhttp|node-fetch|axios|undici|masscan|zgrab|sqlmap|nikto|nmap|havij|acunetix|netsparker|dirbuster|gobuster|ffuf|wfuzz|hydra|nuclei|httprobe|phantomjs|headlesschrome|selenium|puppeteer|playwright) 1; }
+map \$rh_tool \$rh_toolblock { include $GUARD_DIR/tool-block.conf; }
+map \$uri \$rh_exempt { default 0; ~^/api/zalo/ 1; }
+map "\$rh_toolblock\$rh_exempt" \$rh_toolfinal { default 0; "10" 1; }
+# bị cấm khi không nằm trong danh sách luôn cho phép (ký tự đầu = 0) và có ít nhất một điều kiện cấm bằng 1
+map "\$rh_allow\$rh_ban_ip\$rh_ban_fp\$rh_ban_dv\$rh_ban_model\$rh_ban_ua\$rh_ban_cc\$rh_toolfinal" \$rh_banned { default 0; ~^0[01]*1 1; }
 map \$rh_allow \$rh_ipkey { 1 ""; default \$binary_remote_addr; }
 map \$rh_allow \$rh_fpkey { 1 ""; default "\$http_user_agent|\$http_accept_language|\$http_accept_encoding|\$http_sec_ch_ua|\$http_sec_ch_ua_platform"; }
-limit_req_zone \$rh_ipkey zone=rh_ip:20m rate=20r/s;
-limit_req_zone \$rh_ipkey zone=rh_api:10m rate=5r/s;
-limit_req_zone \$rh_ipkey zone=rh_pdf:5m rate=1r/s;
-limit_req_zone \$rh_fpkey zone=rh_fp:20m rate=300r/s;
-limit_conn_zone \$rh_ipkey zone=rh_conn:10m;
+include $GUARD_DIR/zones.conf;
 
 server {
     listen 80;

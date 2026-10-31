@@ -203,6 +203,13 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 	}
 
 	switch {
+	case sub == "stats" && m == http.MethodGet:
+		v, err := a.statsAdmin(ctx, r)
+		if err != nil {
+			return err
+		}
+		return ok(v)
+
 	case sub == "me":
 		return ok(map[string]any{"ok": true})
 
@@ -307,7 +314,7 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 		b := a.brandInfo(ctx, siteBase(r))
 		html := renderMail(mailData{B: b, Lang: "vi", Pre: "Cấu hình email của website đã hoạt động.", Kicker: "Gửi thử thành công", Title: "Email của website đã sẵn sàng",
 			Lead: "Đây là thư gửi thử từ trang quản trị 3RDHub CMS. Bạn đọc được thư này nghĩa là máy chủ gửi thư (SMTP) đã cấu hình đúng; khách hàng sẽ nhận thư với giao diện như thế này.",
-			Rows: []mailRow{{"Máy chủ", a.loadSMTP(ctx).Host}, {"Người gửi", a.loadSMTP(ctx).FromEmail}, {"Thời gian", time.Now().In(vnZone()).Format("15:04 · 02/01/2006")}}, CTA: "Mở website", URL: b.Site})
+			Rows: []mailRow{{K: "Máy chủ", V: a.loadSMTP(ctx).Host}, {K: "Người gửi", V: a.loadSMTP(ctx).FromEmail}, {K: "Thời gian", V: time.Now().In(vnZone()).Format("15:04 · 02/01/2006")}}, CTA: "Mở website", URL: b.Site})
 		if err := a.sendMail(ctx, []string{to}, "✅ Gửi thử email từ 3RDHub CMS", "Đây là email gửi thử từ trang quản trị 3RDHub CMS.\nNếu bạn đọc được thư này thì cấu hình SMTP đã hoạt động.\n", html); err != nil {
 			return bad("%v", err)
 		}

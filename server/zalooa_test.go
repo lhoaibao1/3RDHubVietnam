@@ -326,16 +326,23 @@ func TestZaloSignatureAndPoll(t *testing.T) {
 	}
 }
 
-// Mã nguồn chạy thật không được chứa điểm làm mới token Zalo OA (refresh token do 3RDHub giữ).
-func TestNoZaloOAuthRefresh(t *testing.T) {
+// Chỉ zalo_own.go (tự kết nối Zalo OA, theo yêu cầu của chủ website) được gọi oauth.zaloapp.com và làm mới token;
+// các file khác (cách cũ mượn token từ 3RDHub) vẫn không được, và không file nào được ghi token hay khoá vào log.
+func TestZaloOAuthOnlyInOwnFile(t *testing.T) {
 	files, _ := filepath.Glob("*.go")
 	for _, f := range files {
-		if strings.HasSuffix(f, "_test.go") {
+		if strings.HasSuffix(f, "_test.go") || f == "zalo_own.go" {
 			continue
 		}
 		b, _ := os.ReadFile(f)
 		if strings.Contains(string(b), `"https://oauth.zaloapp.com`) || strings.Contains(string(b), `"refresh_token"`) {
-			t.Fatalf("%s gọi/làm mới token Zalo OA", f)
+			t.Fatalf("%s gọi/làm mới token Zalo OA ngoài zalo_own.go", f)
+		}
+	}
+	b, _ := os.ReadFile("zalo_own.go")
+	for _, line := range strings.Split(string(b), "\n") {
+		if strings.Contains(line, "log.") && (strings.Contains(line, "Access") || strings.Contains(line, "Refresh") || strings.Contains(line, "Secret")) {
+			t.Fatalf("không được ghi token/khoá vào log: %s", line)
 		}
 	}
 }

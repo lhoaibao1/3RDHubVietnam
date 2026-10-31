@@ -192,7 +192,7 @@ func (a *App) brandInfo(ctx context.Context, base string) brand {
 	return brand{Company: get("company_name"), Address: get("address"), Hotline: get("hotline"), Tel: get("hotline_tel"), Email: get("email"), Site: base, Parent: get("parent_url"), Logo: base + "/icon-192.png"}
 }
 
-type mailRow struct{ K, V string }
+type mailRow struct{ K, V, H string } // H: liên kết (tel:, mailto:) của giá trị, có thể để trống
 
 type mailData struct {
 	B        brand
@@ -205,48 +205,59 @@ type mailData struct {
 	CTA, URL string
 	Note     string
 	Lang     string
+	Sign     string // dòng ký tên cuối thư
 }
 
+// Thư HTML: bố cục bảng + style nội tuyến để hiển thị đúng ở Gmail, Outlook, Apple Mail và điện thoại. Không dùng hiệu ứng chuyển động
+// (hầu hết ứng dụng thư không chạy, và Outlook hiển thị sai). Màu chủ đạo xanh đêm, điểm nhấn cam dùng tiết chế.
 var mailTpl = template.Must(template.New("m").Parse(`<!doctype html>
-<html lang="{{.Lang}}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><title>{{.Title}}</title>
+<html lang="{{.Lang}}" xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="x-apple-disable-message-reformatting"><meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light"><title>{{.Title}}</title>
 <style>
-@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-@keyframes shine{0%{background-position:-200% 0}100%{background-position:200% 0}}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
-.card{animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
-.hero{background-size:200% 100%;animation:shine 6s linear infinite}
-.cta{animation:pulse 2.4s ease-in-out infinite}
-@media(max-width:620px){.wrap{width:100%!important}.pad{padding:24px 20px!important}.h1{font-size:24px!important}}
+body{margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%}
+table{border-collapse:collapse}
+a{text-decoration:none}
+@media(max-width:620px){.wrap{width:100%!important}.pad{padding:28px 22px!important}.hd{padding:28px 22px 30px!important}.h1{font-size:25px!important}.k{display:block!important;width:auto!important;padding:12px 0 2px!important;border-bottom:0!important}.v{display:block!important;padding:0 0 12px!important}}
 </style></head>
-<body style="margin:0;padding:0;background:#F3F1EC;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0B2A6F">
-<div style="display:none;max-height:0;overflow:hidden;opacity:0">{{.Pre}}</div>
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F3F1EC;padding:28px 12px"><tr><td align="center">
-<table role="presentation" class="wrap card" width="600" cellpadding="0" cellspacing="0" style="width:600px;max-width:600px;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 24px 60px -30px rgba(11,42,111,.45)">
-<tr><td class="hero" bgcolor="#0B2A6F" style="background:#0B2A6F;background-image:linear-gradient(120deg,#0B2A6F 0%,#2A1C6B 45%,#FF6A2B 80%,#0B2A6F 100%);padding:30px 36px 34px">
-  <table role="presentation" width="100%"><tr>
-    <td><img src="{{.B.Logo}}" width="40" height="40" alt="3RDHub" style="display:inline-block;vertical-align:middle;border-radius:10px;border:0"><span style="display:inline-block;vertical-align:middle;margin-left:10px;font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-.01em">3RDHub <span style="color:#FFB38E">Vietnam</span></span></td>
+<body style="margin:0;padding:0;background:#EDEFF5;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#0A1330">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px;color:#EDEFF5">{{.Pre}}&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#EDEFF5" style="background:#EDEFF5"><tr><td align="center" style="padding:36px 12px 44px">
+<table role="presentation" class="wrap" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:600px">
+<tr><td style="padding:0 6px 16px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#7A83A3;font-weight:700">3RDVN Technology</td></tr>
+<tr><td style="background:#ffffff;border:1px solid #DDE1EC;border-radius:22px;overflow:hidden">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td height="4" bgcolor="#FF6A2B" style="height:4px;line-height:4px;font-size:0;background:#FF6A2B;background-image:linear-gradient(90deg,#FF6A2B 0%,#FF4D8D 55%,#7B4DFF 100%)">&nbsp;</td></tr>
+<tr><td class="hd" bgcolor="#0A1330" style="background:#0A1330;background-image:linear-gradient(135deg,#0A1330 0%,#111F52 62%,#1A2B6B 100%);padding:34px 40px 38px">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+    <td valign="middle"><img src="{{.B.Logo}}" width="38" height="38" alt="" style="display:block;border:0;border-radius:10px"></td>
+    <td valign="middle" style="padding-left:12px;font-size:19px;font-weight:800;color:#ffffff;letter-spacing:-.01em">3RDHub <span style="color:#FF9A6B">Vietnam</span></td>
   </tr></table>
-  {{if .Kicker}}<div style="margin-top:26px;display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);color:#ffffff;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase">{{.Kicker}}</div>{{end}}
-  <div class="h1" style="margin-top:14px;font-size:28px;line-height:1.25;font-weight:800;color:#ffffff">{{.Title}}</div>
+  {{if .Kicker}}<div style="margin:34px 0 0;font-size:12px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#FF9A6B">{{.Kicker}}</div>{{end}}
+  <div class="h1" style="margin:12px 0 0;font-size:30px;line-height:1.2;font-weight:800;letter-spacing:-.02em;color:#ffffff">{{.Title}}</div>
 </td></tr>
-<tr><td class="pad" style="padding:30px 36px 8px">
-  <p style="margin:0 0 20px;font-size:15.5px;line-height:1.65;color:#3B4563">{{.Lead}}</p>
-  {{if .Rows}}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F5F1;border-radius:18px;border:1px solid #ECE7DE">
-    {{range .Rows}}<tr><td style="padding:12px 18px;font-size:13px;color:#6B7390;width:130px;vertical-align:top;border-bottom:1px solid #ECE7DE">{{.K}}</td><td style="padding:12px 18px;font-size:14.5px;font-weight:700;color:#0B2A6F;border-bottom:1px solid #ECE7DE;white-space:pre-line">{{.V}}</td></tr>{{end}}
+<tr><td class="pad" style="padding:36px 40px 12px">
+  <p style="margin:0 0 26px;font-size:16px;line-height:1.75;color:#38405F">{{.Lead}}</p>
+  {{if .Rows}}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F6F7FB" style="background:#F6F7FB;border-radius:16px;border:1px solid #E6E9F2"><tr><td style="padding:6px 24px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    {{range $i, $r := .Rows}}<tr><td class="k" width="118" valign="top" style="padding:14px 12px 14px 0;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#7A83A3;border-bottom:1px solid #E6E9F2">{{$r.K}}</td><td class="v" valign="top" style="padding:12px 0;font-size:15.5px;line-height:1.55;font-weight:600;color:#0A1330;border-bottom:1px solid #E6E9F2;white-space:pre-line">{{if $r.H}}<a href="{{$r.H}}" style="color:#0A1330;border-bottom:1px solid #FF9A6B">{{$r.V}}</a>{{else}}{{$r.V}}{{end}}</td></tr>{{end}}
+    </table></td></tr></table>{{end}}
+  {{if .Steps}}<div style="margin:30px 0 4px;font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#7A83A3">{{if eq .Lang "en"}}What happens next{{else}}Các bước tiếp theo{{end}}</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+    {{range $i, $s := .Steps}}<tr><td width="46" valign="top" style="padding:14px 0;border-bottom:1px solid #ECEEF5;font-size:15px;font-weight:800;color:#FF6A2B;letter-spacing:.04em">0{{$s.K}}</td><td valign="top" style="padding:14px 0;border-bottom:1px solid #ECEEF5;font-size:15px;line-height:1.6;color:#38405F">{{$s.V}}</td></tr>{{end}}
   </table>{{end}}
-  {{if .Steps}}<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:22px">
-    {{range $i, $s := .Steps}}<tr><td width="44" valign="top" style="padding:0 0 16px"><div style="width:32px;height:32px;border-radius:50%;background:#FF6A2B;color:#ffffff;font-weight:800;font-size:14px;line-height:32px;text-align:center">{{$s.K}}</div></td><td valign="top" style="padding:5px 0 16px;font-size:14.5px;line-height:1.55;color:#3B4563">{{$s.V}}</td></tr>{{end}}
-  </table>{{end}}
-  {{if .CTA}}<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px 0 6px"><tr><td class="cta" bgcolor="#FF6A2B" style="border-radius:999px;background:#FF6A2B;box-shadow:0 12px 24px -12px rgba(255,106,43,.9)"><a href="{{.URL}}" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:800;color:#ffffff;text-decoration:none;border-radius:999px">{{.CTA}} →</a></td></tr></table>{{end}}
-  {{if .Note}}<p style="margin:18px 0 0;font-size:13px;line-height:1.6;color:#6B7390">{{.Note}}</p>{{end}}
+  {{if .CTA}}<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:32px 0 8px"><tr><td bgcolor="#0A1330" style="border-radius:12px;background:#0A1330"><a href="{{.URL}}" style="display:inline-block;padding:16px 32px;font-size:15px;font-weight:800;letter-spacing:.01em;color:#ffffff;border-radius:12px">{{.CTA}}&nbsp;&nbsp;<span style="color:#FF9A6B">&rarr;</span></a></td></tr></table>{{end}}
+  {{if .Note}}<p style="margin:22px 0 0;font-size:13.5px;line-height:1.7;color:#7A83A3">{{.Note}}</p>{{end}}
+  {{if .Sign}}<p style="margin:26px 0 0;font-size:15px;line-height:1.7;color:#38405F">{{.Sign}}<br><b style="color:#0A1330">{{.B.Company}}</b></p>{{end}}
 </td></tr>
-<tr><td style="padding:26px 36px 30px">
-  <table role="presentation" width="100%" style="border-top:1px solid #ECE7DE"><tr><td style="padding-top:18px;font-size:12.5px;line-height:1.7;color:#6B7390">
-    <b style="color:#0B2A6F">{{.B.Company}}</b><br>{{if .B.Address}}{{.B.Address}}<br>{{end}}
-    Hotline <a href="tel:{{.B.Tel}}" style="color:#E2531A;text-decoration:none;font-weight:700">{{.B.Hotline}}</a> · <a href="mailto:{{.B.Email}}" style="color:#E2531A;text-decoration:none;font-weight:700">{{.B.Email}}</a><br>
-    <a href="{{.B.Site}}" style="color:#0B2A6F;font-weight:700">3rdhubvietnam.tech</a>{{if .B.Parent}} · <a href="{{.B.Parent}}" style="color:#0B2A6F;font-weight:700">3rdvn.io.vn</a>{{end}}
+<tr><td bgcolor="#F6F7FB" style="background:#F6F7FB;border-top:1px solid #E6E9F2;padding:26px 40px 28px">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="font-size:12.5px;line-height:1.8;color:#7A83A3">
+    <b style="color:#0A1330">{{.B.Company}}</b><br>{{if .B.Address}}{{.B.Address}}<br>{{end}}
+    <a href="tel:{{.B.Tel}}" style="color:#38405F;font-weight:700">{{.B.Hotline}}</a> &nbsp;&middot;&nbsp; <a href="mailto:{{.B.Email}}" style="color:#38405F;font-weight:700">{{.B.Email}}</a><br>
+    <a href="{{.B.Site}}" style="color:#E2531A;font-weight:700">3rdhubvietnam.tech</a>{{if .B.Parent}} &nbsp;&middot;&nbsp; <a href="{{.B.Parent}}" style="color:#E2531A;font-weight:700">3rdvn.io.vn</a>{{end}}
   </td></tr></table>
 </td></tr>
+</table>
+</td></tr>
+<tr><td align="center" style="padding:18px 12px 0;font-size:11.5px;line-height:1.6;color:#9AA2BD">{{if eq .Lang "en"}}You are receiving this email because you contacted 3RDHub Vietnam through our website.{{else}}Bạn nhận email này vì đã liên hệ 3RDHub Vietnam qua website.{{end}}</td></tr>
 </table>
 </td></tr></table>
 </body></html>`))
@@ -259,6 +270,17 @@ func renderMail(d mailData) string {
 	return b.String()
 }
 
+// telOf giữ lại số và dấu + để dùng trong liên kết tel:.
+func telOf(p string) string {
+	var b strings.Builder
+	for _, r := range p {
+		if r >= '0' && r <= '9' || r == '+' {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
+}
+
 func leadRows(l leadRow, en bool) []mailRow {
 	lb := func(vi, e string) string {
 		if en {
@@ -266,18 +288,18 @@ func leadRows(l leadRow, en bool) []mailRow {
 		}
 		return vi
 	}
-	rows := []mailRow{{lb("Họ tên", "Name"), l.Name}, {lb("Điện thoại", "Phone"), l.Phone}}
+	rows := []mailRow{{K: lb("Họ tên", "Name"), V: l.Name}, {K: lb("Điện thoại", "Phone"), V: l.Phone, H: "tel:" + telOf(l.Phone)}}
 	if l.Email != "" {
-		rows = append(rows, mailRow{"Email", l.Email})
+		rows = append(rows, mailRow{K: "Email", V: l.Email, H: "mailto:" + l.Email})
 	}
 	if l.Company != "" {
-		rows = append(rows, mailRow{lb("Công ty", "Company"), l.Company})
+		rows = append(rows, mailRow{K: lb("Công ty", "Company"), V: l.Company})
 	}
 	if l.Need != "" {
-		rows = append(rows, mailRow{lb("Nhu cầu", "Interest"), l.Need})
+		rows = append(rows, mailRow{K: lb("Nhu cầu", "Interest"), V: l.Need})
 	}
 	if l.Message != "" {
-		rows = append(rows, mailRow{lb("Nội dung", "Message"), l.Message})
+		rows = append(rows, mailRow{K: lb("Nội dung", "Message"), V: l.Message})
 	}
 	return rows
 }
@@ -289,7 +311,7 @@ func staffMail(b brand, l leadRow, cms string) (subject, text, html string) {
 		need = "Tư vấn"
 	}
 	subject = fmt.Sprintf("🔔 Yêu cầu mới #%d · %s · %s", l.ID, l.Name, need)
-	rows := append(leadRows(l, false), mailRow{"Thời gian", time.Unix(l.TS, 0).In(vnZone()).Format("15:04 · 02/01/2006")})
+	rows := append(leadRows(l, false), mailRow{K: "Thời gian", V: time.Unix(l.TS, 0).In(vnZone()).Format("15:04 · 02/01/2006")})
 	html = renderMail(mailData{B: b, Lang: "vi", Pre: l.Name + " · " + l.Phone + " · " + need, Kicker: "Yêu cầu mới từ website", Title: l.Name + " vừa gửi yêu cầu",
 		Lead: "Có khách vừa để lại thông tin trên website 3RDHub Vietnam. Liên hệ sớm để không lỡ cơ hội.", Rows: rows, CTA: "Mở trong CMS", URL: cms + "/#leads",
 		Note: replyNote(l)})
@@ -314,18 +336,18 @@ func customerMail(b brand, l leadRow) (subject, text, html string) {
 	en := l.Lang == "en"
 	if en {
 		subject = "We've received your request · 3RDHub Vietnam"
-		d := mailData{B: b, Lang: "en", Pre: "Thanks " + l.Name + ", our team will contact you shortly.", Kicker: "Request received", Title: "Thank you, " + l.Name + "!",
-			Lead: "We have received your request. A 3RDVN Technology consultant will reach out to you during business hours. Here is what you sent us:",
-			Rows: leadRows(l, true), Steps: []mailRow{{"1", "We review your needs and prepare suitable options."}, {"2", "A consultant calls you to discuss details and show a demo."}, {"3", "You receive a scoped quote and next steps."}},
+		d := mailData{B: b, Lang: "en", Pre: "Thanks " + l.Name + ", our team will contact you shortly.", Kicker: "Request received", Title: "Thank you, " + l.Name + ". We have your request",
+			Lead: "A 3RDVN Technology consultant will reach out to you during business hours. Below is what you sent us, for your reference.",
+			Rows: leadRows(l, true), Steps: []mailRow{{K: "1", V: "We review your needs and prepare suitable options."}, {K: "2", V: "A consultant calls you to discuss details and show a demo."}, {K: "3", V: "You receive a scoped quote and next steps."}}, Sign: "Best regards,",
 			CTA: "Explore 3RDHub", URL: b.Site + "/san-pham", Note: "If you did not submit this request, simply ignore this email."}
 		html = renderMail(d)
 		text = "Thank you, " + l.Name + "!\n\nWe have received your request and will contact you shortly.\n\n" + b.Company + " · " + b.Hotline + " · " + b.Email + "\n"
 		return
 	}
 	subject = "3RDHub Vietnam đã nhận yêu cầu của bạn"
-	d := mailData{B: b, Lang: "vi", Pre: "Cảm ơn " + l.Name + ", đội ngũ 3RDVN Technology sẽ liên hệ bạn sớm.", Kicker: "Đã nhận yêu cầu", Title: "Cảm ơn " + l.Name + "!",
-		Lead: "Chúng tôi đã nhận được yêu cầu của bạn. Chuyên viên 3RDVN Technology sẽ liên hệ trong giờ làm việc. Thông tin bạn đã gửi:",
-		Rows: leadRows(l, false), Steps: []mailRow{{"1", "Chúng tôi xem nhu cầu và chuẩn bị phương án phù hợp."}, {"2", "Chuyên viên gọi cho bạn để trao đổi chi tiết, cho xem demo."}, {"3", "Bạn nhận báo giá theo đúng phạm vi và các bước tiếp theo."}},
+	d := mailData{B: b, Lang: "vi", Pre: "Cảm ơn " + l.Name + ", đội ngũ 3RDVN Technology sẽ liên hệ bạn sớm.", Kicker: "Đã nhận yêu cầu", Title: "Cảm ơn " + l.Name + ", chúng tôi đã nhận được yêu cầu",
+		Lead: "Chuyên viên của 3RDVN Technology sẽ liên hệ bạn trong giờ làm việc. Dưới đây là thông tin bạn đã gửi để bạn tiện đối chiếu.",
+		Rows: leadRows(l, false), Steps: []mailRow{{K: "1", V: "Chúng tôi xem nhu cầu và chuẩn bị phương án phù hợp."}, {K: "2", V: "Chuyên viên gọi cho bạn để trao đổi chi tiết, cho xem demo."}, {K: "3", V: "Bạn nhận báo giá theo đúng phạm vi và các bước tiếp theo."}}, Sign: "Trân trọng,",
 		CTA: "Xem sản phẩm 3RDHub", URL: b.Site + "/san-pham", Note: "Nếu bạn không gửi yêu cầu này, vui lòng bỏ qua email."}
 	html = renderMail(d)
 	text = "Cảm ơn " + l.Name + "!\n\nChúng tôi đã nhận được yêu cầu của bạn và sẽ liên hệ sớm.\n\n" + b.Company + " · " + b.Hotline + " · " + b.Email + "\n"
