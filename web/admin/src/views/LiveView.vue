@@ -67,7 +67,7 @@ function reset() { delete ov.value[key.value] }
             <li>Đưa chuột lên trang bên trái: đoạn chữ sửa được sẽ có <b style="color:var(--or-d)">viền cam</b>. Bấm vào để sửa ở đây.</li>
             <li>Vùng có <b style="color:#7B4DFF">viền tím</b> là danh sách (hỏi đáp, đối tác, khách hàng, báo giá, thông tin công ty): bấm vào để mở mục quản lý của nó.</li>
             <li>Chỉ cần viết <b>tiếng Việt</b>. Khi lưu, hệ thống tự dịch sang tiếng Anh.</li>
-            <li>Sửa xong bấm <b>"Lưu và đăng lên website"</b> ở trên cùng.</li>
+            <li>Sửa xong bấm <b>"Dịch sang English và lưu"</b> ở trên cùng.</li>
           </ul>
         </template>
         <template v-else>

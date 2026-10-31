@@ -48,6 +48,14 @@ function setField(it: StringItem, lg: 'vi' | 'en', val: string) {
   const o = ov.value[it.k]
   if (o && !o.vi && !o.en) delete ov.value[it.k]
 }
+const busy = ref('')
+/** Dịch riêng đoạn này từ tiếng Việt sang English và điền vào ô (bấm Lưu để đăng). */
+async function tr(it: StringItem) {
+  busy.value = it.k
+  const [en] = await a.translate([cur(it, 'vi')])
+  busy.value = ''
+  if (en) setField(it, 'en', en)
+}
 function reset(it: StringItem) { delete ov.value[it.k] }
 function turn(d: number) { page.value += d; window.scrollTo(0, 0) }
 </script>
@@ -76,7 +84,7 @@ function turn(d: number) { page.value += d; window.scrollTo(0, 0) }
       </div>
       <div class="cols">
         <label>Tiếng Việt<AutoTextarea :model-value="cur(it, 'vi')" @update:model-value="setField(it, 'vi', $event)" /></label>
-        <label>English <span v-if="ov[it.k]?.x" class="tag">Tự dịch</span><span v-else-if="ov[it.k]?.vi && !ov[it.k]?.en" class="tag or">Sẽ tự dịch khi lưu</span><AutoTextarea :model-value="cur(it, 'en')" @update:model-value="setField(it, 'en', $event)" /></label>
+        <label>English <span v-if="ov[it.k]?.x" class="tag">Tự dịch</span><span v-else-if="ov[it.k]?.vi && !ov[it.k]?.en" class="tag or">Sẽ tự dịch khi lưu</span><button class="btn gh sm trbtn" type="button" :disabled="busy === it.k" @click.prevent="tr(it)">{{ busy === it.k ? 'Đang dịch…' : 'Dịch từ tiếng Việt' }}</button><AutoTextarea :model-value="cur(it, 'en')" @update:model-value="setField(it, 'en', $event)" /></label>
       </div>
     </div>
     <div v-if="pages > 1" class="pager">

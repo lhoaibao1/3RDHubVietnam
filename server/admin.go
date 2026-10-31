@@ -262,6 +262,38 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 		_, upd, _ := a.currentContent(ctx)
 		return ok(map[string]any{"ok": true, "content": c, "updated": upd, "translated": tdone, "translate_failed": tfail})
 
+	case sub == "translate" && m == http.MethodPost:
+		// dịch tức thì Việt -> Anh cho nút "Dịch" trong CMS (không lưu); trả đúng thứ tự đầu vào
+		d, err := readJSON(r, maxJSON)
+		if err != nil {
+			return err
+		}
+		in, _ := d["texts"].([]any)
+		if len(in) == 0 || len(in) > 40 {
+			return bad("Cần 1 đến 40 đoạn chữ để dịch")
+		}
+		if a.tr == nil || a.tr.off {
+			return bad("Tính năng tự dịch đang tắt trên máy chủ")
+		}
+		out := make([]string, len(in))
+		failed := 0
+		for i, x := range in {
+			s, _ := x.(string)
+			if s = strings.TrimSpace(s); s == "" {
+				continue
+			}
+			if len([]rune(s)) > 8000 {
+				return bad("Đoạn chữ quá dài để dịch")
+			}
+			en, err := a.translateOne(ctx, s)
+			if err != nil || en == "" {
+				failed++
+				continue
+			}
+			out[i] = en
+		}
+		return ok(map[string]any{"texts": out, "failed": failed})
+
 	case sub == "smtp" && m == http.MethodGet:
 		c := a.loadSMTP(ctx)
 		has := c.PassEnc != ""

@@ -102,6 +102,17 @@ export const useAdmin = defineStore('admin', {
         this.saving = false
       }
     },
+    /** Dịch tức thì Việt -> Anh (không lưu); trả mảng cùng thứ tự, rỗng nếu đoạn đó chưa dịch được. */
+    async translate(texts: string[]): Promise<string[]> {
+      try {
+        const r = await api<{ texts: string[]; failed: number }>('POST', 'translate', { texts })
+        if (r.failed) this.say(`${r.failed} đoạn chưa dịch được, thử lại sau.`, true)
+        return r.texts
+      } catch (e) {
+        this.say((e as Error).message, true)
+        return texts.map(() => '')
+      }
+    },
     discard() {
       if (!confirm('Bỏ toàn bộ thay đổi chưa lưu?')) return
       this.content = JSON.parse(this.saved)

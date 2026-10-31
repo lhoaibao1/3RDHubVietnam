@@ -299,3 +299,24 @@ func TestSMTPConfigAndSend(t *testing.T) {
 	}
 	_ = url.Values{}
 }
+
+func TestAdminTranslateEndpoint(t *testing.T) {
+	a := testApp(t)
+	srv, _ := fakeTranslate(t)
+	a.tr = &translator{client: srv.Client(), url: srv.URL}
+	h := map[string]string{"Cookie": login(t, a), "X-CMS": "1"}
+	r := do(a, "POST", cms, "/api/admin/translate", []byte(`{"texts":["Xin chào","","Tạm biệt"]}`), h)
+	if r.code != 200 {
+		t.Fatalf("%d %s", r.code, r.body)
+	}
+	got := r.json(t)["texts"].([]any)
+	if len(got) != 3 || got[0] != "EN: Xin chào" || got[1] != "" || got[2] != "EN: Tạm biệt" {
+		t.Fatalf("dịch tức thì: %v", got)
+	}
+	if r := do(a, "POST", cms, "/api/admin/translate", []byte(`{"texts":[]}`), h); r.code != 400 {
+		t.Fatalf("rỗng phải 400, được %d", r.code)
+	}
+	if r := do(a, "POST", cms, "/api/admin/translate", []byte(`{"texts":["a"]}`), map[string]string{}); r.code != 401 {
+		t.Fatalf("chưa đăng nhập phải 401, được %d", r.code)
+	}
+}

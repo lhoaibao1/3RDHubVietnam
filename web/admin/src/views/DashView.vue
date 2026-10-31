@@ -192,7 +192,7 @@ const stLabel = (v: string) => STATUS.find((x) => x[0] === v)?.[1] || v
 
     <details class="panel help"><summary>Cách hoạt động của CMS</summary>
       <ul>
-        <li><b>Sửa xong bấm "Lưu và đăng lên website"</b>: website cập nhật ngay, không cần chạy lại gì.</li>
+        <li><b>Sửa tiếng Việt xong bấm "Dịch sang English và lưu" (English trống sẽ tự điền)</b>: website cập nhật ngay, không cần chạy lại gì.</li>
         <li><b>Mỗi đoạn chữ có 2 ô</b>: Tiếng Việt và English. Chỉ cần viết tiếng Việt, khi lưu hệ thống tự dịch sang tiếng Anh.</li>
         <li><b>Chữ giống nhau ở nhiều chỗ</b> đổi một lần là đổi hết. <b>Làm sai?</b> Vào mục "Lịch sử" để khôi phục phiên bản trước.</li>
         <li><b>Sửa chữ:</b> vào "Sửa trên trang" và bấm thẳng vào chữ; không nhớ chữ ở đâu thì dùng "Tìm chữ để sửa".</li>

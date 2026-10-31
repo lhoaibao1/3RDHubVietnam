@@ -38,7 +38,7 @@ const docs = computed(() => LEGALS.map(([key, label, slug]) => ({ key, label, sl
 <template>
   <div class="panel help">
     <h2>Điều khoản và các chính sách của website</h2>
-    <p class="sub">8 trang chính sách theo hồ sơ thông báo website với Bộ Công Thương (bảo mật, khiếu nại, giá, thanh toán, điều kiện dịch vụ, cung cấp và hoàn tiền, hỗ trợ, điều khoản). Mỗi trang có nút Tải PDF trên website, tạo từ đúng nội dung ở đây; trang <a :href="siteUrl + '/chinh-sach'" target="_blank" rel="noopener">/chinh-sach</a> có nút tải tất cả trong một file. Sửa xong bấm "Lưu và đăng lên website".</p>
+    <p class="sub">8 trang chính sách theo hồ sơ thông báo website với Bộ Công Thương (bảo mật, khiếu nại, giá, thanh toán, điều kiện dịch vụ, cung cấp và hoàn tiền, hỗ trợ, điều khoản). Mỗi trang có nút Tải PDF trên website, tạo từ đúng nội dung ở đây; trang <a :href="siteUrl + '/chinh-sach'" target="_blank" rel="noopener">/chinh-sach</a> có nút tải tất cả trong một file. Sửa tiếng Việt xong bấm "Dịch sang English và lưu" (English trống sẽ tự điền).</p>
     <ul>
       <li><b>Định dạng</b>: dòng trống để tách đoạn; <b>## Tiêu đề</b> cho mục lớn, <b>### </b> cho mục nhỏ; <b>- </b> đầu dòng để tạo danh sách; <b>**chữ đậm**</b>; <b>[chữ hiển thị](https://...)</b> để chèn liên kết.</li>
       <li v-pre>Mã <b>{{price_list}}</b> (trong Chính sách giá) tự thay bằng danh sách gói và giá hiện hành ở tab Báo giá.</li>

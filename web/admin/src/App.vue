@@ -85,7 +85,7 @@ onBeforeUnmount(() => window.removeEventListener('beforeunload', beforeUnload))
         <div class="savebar" :class="{ on: a.dirty }" role="status">
           <span>Có thay đổi chưa lưu</span>
           <button class="btn gh sm" type="button" @click="a.discard()">Bỏ</button>
-          <button class="btn sm save" type="button" :disabled="a.saving" @click="a.save()">{{ a.saving ? 'Đang lưu…' : 'Lưu và đăng lên website' }}</button>
+          <button class="btn sm save" type="button" :disabled="a.saving" title="Chữ tiếng Anh còn trống sẽ được tự dịch từ tiếng Việt rồi lưu" @click="a.save()">{{ a.saving ? 'Đang dịch và lưu…' : 'Dịch sang English và lưu' }}</button>
         </div>
       </div>
       <TextView v-if="a.tab === 'text'" :groups="ALL_GROUPS" />

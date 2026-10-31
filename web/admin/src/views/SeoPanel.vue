@@ -31,6 +31,17 @@ const shown = computed(() => pages.filter((p) => !q.value || (p.title + p.slug).
 const title = (p: (typeof pages)[number]) => lg.value === 'en' ? S()[K('seot_', p)] || p.title_en : S()[K('seot_', p)] || (p.key === 'home' && S().site_title) || p.title
 const desc = (p: (typeof pages)[number]) => lg.value === 'en' ? S()[K('seod_', p)] || p.desc_en : S()[K('seod_', p)] || (p.key === 'home' && (S().meta_description || '').replace(/\s+/g, ' ')) || p.desc
 const edited = (p: (typeof pages)[number]) => !!(S()['seot_' + p.key] || S()['seod_' + p.key] || S()['seot_en_' + p.key] || S()['seod_en_' + p.key])
+const trBusy = ref(false)
+/** Điền bản English của trang từ tiếng Việt đang hiển thị (đã sửa hoặc mặc định). */
+async function trPage(p: (typeof pages)[number]) {
+  trBusy.value = true
+  const vt = S()['seot_' + p.key] || (p.key === 'home' && S().site_title) || p.title
+  const vd = S()['seod_' + p.key] || (p.key === 'home' && (S().meta_description || '').replace(/\s+/g, ' ')) || p.desc
+  const [t, d] = await a.translate([vt, vd])
+  trBusy.value = false
+  if (t) setS('seot_en_' + p.key, t.slice(0, 120))
+  if (d) setS('seod_en_' + p.key, d.slice(0, 320))
+}
 const lenCls = (n: number, lo: number, hi: number) => (n === 0 ? '' : n < lo ? 'warn' : n > hi ? 'bad' : 'ok')
 </script>
 
@@ -79,6 +90,7 @@ const lenCls = (n: number, lo: number, hi: number) => (n === 0 ? '' : n < lo ? '
             <input type="text" maxlength="120" :value="S()[K('seot_', p)] || ''" :placeholder="lg === 'en' ? p.title_en : p.title" @input="setS(K('seot_', p), ($event.target as HTMLInputElement).value)"></label>
           <label class="f">Mô tả <small :class="lenCls((S()[K('seod_', p)] || '').length, 120, 160)">{{ (S()[K('seod_', p)] || '').length }}/160</small>
             <textarea rows="3" maxlength="320" :value="S()[K('seod_', p)] || ''" :placeholder="lg === 'en' ? p.desc_en : p.desc" @input="setS(K('seod_', p), ($event.target as HTMLTextAreaElement).value.replace(/\s*\n\s*/g, ' '))"></textarea></label>
+          <button v-if="lg === 'en'" class="btn sm" type="button" :disabled="trBusy" @click="trPage(p)">{{ trBusy ? 'Đang dịch…' : 'Dịch từ tiếng Việt' }}</button>
           <a class="btn gh sm" :href="siteBase + '/' + lg + p.path" target="_blank" rel="noopener">Mở trang</a>
         </div>
       </div>
