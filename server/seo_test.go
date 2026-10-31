@@ -10,6 +10,16 @@ func TestSEOFragmentAndSSI(t *testing.T) {
 	if f := seoFragment(c, "t", "san-pham"); !strings.Contains(f, "<title>A &amp; &#34;B&#34;</title>") {
 		t.Fatalf("title: %s", f)
 	}
+	h := Content{Settings: map[string]string{"site_title": "Tên cũ  của web", "meta_description": "dòng 1.\n  dòng 2."}}
+	if f := seoFragment(h, "t", "home"); !strings.Contains(f, "<title>Tên cũ của web</title>") {
+		t.Fatalf("trang chủ phải dùng Tiêu đề website khi chưa có tiêu đề riêng: %s", f)
+	}
+	if f := seoFragment(h, "d", "home"); !strings.Contains(f, `content="dòng 1. dòng 2."`) {
+		t.Fatalf("mô tả phải gộp xuống dòng: %s", f)
+	}
+	if seoFragment(h, "t", "mo-hinh") != "" {
+		t.Fatal("site_title chỉ áp dụng cho trang chủ")
+	}
 	if seoFragment(c, "t", "mo-hinh") != "" || seoFragment(c, "d", "mo-hinh") != "" {
 		t.Fatal("trang chưa sửa phải trả rỗng để dùng bản dựng sẵn")
 	}

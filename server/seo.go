@@ -57,7 +57,11 @@ func seoFragment(c Content, kind, page string) string {
 	s := c.Settings
 	switch kind {
 	case "t":
-		if t := s["seot_"+page]; t != "" {
+		t := s["seot_"+page]
+		if t == "" && page == "home" {
+			t = s["site_title"] // ô "Tiêu đề website" cũ áp dụng cho trang chủ khi chưa có tiêu đề riêng
+		}
+		if t = strings.Join(strings.Fields(t), " "); t != "" {
 			return "<title>" + e(t) + "</title>\n<meta property=\"og:title\" content=\"" + e(t) + "\">\n<meta name=\"twitter:title\" content=\"" + e(t) + "\">"
 		}
 	case "d":
@@ -65,7 +69,7 @@ func seoFragment(c Content, kind, page string) string {
 		if d == "" && page == "home" {
 			d = s["meta_description"] // ô "Mô tả website" cũ áp dụng cho trang chủ
 		}
-		if d != "" {
+		if d = strings.Join(strings.Fields(d), " "); d != "" { // gộp xuống dòng/khoảng trắng thừa
 			return "<meta name=\"description\" content=\"" + e(d) + "\">\n<meta property=\"og:description\" content=\"" + e(d) + "\">\n<meta name=\"twitter:description\" content=\"" + e(d) + "\">"
 		}
 	case "v":

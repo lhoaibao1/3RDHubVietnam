@@ -36,8 +36,9 @@ export function useSeo() {
     const def = PAGES[slug] || PAGES['']
     const known = slug in PAGES
     const vi = site.lang === 'vi'
-    const title = (vi && known && site.S('seot_' + key)) || (vi && known ? def.title : page ? `${page} · ${base}` : base)
-    const desc = site.S('seod_' + key) || (key === 'home' ? site.S('meta_description') : '') || def.desc
+    const homeTitle = key === 'home' ? site.cms?.settings?.site_title || '' : ''
+    const title = (vi && known && (site.S('seot_' + key) || homeTitle)) || (vi && known ? def.title : page ? `${page} · ${base}` : base)
+    const desc = (site.S('seod_' + key) || (key === 'home' ? site.S('meta_description') : '') || def.desc).replace(/\s+/g, ' ').trim()
     document.title = title
     setMeta('meta[name=description]', desc)
     setMeta('meta[property="og:description"]', desc)

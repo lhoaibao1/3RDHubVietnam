@@ -26,8 +26,8 @@ function setVerify(k: string, v: string) { const m = v.match(/content\s*=\s*["']
 const open = ref<string | null>(null)
 const q = ref('')
 const shown = computed(() => pages.filter((p) => !q.value || (p.title + p.slug).toLowerCase().includes(q.value.toLowerCase())))
-const title = (p: (typeof pages)[number]) => S()['seot_' + p.key] || p.title
-const desc = (p: (typeof pages)[number]) => S()['seod_' + p.key] || (p.key === 'home' && S().meta_description) || p.desc
+const title = (p: (typeof pages)[number]) => S()['seot_' + p.key] || (p.key === 'home' && S().site_title) || p.title
+const desc = (p: (typeof pages)[number]) => S()['seod_' + p.key] || (p.key === 'home' && (S().meta_description || '').replace(/\s+/g, ' ')) || p.desc
 const edited = (p: (typeof pages)[number]) => !!(S()['seot_' + p.key] || S()['seod_' + p.key])
 const lenCls = (n: number, lo: number, hi: number) => (n === 0 ? '' : n < lo ? 'warn' : n > hi ? 'bad' : 'ok')
 </script>
