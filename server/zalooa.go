@@ -439,9 +439,11 @@ func (a *App) zaloWebhook(w http.ResponseWriter, r *http.Request) {
 		a.send(w, r, 200, []byte("ok"), "text/plain; charset=utf-8", noStore)
 		return
 	}
-	if !a.zoa.verify(r.Header.Get("X-ZEvent-Signature"), raw, string(ev.Timestamp)) || string(ev.AppID) != a.zoa.appID {
+	if !a.zoa.verify(r.Header.Get("X-ZEvent-Signature"), raw, string(ev.Timestamp)) || string(ev.AppID) != a.zoa.appIDv() {
+		// Zalo bắt buộc địa chỉ webhook trả 200 khi bấm "Kiểm tra" (request thử không có chữ ký hợp lệ), nên vẫn trả 200
+		// nhưng KHÔNG xử lý gì: sự kiện giả không có tác dụng.
 		log.Printf("Zalo webhook: sai chữ ký hoặc App ID, bỏ qua sự kiện %q", ev.EventName)
-		a.fail(w, r, 401, "sai chữ ký")
+		a.send(w, r, 200, []byte("ok"), "text/plain; charset=utf-8", noStore)
 		return
 	}
 	a.send(w, r, 200, []byte("ok"), "text/plain; charset=utf-8", noStore) // trả 200 ngay, Zalo chỉ chờ tối đa 2 giây
@@ -452,7 +454,7 @@ func (a *App) zaloWebhook(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 		defer cancel()
 		switch {
-		case strings.HasPrefix(ev.EventName, "user_send_") && (a.zoa.oaID == "" || string(ev.Recipient.ID) == a.zoa.oaID):
+		case strings.HasPrefix(ev.EventName, "user_send_") && (a.zoa.oaIDv() == "" || string(ev.Recipient.ID) == a.zoa.oaIDv()):
 			id := ev.Message.MsgID
 			if id == "" {
 				id = "w:" + string(ev.Sender.ID) + ":" + string(ev.Timestamp)
@@ -462,7 +464,7 @@ func (a *App) zaloWebhook(w http.ResponseWriter, r *http.Request) {
 				text = ev.Message.Text
 			}
 			a.inbound(ctx, string(ev.Sender.ID), text, id)
-		case ev.EventName == "follow" && (a.zoa.oaID == "" || string(ev.OAID) == a.zoa.oaID):
+		case ev.EventName == "follow" && (a.zoa.oaIDv() == "" || string(ev.OAID) == a.zoa.oaIDv()):
 			a.flushOutbox(ctx, string(ev.Follower.ID))
 		}
 	}()

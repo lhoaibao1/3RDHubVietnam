@@ -133,10 +133,10 @@ func TestZaloOAFlow(t *testing.T) {
 	}
 	code := z["code"].(string)
 
-	// chữ ký sai: 401, không xử lý
+	// chữ ký sai: 200 nhưng không xử lý
 	body, _ := textEvent("u-111", "Mã của tôi "+code, "msg-0")
-	if r := do(a, "POST", "example.vn", "/api/zalo/webhook", []byte(body), map[string]string{"X-ZEvent-Signature": "mac=deadbeef"}); r.code != 401 {
-		t.Fatalf("chữ ký sai phải 401: %d", r.code)
+	if r := do(a, "POST", "example.vn", "/api/zalo/webhook", []byte(body), map[string]string{"X-ZEvent-Signature": "mac=deadbeef"}); r.code != 200 {
+		t.Fatalf("chữ ký sai vẫn trả 200 (Zalo kiểm tra webhook) nhưng không xử lý: %d", r.code)
 	}
 	// chữ ký đúng (viết thường, có khoảng trắng, dạng 3r 12345): ghép và trả lời xác nhận
 	loose := strings.ToLower(strings.Replace(code, "-", " ", 1))
@@ -289,7 +289,7 @@ func TestZaloSignatureAndPoll(t *testing.T) {
 	// App ID khác: từ chối
 	b2 := strings.Replace(body, "3689777608400566243", "111", 1)
 	_, sig := signedEvent("111", b2, "1700000000000")
-	if r := do(a, "POST", "example.vn", "/api/zalo/webhook", []byte(b2), map[string]string{"X-ZEvent-Signature": sig}); r.code != 401 {
+	if r := do(a, "POST", "example.vn", "/api/zalo/webhook", []byte(b2), map[string]string{"X-ZEvent-Signature": sig}); r.code != 200 {
 		t.Fatalf("app khác: %d", r.code)
 	}
 	// không có khoá bí mật thì không tin bất kỳ chữ ký nào
