@@ -18,6 +18,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -40,6 +41,8 @@ type App struct {
 	tr       *translator
 	hub      *hubClient
 	zoa      *zaloOA
+	gd       *guard
+	gdOnce   sync.Once
 }
 
 func loadDefaults() (Defaults, error) {
@@ -166,9 +169,10 @@ func (a *App) isAdminHost(r *http.Request) bool {
 }
 
 func clientIP(r *http.Request) string {
-	ip := r.Header.Get("CF-Connecting-IP")
+	// X-Real-IP do nginx đặt (đã khôi phục IP khách thật khi đi qua Cloudflare); CF-Connecting-IP khách có thể tự gửi nên chỉ dùng khi không có nginx
+	ip := r.Header.Get("X-Real-IP")
 	if ip == "" {
-		ip = r.Header.Get("X-Real-IP")
+		ip = r.Header.Get("CF-Connecting-IP")
 	}
 	if ip == "" {
 		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
@@ -334,6 +338,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.apiProducts(w, r)
 	case p == "/api/register" && r.Method == http.MethodPost:
 		a.apiRegister(w, r)
+	case p == "/api/guard/strike" && !a.isAdminHost(r):
+		a.guardStrike(w, r) // nginx báo mỗi request bị giới hạn tốc độ (chỉ nhận từ 127.0.0.1)
 	case p == "/api/zalo/webhook" && !a.isAdminHost(r):
 		a.zaloWebhook(w, r)
 	case p == "/dmca-validation.html" && get && !a.isAdminHost(r):

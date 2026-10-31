@@ -189,6 +189,12 @@ func (a *App) adminRoute(w http.ResponseWriter, r *http.Request, ctx context.Con
 		return nil
 	}
 	ok := func(v any) error { a.sendJSON(w, r, 200, v, noStore); return nil }
+	if v, hit, err := a.guardAdmin(ctx, w, r, sub); hit {
+		if err != nil {
+			return err
+		}
+		return ok(v)
+	}
 	if v, hit, err := a.zaloAdmin(ctx, w, r, sub); hit {
 		if err != nil {
 			return err

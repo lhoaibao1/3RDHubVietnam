@@ -104,6 +104,7 @@ func serve(a *App) {
 		}
 	}()
 	a.startZalo(context.Background())
+	a.startGuard(context.Background())
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	go func() {

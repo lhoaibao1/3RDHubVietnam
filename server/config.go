@@ -28,6 +28,7 @@ type Config struct {
 	ZaloSecret   string // ZALO_WEBHOOK_SECRET: OA Secret Key của ứng dụng Zalo (xác thực chữ ký webhook)
 	ZaloPublic   bool   // ZALO_OA_PUBLIC=1: hiện mã và nút Zalo OA cho khách sau khi gửi form
 	ZaloPoll     bool   // ZALO_POLL=1: đọc tin gần nhất mỗi 45 giây khi không dùng được webhook
+	GuardDir     string // GUARD_DIR: thư mục nginx đọc danh sách cấm (ví dụ /etc/nginx/3rdhub-guard); để trống thì chỉ ghi nhận, không áp vào nginx
 	ZaloAPIBase  string // ZALO_API_BASE: chỉ dùng khi thử (máy chủ Zalo giả), để trống khi chạy thật
 }
 
@@ -58,6 +59,7 @@ func loadConfig() Config {
 		ZaloAPIBase:  env("ZALO_API_BASE", ""),
 		HubBase:      env("HUB_API_BASE", ""),
 		HubKey:       strings.TrimSpace(os.Getenv("HUB_SITE_KEY")),
+		GuardDir:     strings.TrimSpace(os.Getenv("GUARD_DIR")),
 		HubMock:      env("HUB_MOCK", "") == "1",
 	}
 	if ttl, err := strconv.Atoi(os.Getenv("SESSION_TTL")); err == nil && ttl > 0 {

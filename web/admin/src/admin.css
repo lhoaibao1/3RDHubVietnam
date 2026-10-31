@@ -269,3 +269,26 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .seof{display:grid;gap:10px;padding:0 16px 16px}
 .seof .f small{margin-left:6px;font-weight:800}.seof .ok{color:var(--ok)}.seof .warn{color:#B7791F}.seof .bad{color:var(--bad)}
 .seof .btn{justify-self:start}
+/* chặn tấn công */
+.gst{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-top:6px}
+.gok{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14px;padding:6px 14px;border-radius:999px;background:var(--ok-t);color:var(--ok)}
+.gok i{width:9px;height:9px;border-radius:50%;background:currentColor}
+.gok.no{background:var(--or-t);color:var(--or-d)}
+.gme{font-size:14px;color:var(--ink2)}.gme b{color:var(--ink)}
+.gt{width:100%;border-collapse:collapse;font-size:14px}
+.gt th{text-align:left;font-size:12.5px;color:var(--ink2);font-weight:800;padding:8px 10px;border-bottom:1.5px solid var(--line)}
+.gt td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere}
+.gt small{color:var(--ink2);font-weight:600}
+.gtw{overflow-x:auto}
+.gk{display:inline-block;margin-right:8px;font-size:11.5px;font-weight:900;padding:2px 9px;border-radius:999px;background:var(--bg);color:var(--ink2)}
+.gk.fp{background:#EFE9FF;color:#6B3FD6}
+.gbn{color:var(--bad)!important;font-weight:800!important}
+.gact{display:flex;gap:6px;flex-wrap:wrap}
+.gh3{margin:18px 0 8px;font-size:15px;font-weight:900}
+.gform{display:grid;grid-template-columns:minmax(220px,2fr) 150px minmax(180px,2fr) auto;gap:12px;align-items:end}
+.gsw{display:flex;gap:10px;align-items:flex-start;margin-bottom:14px;font-size:14.5px}.gsw input{margin-top:4px;width:18px;height:18px;accent-color:var(--or)}
+.gcfg{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:14px}
+.gcfg small{color:var(--ink2);font-weight:600}
+.gnote{margin:14px 0 0}
+.gcf{margin:0;padding-left:20px;display:grid;gap:8px;font-size:14.5px;line-height:1.55}.gcf a{color:var(--or-d);font-weight:800}
+@media(max-width:720px){.gform{grid-template-columns:1fr}}

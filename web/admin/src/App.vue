@@ -15,6 +15,7 @@ import ModulesView from './views/ModulesView.vue'
 import strings from './strings.json'
 import LookView from './views/LookView.vue'
 import BgView from './views/BgView.vue'
+import GuardView from './views/GuardView.vue'
 import EmailView from './views/EmailView.vue'
 import LegalView from './views/LegalView.vue'
 import LeadsView from './views/LeadsView.vue'
@@ -25,7 +26,7 @@ const a = useAdmin()
 a.boot()
 
 const ALL_GROUPS = (strings as { groups: string[] }).groups
-const VIEWS: Record<string, unknown> = { dash: DashView, live: LiveView, faq: FaqView, partners: PartnersView, clients: ClientsView, quote: QuoteView, product: ModulesView, legal: LegalView, leads: LeadsView, history: HistoryView, look: LookView, bg: BgView, email: EmailView }
+const VIEWS: Record<string, unknown> = { dash: DashView, live: LiveView, faq: FaqView, partners: PartnersView, clients: ClientsView, quote: QuoteView, product: ModulesView, legal: LegalView, leads: LeadsView, history: HistoryView, look: LookView, bg: BgView, guard: GuardView, email: EmailView }
 const ICONS: Record<TabKey, string> = {
   dash: '<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
   live: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4z"/>',
@@ -40,6 +41,7 @@ const ICONS: Record<TabKey, string> = {
   seo: '<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 6-6"/>',
   look: '<path d="M12 2l9 5v10l-9 5-9-5V7zM12 12l9-5M12 12v10M12 12L3 7"/>',
   bg: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/>',
+  guard: '<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/>',
   email: '<path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/>',
   account: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
   leads: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5.1 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.9A2 2 0 0 0 16.7 4H7.2a2 2 0 0 0-1.7 1.1z"/>',

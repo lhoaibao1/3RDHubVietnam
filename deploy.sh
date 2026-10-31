@@ -21,6 +21,7 @@ CMS_DIR="${CMS_DIR:-/opt/3rdhub-cms}"
 CMS_DATA="${CMS_DATA:-/var/lib/3rdhub-cms}"
 CMS_ENV="${CMS_ENV:-$ETC/3rdhub-cms.env}"
 UNIT_DIR="${UNIT_DIR:-$ETC/systemd/system}"
+GUARD_DIR="${GUARD_DIR:-$ETC/nginx/3rdhub-guard}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SITE="$HERE/site"
 ADMIN_SRC="$HERE/admin"
@@ -197,7 +198,67 @@ install_files() {
   ok "Đã chép site vào $WEBROOT"
 }
 
-proxy_block() { # $1=cổng
+# ---- chống tấn công: file nginx đọc (danh sách cấm do CMS ghi), dải IP Cloudflare để khôi phục IP khách thật
+CF_V4="173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22"
+CF_V6="2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32"
+ensure_guard() {
+  [ -n "$NGINX" ] || return 0
+  mkdir -p "$GUARD_DIR"
+  local f
+  [ -f "$GUARD_DIR/allow-ip.conf" ] || printf '# do 3RDHub CMS ghi, đừng sửa tay\n127.0.0.1 1;\n::1 1;\n' > "$GUARD_DIR/allow-ip.conf"
+  [ -f "$GUARD_DIR/ban-ip.conf" ] || printf '# do 3RDHub CMS ghi, đừng sửa tay\n' > "$GUARD_DIR/ban-ip.conf"
+  [ -f "$GUARD_DIR/ban-fp.conf" ] || printf '# do 3RDHub CMS ghi, đừng sửa tay\n' > "$GUARD_DIR/ban-fp.conf"
+  [ -f "$GUARD_DIR/reload" ] || date -u +%FT%TZ > "$GUARD_DIR/reload"
+  # dải IP Cloudflare: lấy bản mới nhất (làm mới mỗi 7 ngày), không được thì dùng danh sách có sẵn trong script
+  if [ ! -s "$GUARD_DIR/cloudflare.conf" ] || [ -n "$(find "$GUARD_DIR/cloudflare.conf" -mtime +7 2>/dev/null)" ]; then
+    local ranges="" got4 got6
+    got4="$(curl -fsS -m 10 https://www.cloudflare.com/ips-v4 2>/dev/null | grep -E '^[0-9.]+/[0-9]+$' || true)"
+    got6="$(curl -fsS -m 10 https://www.cloudflare.com/ips-v6 2>/dev/null | grep -E '^[0-9a-fA-F:]+/[0-9]+$' || true)"
+    if [ "$(printf '%s\n' "$got4" | grep -c .)" -ge 5 ] && [ "$(printf '%s\n' "$got6" | grep -c .)" -ge 3 ]; then
+      ranges="$(printf '%s\n%s\n' "$got4" "$got6")"
+    else
+      [ -s "$GUARD_DIR/cloudflare.conf" ] && return 0 || ranges="$(printf '%s\n' $CF_V4 $CF_V6)"
+    fi
+    {
+      echo "# Dải IP của Cloudflare: nginx tin header CF-Connecting-IP chỉ khi gói tin đến từ các dải này. Tạo bởi deploy.sh"
+      printf '%s\n' "$ranges" | sed 's/.*/set_real_ip_from &;/'
+      echo "real_ip_header CF-Connecting-IP;"
+      echo "real_ip_recursive on;"
+    } > "$GUARD_DIR/cloudflare.conf.new" && mv -f "$GUARD_DIR/cloudflare.conf.new" "$GUARD_DIR/cloudflare.conf"
+  fi
+  chmod 755 "$GUARD_DIR"; chmod 644 "$GUARD_DIR"/* 2>/dev/null || true
+  if [ "${SKIP_SYSTEM:-0}" != 1 ] && id tdhubcms >/dev/null 2>&1; then chown -R tdhubcms:tdhubcms "$GUARD_DIR"; fi
+}
+
+# dịch vụ nền (chạy bằng root) nạp lại nginx mỗi khi backend ghi lại danh sách cấm: backend chạy quyền thấp nên không tự nạp được
+install_guard_units() {
+  [ -n "$NGINX" ] || return 0
+  mkdir -p "$UNIT_DIR"
+  cat > "$UNIT_DIR/3rdhub-guard.path" <<UNIT
+[Unit]
+Description=Theo dõi danh sách cấm của 3RDHub CMS
+
+[Path]
+PathChanged=$GUARD_DIR/reload
+Unit=3rdhub-guard.service
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+  cat > "$UNIT_DIR/3rdhub-guard.service" <<UNIT
+[Unit]
+Description=Nạp lại nginx khi danh sách cấm đổi
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '$NGINX -t && systemctl reload nginx'
+UNIT
+  if [ "${SKIP_SYSTEM:-0}" != 1 ]; then
+    systemctl daemon-reload && systemctl enable --now 3rdhub-guard.path >/dev/null 2>&1 || warn "Không bật được 3rdhub-guard.path: danh sách cấm sẽ chỉ áp dụng khi nginx được nạp lại"
+  fi
+}
+
+proxy_block() { # $1=cổng, $2=limit: áp giới hạn tốc độ nghiêm hơn cho API
   cat <<PB
         proxy_pass http://127.0.0.1:$1;
         proxy_http_version 1.1;
@@ -207,6 +268,14 @@ proxy_block() { # $1=cổng
         proxy_set_header X-Forwarded-Proto \$scheme;
         proxy_read_timeout 30s;
 PB
+  if [ "${2:-}" = limit ]; then
+    cat <<PB
+        limit_req zone=rh_api burst=20 nodelay;
+        limit_req zone=rh_ip burst=80 nodelay;
+        limit_req zone=rh_fp burst=600 nodelay;
+        limit_conn rh_conn 50;
+PB
+  fi
 }
 
 main_vhost() {
@@ -216,32 +285,34 @@ main_vhost() {
     api="
     # Backend Go: chỉ mở các đường dẫn công khai dưới đây. Trang quản trị nằm ở $CMS_SUB
     location = /api/content {
-$(proxy_block "$port")
+$(proxy_block "$port" limit)
     }
     location = /api/lead {
         client_max_body_size 64k;
-$(proxy_block "$port")
+$(proxy_block "$port" limit)
     }
     # Đăng ký sản phẩm của khách: backend chuyển tiếp sang 3RDHub (khoá HUB_SITE_KEY chỉ nằm ở backend)
     location = /api/products {
-$(proxy_block "$port")
+$(proxy_block "$port" limit)
     }
     location = /api/register {
         client_max_body_size 16k;
-$(proxy_block "$port")
+$(proxy_block "$port" limit)
     }
     # Webhook của ứng dụng Zalo (tin khách nhắn OA); backend kiểm tra chữ ký X-ZEvent-Signature
     location = /api/zalo/webhook {
         client_max_body_size 64k;
-$(proxy_block "$port")
+$(proxy_block "$port" limit)
     }
     # file xác minh website của DMCA.com (mã sửa trong CMS)
     location = /dmca-validation.html {
-$(proxy_block "$port")
+$(proxy_block "$port" limit)
     }
     # PDF các chính sách (điều khoản, bảo mật, giá, thanh toán...) tạo từ nội dung CMS
     location ^~ /api/legal/ {
 $(proxy_block "$port")
+        limit_req zone=rh_pdf burst=6 nodelay;
+        limit_req zone=rh_ip burst=80 nodelay;
     }
     # tiêu đề/mô tả SEO và mã xác minh Google/Bing... sửa trong CMS; chỉ dùng nội bộ qua SSI của trang HTML
     location ^~ /api/seo/ {
@@ -249,8 +320,20 @@ $(proxy_block "$port")
         proxy_connect_timeout 2s;
 $(proxy_block "$port")
     }
+    # request bị giới hạn tốc độ (429) được báo về backend để đếm và tự cấm IP/trình duyệt tấn công
+    location = /__rh_strike {
+        internal;
+        proxy_connect_timeout 1s;
+        proxy_read_timeout 2s;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Orig-URI \$request_uri;
+        proxy_set_header X-Forwarded-For \$remote_addr;
+        proxy_pass http://127.0.0.1:$port/api/guard/strike;
+        error_page 502 503 504 = @rh_429;
+    }
     location ^~ /uploads/ {
-$(proxy_block "$port")
+$(proxy_block "$port" limit)
     }
     location ^~ /api/ { return 404; }
 "
@@ -260,12 +343,48 @@ $(proxy_block "$port")
     location ^~ /api/seo/ { internal; return 204; }
 "
   fi
+  local strike="@rh_429"; cms_installed && strike="/__rh_strike"
   cat <<CONF
 # 3RDHub Vietnam: website (Vue, build sẵn). Tạo bởi deploy.sh $STAMP
+# ---- chống tấn công: giới hạn tốc độ theo IP thật và theo chữ ký trình duyệt; danh sách cấm do CMS quản lý ($GUARD_DIR)
+geo \$rh_allow    { default 0; include $GUARD_DIR/allow-ip.conf; }
+geo \$rh_ban_ip   { default 0; include $GUARD_DIR/ban-ip.conf; }
+map "\$http_user_agent|\$http_accept_language|\$http_accept_encoding|\$http_sec_ch_ua|\$http_sec_ch_ua_platform" \$rh_ban_fp { default 0; include $GUARD_DIR/ban-fp.conf; }
+map "\$rh_allow\$rh_ban_ip\$rh_ban_fp" \$rh_banned { default 0; ~^0(?:10|01|11)\$ 1; }
+map \$rh_allow \$rh_ipkey { 1 ""; default \$binary_remote_addr; }
+map \$rh_allow \$rh_fpkey { 1 ""; default "\$http_user_agent|\$http_accept_language|\$http_accept_encoding|\$http_sec_ch_ua|\$http_sec_ch_ua_platform"; }
+limit_req_zone \$rh_ipkey zone=rh_ip:20m rate=20r/s;
+limit_req_zone \$rh_ipkey zone=rh_api:10m rate=5r/s;
+limit_req_zone \$rh_ipkey zone=rh_pdf:5m rate=1r/s;
+limit_req_zone \$rh_fpkey zone=rh_fp:20m rate=300r/s;
+limit_conn_zone \$rh_ipkey zone=rh_conn:10m;
+
 server {
     listen 80;
     listen [::]:80;
     server_name $DOMAIN www.$DOMAIN;
+
+    # IP khách thật khi đi qua Cloudflare (chỉ tin CF-Connecting-IP nếu gói tin đến từ IP Cloudflare)
+    include $GUARD_DIR/cloudflare.conf;
+    limit_req_status 429;
+    limit_conn_status 429;
+    limit_req zone=rh_ip burst=80 nodelay;
+    limit_req zone=rh_fp burst=600 nodelay;
+    limit_conn rh_conn 50;
+    error_page 429 = $strike;
+    error_page 403 @rh_403;
+    if (\$rh_banned) { return 403; }
+    location @rh_429 {
+        default_type text/html;
+        add_header Retry-After 30 always;
+        add_header Cache-Control "no-store" always;
+        return 429 '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>429</title><body style="font:16px/1.6 system-ui,sans-serif;max-width:560px;margin:12vh auto;padding:0 20px;color:#0B2A6F"><h1 style="font-size:22px">Bạn đang gửi quá nhiều yêu cầu</h1><p>Vui lòng chờ một lát rồi tải lại trang.</p><p style="color:#5B6279">Too many requests. Please wait a moment and try again.</p>';
+    }
+    location @rh_403 {
+        default_type text/html;
+        add_header Cache-Control "no-store" always;
+        return 403 '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>403</title><body style="font:16px/1.6 system-ui,sans-serif;max-width:560px;margin:12vh auto;padding:0 20px;color:#0B2A6F"><h1 style="font-size:22px">Truy cập bị chặn</h1><p>Địa chỉ hoặc trình duyệt của bạn tạm thời bị chặn do có dấu hiệu bất thường. Nếu đây là nhầm lẫn, vui lòng liên hệ hotline (+84) 398 192 414.</p><p style="color:#5B6279">Access blocked. If this is a mistake, please contact us.</p>';
+    }
 
     # một địa chỉ duy nhất cho Google: www.<tên miền> chuyển hẳn (301) về <tên miền>
     if (\$host = www.$DOMAIN) { return 301 https://$DOMAIN\$request_uri; }
@@ -311,6 +430,7 @@ CONF
 
 apply_nginx() {
   local CMS_BEFORE; CMS_BEFORE="$(http_code "$CMS_SUB")"
+  ensure_guard
   install_files
   main_vhost | install_vhost "$DOMAIN.conf" "$DOMAIN www.$DOMAIN"
   if [ "${SKIP_VERIFY:-0}" != 1 ]; then
@@ -519,6 +639,7 @@ CMS_DATA=$CMS_DATA
 CMS_HOSTS=$CMS_SUB
 DATABASE_URL=$DB_URL
 ADMIN_DIR=$CMS_DIR/admin
+GUARD_DIR=$GUARD_DIR
 CMS_ADMIN_PASSWORD=$pass
 ENV
     umask 022
@@ -527,9 +648,12 @@ ENV
   else
     if env_set DATABASE_URL "$DB_URL"; then RESTART=1; fi
     if env_set ADMIN_DIR "$CMS_DIR/admin"; then RESTART=1; fi
+    if [ -n "$NGINX" ] && env_set GUARD_DIR "$GUARD_DIR"; then RESTART=1; fi
   fi
   local PORT; PORT="$(cms_port)"
 
+  ensure_guard
+  install_guard_units
   mkdir -p "$UNIT_DIR"
   cat > "$UNITF.new" <<UNIT
 [Unit]
@@ -549,7 +673,7 @@ NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
 PrivateTmp=true
-ReadWritePaths=$CMS_DATA
+ReadWritePaths=$CMS_DATA${NGINX:+ $GUARD_DIR}
 
 [Install]
 WantedBy=multi-user.target
@@ -597,6 +721,7 @@ server {
     listen 80;
     listen [::]:80;
     server_name $CMS_SUB;
+    include $GUARD_DIR/cloudflare.conf;
     client_max_body_size 3m;
     add_header X-Robots-Tag "noindex, nofollow" always;
     location / {

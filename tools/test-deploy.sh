@@ -32,6 +32,17 @@ grep -q 'ExecStart=.*/server serve' "$T/etc/systemd/system/3rdhub-cms.service" |
 grep -q 'location ^~ /assets/' "$T/etc/nginx/sites-available/test.local.conf" || fail "vhost thiếu /assets/"
 grep -q 'ssi on;' "$T/etc/nginx/sites-available/test.local.conf" && [ "$(grep -c 'location ^~ /api/seo/' "$T/etc/nginx/sites-available/test.local.conf")" = 1 ] || fail "vhost thiếu SSI/SEO hoặc trùng location /api/seo/"
 grep -q 'if ($host = www.test.local) { return 301 https://test.local$request_uri; }' "$T/etc/nginx/sites-available/test.local.conf" || fail "thiếu chuyển www về tên miền chính"
+V="$T/etc/nginx/sites-available/test.local.conf"
+for k in 'limit_req_zone $rh_ipkey zone=rh_ip' 'map "$rh_allow$rh_ban_ip$rh_ban_fp" $rh_banned' 'error_page 429 = /__rh_strike;' 'if ($rh_banned) { return 403; }' 'location = /__rh_strike' 'limit_req zone=rh_pdf' "include $T/etc/nginx/3rdhub-guard/cloudflare.conf;"; do
+  grep -qF -- "$k" "$V" || fail "vhost thiếu khối chống tấn công: $k"
+done
+G="$T/etc/nginx/3rdhub-guard"
+for f in allow-ip.conf ban-ip.conf ban-fp.conf cloudflare.conf reload; do [ -f "$G/$f" ] || fail "thiếu $G/$f"; done
+grep -q 'set_real_ip_from 173.245.48.0/20;' "$G/cloudflare.conf" || grep -q 'set_real_ip_from 104.16.0.0/13;' "$G/cloudflare.conf" || fail "cloudflare.conf thiếu dải IP"
+grep -q 'real_ip_header CF-Connecting-IP;' "$G/cloudflare.conf" || fail "cloudflare.conf thiếu real_ip_header"
+grep -q 'PathChanged='"$G"'/reload' "$T/etc/systemd/system/3rdhub-guard.path" || fail "thiếu 3rdhub-guard.path"
+grep -q '^GUARD_DIR='"$G" "$T/etc/3rdhub-cms.env" || fail "env thiếu GUARD_DIR"
+grep -q 'ReadWritePaths=.*'"$G" "$T/etc/systemd/system/3rdhub-cms.service" || fail "unit thiếu ReadWritePaths cho thư mục danh sách cấm"
 grep -q 'server_name cms.test.local' "$T/etc/nginx/sites-available/cms.test.local.conf" || fail "thiếu vhost cms"
 grep -q 'Mật khẩu quản trị lần đầu' "$T/out1" || fail "không in mật khẩu"
 echo "ok"

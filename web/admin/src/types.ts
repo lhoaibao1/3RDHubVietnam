@@ -12,7 +12,7 @@ export interface StringItem { k: string; g: string; en: string }
 export interface Strings { groups: string[]; items: StringItem[] }
 
 export const LEAD_LABEL: Record<Lead['status'], string> = { new: 'Mới', contacted: 'Đã liên hệ', done: 'Hoàn tất', spam: 'Spam' }
-export type TabKey = 'dash' | 'live' | 'text' | 'product' | 'faq' | 'partners' | 'clients' | 'quote' | 'legal' | 'company' | 'seo' | 'look' | 'bg' | 'email' | 'account' | 'leads' | 'history'
+export type TabKey = 'dash' | 'live' | 'text' | 'product' | 'faq' | 'partners' | 'clients' | 'quote' | 'legal' | 'company' | 'seo' | 'look' | 'bg' | 'guard' | 'email' | 'account' | 'leads' | 'history'
 /** Thanh bên: sửa chữ ngay trên trang là chính; danh sách (hỏi đáp, đối tác, khách hàng, báo giá) và thông tin công ty tách riêng. */
 export const SECTIONS: { title: string; tabs: [TabKey, string][] }[] = [
   { title: '', tabs: [['dash', 'Tổng quan']] },
@@ -20,7 +20,7 @@ export const SECTIONS: { title: string; tabs: [TabKey, string][] }[] = [
   { title: 'Danh sách', tabs: [['product', 'Sản phẩm, dự án'], ['quote', 'Báo giá, so sánh gói'], ['faq', 'Hỏi đáp'], ['partners', 'Đối tác (logo)'], ['clients', 'Khách hàng'], ['legal', 'Điều khoản, chính sách']] },
   { title: 'Thông tin', tabs: [['company', 'Công ty, liên hệ, MXH'], ['seo', 'SEO, Google Analytics']] },
   { title: 'Hệ thống', tabs: [['look', 'Cảnh 3D, hiệu ứng cuộn'], ['bg', 'Nền từng trang'], ['email', 'Email & Zalo báo tin'], ['account', 'Mật khẩu']] },
-  { title: 'Vận hành', tabs: [['leads', 'Yêu cầu khách'], ['history', 'Lịch sử']] },
+  { title: 'Vận hành', tabs: [['leads', 'Yêu cầu khách'], ['guard', 'Chặn tấn công'], ['history', 'Lịch sử']] },
 ]
 export const TABS: [TabKey, string][] = SECTIONS.flatMap((s) => s.tabs)
 
