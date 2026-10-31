@@ -359,3 +359,5 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .gpre small{color:var(--ink2);font-weight:600;line-height:1.4}
 .gform{grid-template-columns:minmax(150px,1.2fr) minmax(180px,2fr) 130px minmax(140px,1.4fr) auto}
 @media(max-width:720px){.gform{grid-template-columns:1fr}}
+.zprev{max-width:340px;margin:12px 0 14px;border-radius:18px;overflow:hidden;background:#fff;box-shadow:0 14px 30px -20px rgba(11,42,111,.5);border:1px solid var(--line)}
+.zprev img{display:block;width:100%;height:auto}.zprev .zb{padding:12px 14px;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}

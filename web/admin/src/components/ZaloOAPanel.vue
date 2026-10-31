@@ -9,12 +9,13 @@ interface St {
   configured: boolean; legacy?: boolean; own: { app_id: string; has_secret: boolean; has_oa_secret: boolean; connected: boolean; oa_id: string; connected_at: number; public: boolean; callback_url: string; webhook_url: string }
   public: boolean; webhook: boolean; poll: boolean; app_id: string; oa_id: string; oa_url: string
   token: { ok: boolean; oa_id: string; error: string; checked_at: number; expires_at?: number }
-  last_event_at: number; linked: number; pending: number; confirm: string; confirm_default: string
+  last_event_at: number; linked: number; pending: number; confirm: string; confirm_default: string; banner: boolean; banner_url: string
 }
 interface Out { id: number; lead_id: number; name: string; text: string; status: 'pending' | 'sent' | 'failed'; tries: number; error: string; created: number; sent_at: number }
 const st = ref<St | null>(null)
 const outbox = ref<Out[]>([])
 const confirmText = ref('')
+const withBanner = ref(true)
 const test = ref<{ code: string; expires_at: number; oa_url: string } | null>(null)
 const busy = ref(false)
 const msg = ref('')
@@ -32,7 +33,7 @@ const LBL: Record<Out['status'], string> = { pending: 'Đang chờ', sent: 'Đã
 async function load() {
   try {
     st.value = await api<St>('GET', 'zalo-oa')
-    confirmText.value = st.value.confirm
+    confirmText.value = st.value.confirm; withBanner.value = st.value.banner
     form.app_id = st.value.own.app_id || st.value.app_id || ''; form.public = st.value.own.public; form.app_secret = ''; form.oa_secret = ''
     outbox.value = await api<Out[]>('GET', 'zalo-oa/outbox')
   } catch (e) { say((e as Error).message) }
@@ -47,7 +48,7 @@ const check = () => run(async () => { st.value = await api<St>('POST', 'zalo-oa/
 const saveApp = () => run(async () => { st.value = await api<St>('PUT', 'zalo-oa/app', { ...form }); form.app_secret = ''; form.oa_secret = '' }, 'Đã lưu. Khoá được mã hoá trên máy chủ và không hiện lại.')
 const connect = () => run(async () => { const r = await api<{ url: string }>('POST', 'zalo-oa/connect', {}); location.href = r.url }, 'Đang chuyển sang Zalo…')
 const disconnect = () => { if (confirm('Ngắt kết nối Zalo OA? Tin tư vấn sẽ không gửi được cho tới khi kết nối lại.')) run(async () => { st.value = await api<St>('POST', 'zalo-oa/disconnect', {}) }, 'Đã ngắt kết nối.') }
-const saveConfirm = () => run(async () => { st.value = await api<St>('PUT', 'zalo-oa', { confirm: confirmText.value }) }, 'Đã lưu tin xác nhận.')
+const saveConfirm = () => run(async () => { st.value = await api<St>('PUT', 'zalo-oa', { confirm: confirmText.value, banner: withBanner.value }) }, 'Đã lưu tin xác nhận.')
 const makeCode = () => run(async () => { test.value = await api('POST', 'zalo-oa/test-code', {}) }, 'Đã tạo yêu cầu thử. Làm theo các bước bên dưới.')
 </script>
 
@@ -123,7 +124,9 @@ const makeCode = () => run(async () => { test.value = await api('POST', 'zalo-oa
 
   <div class="panel">
     <h2>Tin xác nhận khi khách gửi mã</h2>
-    <p class="sub">Dùng được: {code} mã, {name} tên khách, {need} nhu cầu. Tối đa 2.000 ký tự.</p>
+    <p class="sub">Dùng được: {code} mã, {name} tên khách, {need} nhu cầu. Tối đa 2.000 ký tự. Khung xem trước bên dưới là tin khách sẽ nhận (nhân viên tự gõ thì gửi chữ thường, không kèm ảnh).</p>
+    <label class="zsw"><input v-model="withBanner" type="checkbox"> <span><b>Kèm logo thương hiệu</b> phía trên tin xác nhận (ảnh 3RDHub Vietnam). Nếu Zalo từ chối ảnh, tin vẫn được gửi dưới dạng chữ.</span></label>
+    <div class="zprev"><img v-if="withBanner" :src="site + '/img/zalo-banner.png'" alt="Logo kèm trong tin nhắn" width="1000" height="500"><div class="zb">{{ confirmText || st?.confirm_default }}</div></div>
     <textarea v-model="confirmText" rows="3" :placeholder="st?.confirm_default" style="width:100%" />
     <div class="bar" style="margin-top:10px">
       <button class="btn" type="button" :disabled="busy" @click="saveConfirm">Lưu tin xác nhận</button>

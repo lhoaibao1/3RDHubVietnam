@@ -22,6 +22,8 @@ type fakeOAuth struct {
 	n         int
 	refreshOK map[string]bool // refresh token còn hợp lệ (dùng một lần)
 	sent      []string
+	imgs      []string // địa chỉ ảnh đính kèm trong các tin đã gửi
+	rejectImg bool     // Zalo từ chối tin có ảnh (lỗi tham số)
 }
 
 func newFakeOAuth(t *testing.T) (*fakeOAuth, *httptest.Server) {
@@ -62,9 +64,31 @@ func newFakeOAuth(t *testing.T) (*fakeOAuth, *httptest.Server) {
 			fmt.Fprintf(w, `{"access_token":"at-%d","refresh_token":"rt-%d","expires_in":"3600"}`, f.n, f.n)
 		case "/v3.0/oa/message/cs":
 			var b struct {
-				Message struct{ Text string } `json:"message"`
+				Message struct {
+					Text       string `json:"text"`
+					Attachment struct {
+						Payload struct {
+							TemplateType string `json:"template_type"`
+							Elements     []struct {
+								Type string `json:"media_type"`
+								URL  string `json:"url"`
+							} `json:"elements"`
+						} `json:"payload"`
+					} `json:"attachment"`
+				} `json:"message"`
 			}
 			json.NewDecoder(r.Body).Decode(&b)
+			if els := b.Message.Attachment.Payload.Elements; len(els) > 0 {
+				if f.rejectImg {
+					w.Write([]byte(`{"error":-201,"message":"params invalid"}`))
+					return
+				}
+				if b.Message.Attachment.Payload.TemplateType != "media" || els[0].Type != "image" {
+					w.Write([]byte(`{"error":-201,"message":"sai mẫu"}`))
+					return
+				}
+				f.imgs = append(f.imgs, els[0].URL)
+			}
 			f.sent = append(f.sent, r.Header.Get("access_token")+"|"+b.Message.Text)
 			w.Write([]byte(`{"error":0,"message":"Success","data":{"message_id":"m1"}}`))
 		default:
@@ -187,4 +211,43 @@ func rawKV(t *testing.T, a *App, key string) []byte {
 		t.Fatal(err, ok)
 	}
 	return v
+}
+
+func TestZaloBannerInConfirmation(t *testing.T) {
+	a := testApp(t)
+	f, srv := newFakeOAuth(t)
+	a.cfg.SiteURL = "https://site.example"
+	a.zoa = newZaloOA(Config{ZaloAPIBase: srv.URL})
+	a.zoa.app = a
+	t.Cleanup(func() { zaloOpenAPI, zaloOAuthBase = "https://openapi.zalo.me", "https://oauth.zaloapp.com" })
+	if err := a.zaloOwnWrite(t.Context(), zaloOwn{AppID: "3689777608400566243", AppSecret: "khoa-bi-mat-app", Access: "at-0", Refresh: "rt-0", Exp: 4102444800, OAID: "1"}); err != nil {
+		t.Fatal(err)
+	}
+	if u := a.zaloBannerURL(t.Context()); u != "https://site.example/img/zalo-banner.png" {
+		t.Fatalf("banner mặc định bật: %q", u)
+	}
+	if st, err := a.deliverImg(t.Context(), 0, "u1", "Xin chào", a.zaloBannerURL(t.Context())); err != nil || st != "sent" {
+		t.Fatalf("%s %v", st, err)
+	}
+	if len(f.imgs) != 1 || f.imgs[0] != "https://site.example/img/zalo-banner.png" {
+		t.Fatalf("tin phải kèm ảnh logo dạng media: %v", f.imgs)
+	}
+	// tắt trong CMS: chỉ còn chữ
+	ck := login(t, a)
+	h := map[string]string{"X-CMS": "1", "Cookie": ck, "Content-Type": "application/json"}
+	if r := do(a, "PUT", cms, "/api/admin/zalo-oa", []byte(`{"confirm":"","banner":false}`), h); r.code != 200 || r.json(t)["banner"] != false {
+		t.Fatalf("%d %s", r.code, r.body)
+	}
+	if u := a.zaloBannerURL(t.Context()); u != "" {
+		t.Fatalf("đã tắt: %q", u)
+	}
+	// Zalo từ chối ảnh: gửi lại chỉ có chữ, vẫn tính là đã gửi
+	f.rejectImg = true
+	n := len(f.sent)
+	if st, err := a.deliverImg(t.Context(), 0, "u1", "Lần hai", "https://site.example/img/zalo-banner.png"); err != nil || st != "sent" {
+		t.Fatalf("%s %v", st, err)
+	}
+	if len(f.sent) != n+1 || !strings.HasSuffix(f.sent[n], "|Lần hai") {
+		t.Fatalf("phải gửi lại dạng chữ: %v", f.sent)
+	}
 }

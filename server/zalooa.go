@@ -209,10 +209,19 @@ func (z *zaloOA) call(ctx context.Context, method, path string, body any) (zaloR
 
 // sendCS gửi một tin tư vấn dạng văn bản (tối đa 2.000 ký tự).
 func (z *zaloOA) sendCS(ctx context.Context, uid, text string) error {
+	return z.sendCSImg(ctx, uid, text, "")
+}
+
+// sendCSImg gửi tin tư vấn kèm một ảnh (logo, banner) phía trên chữ: mẫu "media" của Zalo, ảnh phải có địa chỉ công khai.
+func (z *zaloOA) sendCSImg(ctx context.Context, uid, text, img string) error {
 	if r := []rune(text); len(r) > 2000 {
 		text = string(r[:2000])
 	}
-	r, err := z.call(ctx, http.MethodPost, "/v3.0/oa/message/cs", map[string]any{"recipient": map[string]string{"user_id": uid}, "message": map[string]string{"text": text}})
+	msg := map[string]any{"text": text}
+	if img != "" {
+		msg["attachment"] = map[string]any{"type": "template", "payload": map[string]any{"template_type": "media", "elements": []map[string]string{{"media_type": "image", "url": img}}}}
+	}
+	r, err := z.call(ctx, http.MethodPost, "/v3.0/oa/message/cs", map[string]any{"recipient": map[string]string{"user_id": uid}, "message": msg})
 	if err != nil {
 		return err
 	}
@@ -255,9 +264,23 @@ func normCode(digits string) string { return "3R-" + digits }
 // deliver gửi tin cho khách; quá khung tương tác hoặc lỗi tạm thời thì để trong hàng chờ.
 // Trả về trạng thái: sent | pending | failed.
 func (a *App) deliver(ctx context.Context, leadID int64, uid, text string) (string, error) {
-	err := a.zoa.sendCS(ctx, uid, text)
-	st, msg := "sent", ""
+	return a.deliverImg(ctx, leadID, uid, text, "")
+}
+
+// deliverImg như deliver nhưng kèm ảnh thương hiệu; Zalo từ chối ảnh (lỗi tham số, ảnh không tải được) thì gửi lại chỉ có chữ.
+func (a *App) deliverImg(ctx context.Context, leadID int64, uid, text, img string) (string, error) {
+	var err error
 	var ow errOutsideWindow
+	if img != "" {
+		err = a.zoa.sendCSImg(ctx, uid, text, img)
+		if err != nil && !errors.As(err, &ow) && strings.HasPrefix(err.Error(), "Zalo ") {
+			log.Printf("Zalo OA: gửi kèm ảnh không được (%v), gửi lại chỉ có chữ", err)
+			err = a.zoa.sendCS(ctx, uid, text)
+		}
+	} else {
+		err = a.zoa.sendCS(ctx, uid, text)
+	}
+	st, msg := "sent", ""
 	switch {
 	case err == nil:
 	case errors.As(err, &ow) || !strings.HasPrefix(err.Error(), "Zalo -"):
@@ -325,6 +348,22 @@ func (a *App) zaloConfirmText(ctx context.Context) string {
 	return c.Confirm
 }
 
+// zaloBannerURL: ảnh logo/banner thương hiệu gắn vào tin xác nhận ("" khi đã tắt trong CMS).
+func (a *App) zaloBannerURL(ctx context.Context) string {
+	var c struct {
+		NoBanner bool `json:"no_banner"`
+	}
+	kvGet(ctx, a.pool, "zalo_oa", &c)
+	if c.NoBanner {
+		return ""
+	}
+	base := a.cfg.SiteURL
+	if base == "" {
+		base = a.brandInfo(ctx, "").Site
+	}
+	return strings.TrimRight(base, "/") + "/img/zalo-banner.png"
+}
+
 func fillZalo(tpl string, code, name, need string) string {
 	return strings.NewReplacer("{code}", code, "{name}", name, "{need}", need).Replace(tpl)
 }
@@ -361,7 +400,7 @@ func (a *App) inbound(ctx context.Context, uid, text, msgID string) {
 		if owner == "" {
 			a.pool.Exec(ctx, `UPDATE leads SET zalo_uid=$1, zalo_linked_at=$2 WHERE id=$3 AND zalo_uid=''`, uid, time.Now().Unix(), id)
 		}
-		a.deliver(ctx, id, uid, fillZalo(a.zaloConfirmText(ctx), code, name, need))
+		a.deliverImg(ctx, id, uid, fillZalo(a.zaloConfirmText(ctx), code, name, need), a.zaloBannerURL(ctx))
 		return
 	}
 	if err := a.zoa.sendCS(ctx, uid, reply); err != nil {
@@ -568,7 +607,7 @@ func (a *App) zaloOAStatus(ctx context.Context) map[string]any {
 	return map[string]any{
 		"configured": z.ready(), "public": z.publicOn(), "webhook": z.secretv() != "" && z.appIDv() != "", "poll": z.poll, "legacy": z.tokenURL != "" && z.shareKey != "",
 		"app_id": z.appIDv(), "oa_id": z.oaIDv(), "oa_url": z.oaURL(), "token": tok, "last_event_at": last,
-		"linked": linked, "pending": pending, "confirm": a.zaloConfirmText(ctx), "confirm_default": defaultZaloConfirm,
+		"linked": linked, "pending": pending, "confirm": a.zaloConfirmText(ctx), "confirm_default": defaultZaloConfirm, "banner": a.zaloBannerURL(ctx) != "", "banner_url": a.zaloBannerURL(ctx),
 	}
 }
 
@@ -613,7 +652,8 @@ func (a *App) zaloAdmin(ctx context.Context, w http.ResponseWriter, r *http.Requ
 		if c != "" && !strings.Contains(c, "{code}") {
 			return nil, true, bad("Tin xác nhận nên có {code} để khách biết mã đã được ghép")
 		}
-		if err := kvSetPool(ctx, a.pool, "zalo_oa", map[string]string{"confirm": c}); err != nil {
+		banner, _ := d["banner"].(bool)
+		if err := kvSetPool(ctx, a.pool, "zalo_oa", map[string]any{"confirm": c, "no_banner": !banner}); err != nil {
 			return nil, true, err
 		}
 		return a.zaloOAStatus(ctx), true, nil
