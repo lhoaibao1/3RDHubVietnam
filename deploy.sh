@@ -331,8 +331,12 @@ $(proxy_block "$port")
     location ^~ /api/seo/ {
         internal;
         proxy_connect_timeout 2s;
+        # lỗi bất kỳ của backend thì để trống (SSI dùng khối mặc định), không bao giờ chèn chữ báo lỗi vào trang
+        proxy_intercept_errors on;
+        error_page 400 401 403 404 405 408 413 429 500 502 503 504 = @seo_empty;
 $(proxy_block "$port")
     }
+    location @seo_empty { internal; default_type text/html; return 200 ""; }
     # request bị giới hạn tốc độ (429) được báo về backend để đếm và tự cấm IP/trình duyệt tấn công
     location = /__rh_strike {
         internal;

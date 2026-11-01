@@ -97,3 +97,17 @@ func TestSEODefaultsInSync(t *testing.T) {
 		t.Fatal("server/seed/seo.json phải giống web/scripts/seo.json (chạy: cp web/scripts/seo.json server/seed/seo.json)")
 	}
 }
+
+// Mọi loại khối SEO mà prerender sinh ra (t, d, c, v, l) đều phải có đường dẫn: nếu thiếu, nginx SSI chèn chữ lỗi vào trang.
+func TestSEORoutesAllKinds(t *testing.T) {
+	a := testApp(t)
+	for _, k := range []string{"t", "d", "c", "v", "l"} {
+		r := do(a, "GET", "3rdhubvietnam.tech", "/api/seo/"+k+"?p=san-pham&l=en", nil, nil)
+		if r.code != 200 || strings.Contains(string(r.body), "error") {
+			t.Fatalf("/api/seo/%s: %d %s", k, r.code, r.body)
+		}
+	}
+	if r := do(a, "GET", "3rdhubvietnam.tech", "/api/seo/c?p=san-pham&l=en", nil, nil); !strings.Contains(string(r.body), "/en/san-pham") {
+		t.Fatalf("canonical en: %s", r.body)
+	}
+}

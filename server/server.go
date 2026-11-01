@@ -368,7 +368,7 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		a.send(w, r, 200, []byte(code), "text/html; charset=utf-8", noStore)
-	case strings.HasPrefix(p, "/api/seo/") && len(p) == len("/api/seo/t") && strings.Contains("tdvl", p[len(p)-1:]) && get && !a.isAdminHost(r):
+	case strings.HasPrefix(p, "/api/seo/") && len(p) == len("/api/seo/t") && strings.Contains("tdcvl", p[len(p)-1:]) && get && !a.isAdminHost(r):
 		a.apiSEO(w, r, p[len(p)-1:])
 	case legalPDFRe.MatchString(p) && get:
 		a.apiLegalPDF(w, r)
