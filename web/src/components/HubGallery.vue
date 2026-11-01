@@ -25,8 +25,8 @@ onBeforeUnmount(() => clearInterval(t))
       <button type="button" class="hnav prev" :aria-label="$t('Ảnh trước')" @click="go(i - 1)">‹</button>
       <button type="button" class="hnav next" :aria-label="$t('Ảnh sau')" @click="go(i + 1)">›</button>
     </div>
-    <div class="hthumbs">
-      <button v-for="(s, k) in SHOTS" :key="s.id" type="button" :class="{ on: k === i }" :aria-label="site.pick(s.label)" @click="go(k)"><img :src="s.img" alt="" loading="lazy"><span>{{ site.pick(s.label) }}</span></button>
+    <div class="hdots" role="tablist" :aria-label="$t('Chọn ảnh')">
+      <button v-for="(s, k) in SHOTS" :key="s.id" type="button" role="tab" :class="{ on: k === i }" :aria-selected="k === i" :aria-label="site.pick(s.label)" @click="go(k)" />
     </div>
   </div>
 </template>

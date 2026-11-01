@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref } from 'vue'
+import { nextTick, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSite } from '@/stores/site'
 
@@ -7,7 +7,7 @@ import { useSite } from '@/stores/site'
 // Trình duyệt chỉ gọi /api/products và /api/register của trang này; backend chuyển tiếp sang 3RDHub kèm khoá.
 // Không đưa họ tên, số điện thoại hay dữ liệu khách vào analytics hay log.
 interface Product { code: string; name: string; partner: string }
-interface Done { code: string; zalo_url: string; expires_at: string; product_name: string }
+interface Done { code: string; product_name: string }
 type Field = 'full_name' | 'phone' | 'product_code' | 'consent'
 
 const site = useSite()
@@ -19,10 +19,8 @@ const errs = reactive<Partial<Record<Field, string>>>({})
 const formErr = ref('')
 const busy = ref(false)
 const done = ref<Done | null>(null)
-const copied = ref(false)
 const consentText = ref<HTMLElement | null>(null)
 const doneHead = ref<HTMLElement | null>(null)
-const codeBox = ref<HTMLInputElement | null>(null)
 
 const q = (k: string) => { const v = route.query[k]; return (Array.isArray(v) ? v[0] : v) || '' }
 
@@ -97,24 +95,6 @@ async function submit() {
   }
 }
 
-async function copy() {
-  const code = done.value?.code || ''
-  try {
-    await navigator.clipboard.writeText(code)
-  } catch {
-    codeBox.value?.select()
-    try { document.execCommand('copy') } catch { /* bỏ qua */ }
-  }
-  copied.value = true
-  setTimeout(() => { copied.value = false }, 4000)
-}
-
-const expiry = computed(() => {
-  const s = done.value?.expires_at
-  const d = s ? new Date(s) : null
-  if (!d || isNaN(d.getTime())) return ''
-  return d.toLocaleString(site.lang === 'en' ? 'en-GB' : 'vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
-})
 </script>
 
 <template>
@@ -122,8 +102,8 @@ const expiry = computed(() => {
   <div class="rgwrap">
     <div class="rgintro">
       <div class="k2">3RDHub Vietnam</div>
-      <h1>Đăng ký sản phẩm, <span class="o">theo dõi hồ sơ qua Zalo.</span></h1>
-      <p class="lead">Để lại thông tin, nhân viên tư vấn sẽ liên hệ bạn. Sau khi gửi, bạn nhận một mã để theo dõi hồ sơ qua Zalo.</p>
+      <h1>Đăng ký sản phẩm, <span class="o">nhận tư vấn từ chuyên viên.</span></h1>
+      <p class="lead">Để lại thông tin, nhân viên tư vấn sẽ liên hệ bạn.</p>
     </div>
 
     <form v-if="!done" class="rgform" novalidate @submit.prevent="submit">
@@ -159,21 +139,7 @@ const expiry = computed(() => {
     <div v-else class="cd rgdone">
       <h2 ref="doneHead" tabindex="-1">Đã nhận đăng ký của bạn</h2>
       <p v-if="done.product_name" class="rgprod">{{ done.product_name }}</p>
-      <div class="rgzalo">
-        <h3>Nhận thông báo hồ sơ qua Zalo</h3>
-        <div class="rgcode"><span>Mã của bạn</span><b>{{ done.code }}</b><input ref="codeBox" :value="done.code" readonly tabindex="-1" aria-hidden="true" class="rghp"></div>
-        <div class="acts">
-          <button class="btn or" type="button" @click="copy">Chép mã</button>
-          <a v-if="done.zalo_url" class="btn gh" :href="done.zalo_url" target="_blank" rel="noopener">Mở Zalo OA</a>
-        </div>
-        <p class="rgcopied" aria-live="polite"><template v-if="copied">Đã chép mã vào bộ nhớ tạm.</template></p>
-        <ol class="rgsteps">
-          <li><span>Bấm</span> <b>Mở Zalo OA</b> <span>và bấm</span> <b>Quan tâm</b>.</li>
-          <li><span>Gửi mã</span> <b>{{ done.code }}</b> <span>vào khung chat.</span></li>
-          <li>Bạn sẽ nhận tin khi hồ sơ được duyệt, giải ngân.</li>
-        </ol>
-        <p class="rgnote"><template v-if="expiry"><span>Mã dùng được tới</span> <b>{{ expiry }}</b>. </template><span>Nếu bạn không dùng Zalo, nhân viên sẽ gọi theo số đã đăng ký.</span></p>
-      </div>
+      <p class="rgthanks">Cảm ơn bạn đã đăng ký. Nhân viên tư vấn sẽ liên hệ với bạn sớm qua số điện thoại đã để lại.</p>
     </div>
   </div>
 </section>

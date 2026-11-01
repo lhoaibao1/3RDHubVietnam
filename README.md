@@ -166,7 +166,7 @@ Biến môi trường (trong `/etc/3rdhub-cms.env`, **không commit giá trị**
 
 **Thử trên máy chủ thật (chưa bật cho khách):** đặt 3 biến đầu và `ZALO_WEBHOOK_SECRET` → CMS, *Email & Zalo báo tin* → **Kiểm tra token** → **Tạo mã thử** → dùng tài khoản Zalo thử mở OA, Quan tâm, nhắn mã → nhận tin xác nhận → *Yêu cầu khách*, mở "Thử Zalo OA", gửi một tin. Ổn thì thêm `ZALO_OA_PUBLIC=1`.
 
-**Thử cục bộ:** `go test` (`zalooa_test.go`), và `tools/e2e/zalo.js` (3RDHub + Zalo giả, xem đầu file). `ZALO_API_BASE` chỉ dùng khi thử với máy chủ Zalo giả.
+**Thử cục bộ:** `go test` (`zalooa_test.go`). `ZALO_API_BASE` chỉ dùng khi thử với máy chủ Zalo giả.
 
 ## Bảo mật (tóm tắt)
 

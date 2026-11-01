@@ -12,6 +12,23 @@ import { useSite } from '@/stores/site'
 // Trang Sản phẩm: giới thiệu các dự án 3RDVN đang làm (sửa trong CMS, tab Sản phẩm), rồi đi vào từng dự án.
 // Dự án có id "saas" kèm thêm module, ảnh giao diện thật, so sánh và báo giá các gói.
 const site = useSite()
+
+// Biểu tượng từng module (đường nét 24x24) và tách mã "01 · ĐIỀU HÀNH" thành số lớn + nhãn.
+const MOD_ICONS: Record<string, string> = {
+  'dieu-hanh': 'M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z',
+  'san-pham': 'M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7',
+  'don': 'M9 4h6v3H9zM7 5H5v16h14V5h-2M8 12h8M8 16h5',
+  'nguon': 'M3 17l6-6 4 4 8-8M15 7h6v6',
+  'mkt': 'M3 11v3l12 5V6zM15 8c3 .5 5 2 5 4s-2 3.5-5 4M7 15v4h3',
+  'upl': 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M12 17v-6M9.5 13.5 12 11l2.5 2.5',
+  'tai-chinh': 'M3 7h15a3 3 0 0 1 3 3v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-3v3M17 14h2',
+  'nhan-su': 'M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20M9.5 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-1.5a4 4 0 0 0-3-3.9M16 4.2a3.5 3.5 0 0 1 0 6.6',
+  'he-thong': 'M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0M14 4v4M8 10v4M16 16v4',
+  def: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5',
+}
+const modCode = (m: { code: Parameters<typeof site.pick>[0] }) => site.pick(m.code).split('·').map((x) => x.trim())
+const modNum = (m: { code: Parameters<typeof site.pick>[0] }) => modCode(m)[0]
+const modTag = (m: { code: Parameters<typeof site.pick>[0] }) => modCode(m).slice(1).join(' · ')
 const root = ref<HTMLElement | null>(null)
 usePageFx(root)
 const num = (i: number) => String(i + 1).padStart(2, '0')
@@ -58,8 +75,12 @@ function jump(id: string) { document.getElementById('pj-' + id)?.scrollIntoView(
       <template v-if="p.id === 'saas'">
         <div class="pjs"><h3>Toàn bộ module</h3>
           <div class="mods">
-            <article v-for="m in site.modules" :key="m.id" class="cd mod">
-              <span class="mcode">{{ site.pick(m.code) }}</span>
+            <article v-for="m in site.modules" :key="m.id" class="cd mod" :class="'t' + (site.modules.indexOf(m) % 3)">
+              <span class="mnum" aria-hidden="true">{{ modNum(m) }}</span>
+              <div class="mhead">
+                <span class="mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path :d="MOD_ICONS[m.id] || MOD_ICONS.def" /></svg></span>
+                <span class="mcode">{{ modTag(m) }}</span>
+              </div>
               <h3>{{ site.pick(m.title) }}</h3>
               <ul class="ck"><li v-for="(it, k) in m.items" :key="k">{{ site.pick(it) }}</li></ul>
             </article>

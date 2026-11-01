@@ -65,16 +65,9 @@ const fs = require('fs');
   await fill(p, '+84 912 345 678'); await p.fill('#rg-province', 'Hồ Chí Minh');
   await p.click('.rgform button[type=submit]');
   await p.waitForSelector('.rgdone');
-  const code = (await p.textContent('.rgcode b')).trim();
-  assert(/^KH-\d{4}$/.test(code)); ok('gửi thành công, mã ' + code);
-  assert.strictEqual(await p.evaluate(() => document.activeElement.textContent.trim()), 'Đã nhận đăng ký của bạn'); ok('con trỏ chuyển tới tiêu đề bước 2');
-  assert.strictEqual(await p.getAttribute('.rgzalo a.btn', 'href'), 'https://zalo.me/147468245835855615');
-  assert.strictEqual(await p.getAttribute('.rgzalo a.btn', 'target'), '_blank'); ok('nút Mở Zalo OA mở tab mới');
-  assert((await p.textContent('.rgnote')).includes('Mã dùng được tới')); ok('ghi rõ hạn dùng mã');
-  await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: SITE });
-  await p.click('.rgzalo button >> text=Chép mã');
-  await p.waitForSelector('.rgcopied:has-text("Đã chép")');
-  assert.strictEqual(await p.evaluate(() => navigator.clipboard.readText()), code); ok('Chép mã đúng vào bộ nhớ tạm');
+  assert.strictEqual(await p.evaluate(() => document.activeElement.textContent.trim()), 'Đã nhận đăng ký của bạn'); ok('gửi thành công, con trỏ chuyển tới lời cảm ơn');
+  assert.strictEqual(await p.locator('.rgzalo, .rgcode').count(), 0); ok('không còn bước mã Zalo');
+  assert((await p.textContent('.rgthanks')).includes('sẽ liên hệ')); ok('chỉ cảm ơn và báo sẽ liên hệ');
   await p.screenshot({ path: OUT + '/rg_desktop_done.png' });
   await ctx.close();
 
@@ -89,10 +82,6 @@ const fs = require('fs');
   await p.waitForSelector('.rgdone'); ok('trùng (409 có data): hiện bước 2 với mã trả về');
   assert.strictEqual(await p.evaluate(() => document.documentElement.scrollWidth), 375); ok('375px: không tràn ngang (bước 2)');
   await p.screenshot({ path: OUT + '/rg_mobile_done.png', fullPage: true });
-  // bàn phím: Tab tới được hai nút
-  const tabs = [];
-  for (let i = 0; i < 40 && tabs.length < 60; i++) { await p.keyboard.press('Tab'); tabs.push(await p.evaluate(() => document.activeElement.textContent.trim())) }
-  assert(tabs.includes('Chép mã') && tabs.includes('Mở Zalo OA')); ok('bàn phím: Tab tới được Chép mã và Mở Zalo OA');
   await ctx.close();
 
   // ---- bẫy bot: thành công giả, không gửi sang 3RDHub
