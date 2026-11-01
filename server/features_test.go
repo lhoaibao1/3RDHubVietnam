@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"io"
 	"net"
@@ -318,5 +319,35 @@ func TestAdminTranslateEndpoint(t *testing.T) {
 	}
 	if r := do(a, "POST", cms, "/api/admin/translate", []byte(`{"texts":["a"]}`), map[string]string{}); r.code != 401 {
 		t.Fatalf("chưa đăng nhập phải 401, được %d", r.code)
+	}
+}
+
+// Sửa tiếng Việt mà English vẫn là bản mặc định cũ (vd. giá "35tr" -> "Liên hệ", English còn "35M VND"): hệ thống phải tự dịch lại.
+func TestTranslateStaleEnglish(t *testing.T) {
+	a := testApp(t)
+	srv, _ := fakeTranslate(t)
+	a.tr = &translator{client: srv.Client(), url: srv.URL}
+	c, _, err := a.currentContent(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	var idx = -1
+	for i, p := range c.Quote.Plans {
+		if p.ID == "mua-source" {
+			idx = i
+		}
+	}
+	if idx < 0 {
+		t.Fatal("thiếu gói mua-source")
+	}
+	c.Quote.Plans[idx].Price = Pair{VI: "Liên hệ", EN: "35M VND"}
+	done, _ := a.autoTranslate(context.Background(), &c, c)
+	if got := c.Quote.Plans[idx].Price.EN; done == 0 || got != "EN: Liên hệ" {
+		t.Fatalf("English phải dịch lại theo tiếng Việt mới: %q (done=%d)", got, done)
+	}
+	// còn khớp mặc định thì không dịch thêm
+	c2, _, _ := a.currentContent(context.Background())
+	if d, _ := a.autoTranslate(context.Background(), &c2, c2); d != 0 {
+		t.Fatalf("nội dung mặc định không được dịch lại: %d", d)
 	}
 }

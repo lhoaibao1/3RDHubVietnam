@@ -159,8 +159,43 @@ func (a *App) translateOne(ctx context.Context, vi string) (string, error) {
 	return en, nil
 }
 
+// seedEN: bản English mặc định -> tiếng Việt mặc định (từ seed/defaults.json). Bản English còn nguyên mặc định mà tiếng Việt đã bị sửa
+// nghĩa là chưa ai dịch lại cho khớp (ví dụ giá "35tr" đổi thành "Liên hệ" nhưng English vẫn "35M VND").
+var seedEN = func() map[string]string {
+	m := map[string]string{}
+	b, err := seedFS.ReadFile("seed/defaults.json")
+	if err != nil {
+		return m
+	}
+	var v any
+	if json.Unmarshal(b, &v) != nil {
+		return m
+	}
+	var walk func(x any)
+	walk = func(x any) {
+		switch t := x.(type) {
+		case map[string]any:
+			vi, ok1 := t["vi"].(string)
+			en, ok2 := t["en"].(string)
+			if ok1 && ok2 && strings.TrimSpace(en) != "" && strings.TrimSpace(vi) != "" {
+				m[strings.TrimSpace(en)] = strings.TrimSpace(vi)
+			}
+			for _, c := range t {
+				walk(c)
+			}
+		case []any:
+			for _, c := range t {
+				walk(c)
+			}
+		}
+	}
+	walk(v)
+	return m
+}()
+
 type tjob struct {
 	vi     string
+	prevVI *string // tiếng Việt đã lưu trước đó (nil nếu mục mới)
 	en, x  *string
 	prevEN *string // bản EN đã lưu trước đó (nil nếu mục mới)
 }
@@ -177,6 +212,12 @@ func (j *tjob) need() bool {
 	if strings.TrimSpace(*j.en) == "" {
 		return true
 	}
+	// English vẫn là bản mặc định nhưng tiếng Việt đã khác mặc định
+	if *j.x == "" {
+		if dv, ok := seedEN[strings.TrimSpace(*j.en)]; ok && dv != strings.TrimSpace(j.vi) {
+			return true
+		}
+	}
 	return *j.x != "" && *j.x != vhash(j.vi)
 }
 
@@ -184,6 +225,7 @@ func pairJob(p *Pair, prev *Pair) *tjob {
 	j := &tjob{vi: p.VI, en: &p.EN, x: &p.X}
 	if prev != nil {
 		j.prevEN = &prev.EN
+		j.prevVI = &prev.VI
 	}
 	return j
 }
@@ -206,8 +248,8 @@ func (a *App) autoTranslate(ctx context.Context, c *Content, prev Content) (done
 		k, it := k, v
 		j := &tjob{vi: it.VI, en: &it.EN, x: &it.X}
 		if p, ok := prev.Ov[k]; ok {
-			pe := p.EN
-			j.prevEN = &pe
+			pe, pv := p.EN, p.VI
+			j.prevEN, j.prevVI = &pe, &pv
 		}
 		jobs = append(jobs, j)
 		back = append(back, func() { c.Ov[k] = it })
@@ -359,4 +401,23 @@ func (a *App) autoTranslate(ctx context.Context, c *Content, prev Content) (done
 		f()
 	}
 	return
+}
+
+// repairTranslations chạy một lần khi khởi động: dịch bù những đoạn English còn thiếu hoặc đã cũ so với tiếng Việt (không cần ai bấm lưu).
+func (a *App) repairTranslations(ctx context.Context) {
+	if a.tr == nil || a.tr.off {
+		return
+	}
+	c, _, err := a.currentContent(ctx)
+	if err != nil {
+		return
+	}
+	done, _ := a.autoTranslate(ctx, &c, c)
+	a.translateSEO(ctx, &c, c)
+	if done == 0 {
+		return
+	}
+	if err := a.saveContent(ctx, c, "Tự dịch bổ sung English cho khớp tiếng Việt"); err != nil {
+		log.Printf("tự dịch bổ sung: %v", err)
+	}
 }
