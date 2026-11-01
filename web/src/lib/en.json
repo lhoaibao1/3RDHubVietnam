@@ -101,7 +101,6 @@
 "Sao chép link": "Copy link",
 "Hồ sơ #A-1042 đã duyệt": "Application #A-1042 approved",
 "+350.000đ vào ví": "+350,000đ to wallet",
-"Giao diện minh hoạ từ hệ thống 3RDHub, số liệu là ví dụ.": "Illustrative screens from the 3RDHub system; figures are examples.",
 "Frontend Vue.js, backend Go.": "Vue.js frontend, Go backend.",
 "Giao diện nhanh, dễ mở rộng cho cộng tác viên và quản trị viên. Backend Go xử lý lượt bấm, postback và đối soát với độ trễ thấp, chịu được lưu lượng lớn khi chiến dịch bùng nổ.": "A fast, extensible interface for publishers and admins. The Go backend handles clicks, postbacks and reconciliation with low latency and copes with heavy traffic when campaigns take off.",
 "Website publisher": "Publisher website",
@@ -666,5 +665,7 @@
 "Cảm ơn bạn! Chúng tôi đã nhận yêu cầu, sẽ liên hệ với bạn sớm và gửi thông tin qua email.": "Thank you! We have received your request and will contact you soon and send the details by email.",
 "nhận tư vấn từ chuyên viên.": "get advice from our specialists.",
 "Để lại thông tin, nhân viên tư vấn sẽ liên hệ bạn.": "Leave your details and a consultant will contact you.",
-"Cảm ơn bạn đã đăng ký. Nhân viên tư vấn sẽ liên hệ với bạn sớm qua số điện thoại đã để lại.": "Thank you for registering. A consultant will contact you soon by the phone number you left."
+"Cảm ơn bạn đã đăng ký. Nhân viên tư vấn sẽ liên hệ với bạn sớm qua số điện thoại đã để lại.": "Thank you for registering. A consultant will contact you soon by the phone number you left.",
+"Giao diện thật của hệ thống 3RDVN HUB.": "Real screens from the 3RDVN HUB system.",
+"Chi tiết chiến dịch": "Campaign details"
 }
