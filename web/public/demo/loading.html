@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>Demo lời chào khi vào web · 3RDHub Vietnam</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sacramento&family=Mrs+Saint+Delafield&family=Allura&display=swap">
 <style>
 *{box-sizing:border-box;margin:0}
 :root{--or:#FF6A2B}
@@ -16,170 +16,119 @@ body{font-family:"Nunito",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-s
 .site h1{font-size:clamp(34px,6vw,76px);line-height:1.05;font-weight:900;letter-spacing:-.02em}.site h1 span{color:var(--or)}
 .site p{margin-top:14px;font-size:clamp(16px,2vw,22px);color:#5C6577;font-weight:700}
 .site .cta{display:inline-block;margin-top:24px;background:var(--or);color:#fff;font-weight:900;padding:14px 30px;border-radius:999px;box-shadow:0 16px 30px -14px var(--or)}
-.bar{position:fixed;z-index:100;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:5px;border-radius:999px;background:rgba(11,27,74,.9);backdrop-filter:blur(8px);box-shadow:0 10px 30px -10px rgba(0,0,0,.5);max-width:96vw;overflow-x:auto;scrollbar-width:none}
-.bar button{font:inherit;font-weight:800;font-size:14px;color:#C9D4FF;background:none;border:0;padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
-.bar button.on{background:var(--or);color:#fff}.bar .re{color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.35)}
-.ld{position:fixed;inset:0;z-index:50;color:#fff;overflow:hidden;background:radial-gradient(900px 600px at 80% 8%,rgba(255,106,43,.35),transparent 60%),radial-gradient(800px 700px at 0% 100%,rgba(123,77,255,.45),transparent 60%),linear-gradient(140deg,#071447,#122371 55%,#2B1A78)}
-.ld::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:56px 56px;-webkit-mask:radial-gradient(circle at 50% 50%,#000,transparent 75%);mask:radial-gradient(circle at 50% 50%,#000,transparent 75%)}
+.bar{position:fixed;z-index:100;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:5px;border-radius:999px;background:rgba(40,40,48,.88);backdrop-filter:blur(8px);box-shadow:0 10px 30px -10px rgba(0,0,0,.5);max-width:96vw;overflow-x:auto;scrollbar-width:none}
+.bar button{font:inherit;font-weight:800;font-size:14px;color:#D5D8E4;background:none;border:0;padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.bar button.on{background:var(--or);color:#fff}.bar .re{color:#fff;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.3)}
+/* lớp lời chào, kiểu tối giản */
+.ld{position:fixed;inset:0;z-index:50;display:grid;place-items:center;overflow:hidden;background:#05060B;color:#fff;transition:opacity .9s ease,visibility .9s}
+.ld.light{background:#fff;color:#111}
+.ld.gone{opacity:0;visibility:hidden}
 .ld[hidden]{display:none}
-.mid{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:18px;text-align:center;padding:0 20px}
-.logo{width:clamp(70px,12vw,104px);height:auto;overflow:visible}
-.brand{display:flex;align-items:center;gap:14px;font-weight:900;font-size:clamp(26px,4.6vw,48px);letter-spacing:-.01em;opacity:0;transform:translateY(16px)}
-.brand .logo{width:clamp(50px,7vw,72px)}.brand em{font-style:normal;color:#FF7A3D}
-.go .brand{animation:up .7s var(--bd,2s) cubic-bezier(.2,.9,.2,1) forwards}
-@keyframes up{to{opacity:1;transform:none}}
-.sub{font-weight:800;font-size:clamp(15px,2.2vw,22px);color:#C5D0F7;opacity:0}
-.go .sub{animation:fadein .7s var(--sd,2.6s) forwards}
-@keyframes fadein{to{opacity:1}}
-.dots{position:absolute;left:0;right:0;bottom:7vh;display:flex;justify-content:center;gap:8px}
-.dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);animation:dot 1s infinite}
-.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
-@keyframes dot{0%,100%{transform:translateY(0);background:rgba(255,255,255,.35)}40%{transform:translateY(-6px);background:#FF7A3D}}
-.sp{position:absolute;color:#FFD9A0;opacity:0;font-size:22px}
-.go .sp{animation:tw 1.6s infinite}
-@keyframes tw{0%,100%{opacity:0;transform:scale(.4) rotate(0)}50%{opacity:1;transform:scale(1) rotate(30deg)}}
-/* ===== Mẫu 1: "Xin chào" viết tay ===== */
-.m1 .hand{width:min(88vw,720px);height:auto;overflow:visible}
-.m1 .hand text{font-family:"Dancing Script","Segoe Script","Brush Script MT",cursive;font-weight:700;font-size:150px}
-.m1 .hand .st{fill:transparent;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1600;stroke-dashoffset:1600}
-.m1 .hand .fl{fill:url(#hg);opacity:0}
-.m1.go .hand .st{animation:wr 1.7s .2s cubic-bezier(.5,.1,.3,1) forwards,wr2 .5s 1.9s forwards}
-.m1.go .hand .fl{animation:fadein .8s 1.5s forwards}
-@keyframes wr{to{stroke-dashoffset:0}}@keyframes wr2{to{stroke-opacity:0}}
-.m1 .ul{width:min(60vw,420px);height:6px;border-radius:9px;background:linear-gradient(90deg,transparent,#FF6A2B,#FFB238,transparent);transform:scaleX(0);margin-top:-6px}
-.m1.go .ul{animation:ul .8s 1.8s cubic-bezier(.2,.9,.2,1) forwards}@keyframes ul{to{transform:scaleX(1)}}
-.m1 .wel{font-weight:800;font-size:clamp(15px,2.2vw,22px);letter-spacing:.22em;text-transform:uppercase;color:#FFB08A;opacity:0;margin-top:10px}
-.m1.go .wel{animation:fadein .6s 2.1s forwards}
-.m1{--bd:2.4s;--sd:3s}
-.m1.out{animation:iris .9s cubic-bezier(.7,0,.2,1) forwards}
-@keyframes iris{from{clip-path:circle(150% at 50% 50%)}to{clip-path:circle(0 at 50% 50%)}}
-/* ===== Mẫu 2: chào nhiều thứ tiếng ===== */
-.m2 .hello{position:relative;height:clamp(90px,16vw,170px);width:min(92vw,900px);display:grid;place-items:center}
-.m2 .hello b{position:absolute;font-weight:900;font-size:clamp(54px,12vw,130px);letter-spacing:-.02em;line-height:1;opacity:0;filter:blur(14px);transform:translateY(24px) scale(.96);background:linear-gradient(180deg,#fff,#FFD9A0 60%,#FFB238);-webkit-background-clip:text;background-clip:text;color:transparent;white-space:nowrap}
-.m2 .hello b.on{animation:hw .5s forwards}
-.m2 .hello b.off{animation:hx .3s forwards}
-@keyframes hw{to{opacity:1;filter:blur(0);transform:none}}@keyframes hx{from{opacity:1;filter:blur(0);transform:none}to{opacity:0;filter:blur(10px);transform:translateY(-22px) scale(1.03)}}
-.m2 .brand{position:absolute;left:0;right:0;top:50%;justify-content:center;margin-top:-30px;z-index:2}
-.m2 .hello,.m2 .small{transition:opacity .4s}
-.m2.fin .hello{opacity:0}.m2.fin .brandwrap{opacity:1}
-.m2 .brandwrap{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:14px;opacity:0;transition:opacity .4s}
-.m2 .brandwrap .brand{position:static;margin:0;animation:none;opacity:0;transform:translateY(16px)}
-.m2.fin .brandwrap .brand{animation:up .7s .1s cubic-bezier(.2,.9,.2,1) forwards}
-.m2.fin .brandwrap .sub{animation:fadein .7s .6s forwards}
-.m2 .small{font-weight:800;letter-spacing:.22em;text-transform:uppercase;font-size:14px;color:#FFB08A}
-.m2 .half{position:absolute;left:0;right:0;height:50%;z-index:5;background:linear-gradient(140deg,#071447,#122371 55%,#2B1A78);background-size:100vw 100vh;background-repeat:no-repeat;display:none}
-.m2.out{background:none}.m2.out::before{opacity:0;transition:opacity .2s}
-.m2.out .half{display:block}.m2.out .mid{display:none}
-.m2 .half.a{top:0;background-position:0 0}.m2 .half.b{bottom:0;background-position:0 100%}
-/* ===== Mẫu 3: robot trò chuyện ===== */
-.m3 .chat{display:flex;align-items:flex-end;gap:18px;max-width:min(94vw,820px)}
-.m3 .bot{flex:none;display:grid;place-items:center;width:clamp(76px,13vw,120px);aspect-ratio:1;border-radius:50%;background:linear-gradient(135deg,#1B2C85,#43227E);box-shadow:0 0 0 2px rgba(255,255,255,.25),0 18px 40px -12px rgba(0,0,0,.6);animation:bob 2.2s ease-in-out infinite}
-.m3 .bot .logo{width:62%}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-.m3 .bot .eye{transform-box:fill-box;transform-origin:center;animation:blink 2.4s 1s infinite}
-@keyframes blink{0%,86%,100%{transform:scaleY(1)}92%{transform:scaleY(.1)}}
-.m3 .bub{position:relative;text-align:left;background:#fff;color:#0B1B3F;border-radius:26px 26px 26px 6px;padding:20px 26px;font-weight:900;font-size:clamp(20px,3.4vw,38px);line-height:1.25;box-shadow:0 24px 50px -20px rgba(0,0,0,.6);min-width:min(60vw,360px);transform:scale(.6);opacity:0;transform-origin:0 100%}
-.m3.go .bub{animation:pop .5s .4s cubic-bezier(.3,1.5,.5,1) forwards}
-@keyframes pop{to{transform:none;opacity:1}}
-.m3 .bub em{font-style:normal;color:var(--or)}
-.m3 .bub .caret{display:inline-block;width:3px;height:1em;margin-left:3px;background:var(--or);vertical-align:-.12em;animation:cb .7s steps(1) infinite}
-@keyframes cb{50%{opacity:0}}
-.m3 .bub2{margin-top:-4px;font-weight:800;font-size:clamp(14px,2vw,20px);color:#C5D0F7;opacity:0;min-height:1.4em}
-.m3.go .bub2{opacity:1}
-.m3.out{animation:curtain .85s cubic-bezier(.75,0,.2,1) forwards}
-@keyframes curtain{to{transform:translateY(-105%)}}
+.ld::before{content:"";position:absolute;inset:0;background:radial-gradient(60vmax 40vmax at 50% 55%,rgba(255,106,43,.16),transparent 70%),radial-gradient(50vmax 40vmax at 50% 45%,rgba(123,77,255,.14),transparent 70%);opacity:.9}
+.ld.light::before{opacity:.5}
+.stage{position:relative;width:min(92vw,920px);aspect-ratio:920/300}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.w{font-family:var(--hf,"Sacramento"),"Segoe Script","Brush Script MT",cursive;font-size:230px;fill:currentColor}
+.w.fin{fill:url(#fg)}
+.glow{filter:drop-shadow(0 0 14px rgba(255,170,90,.55))}
+.pen{fill:#fff;filter:drop-shadow(0 0 10px #FFB066) drop-shadow(0 0 22px rgba(255,106,43,.9));opacity:0}
+.brand{position:absolute;left:0;right:0;bottom:11vh;display:flex;justify-content:center;align-items:center;gap:12px;font-weight:900;font-size:clamp(17px,2.4vw,24px);letter-spacing:.01em;opacity:0;transform:translateY(10px);transition:opacity .9s ease,transform .9s ease}
+.brand.on{opacity:.95;transform:none}
+.brand svg{width:34px;height:auto}.brand em{font-style:normal;color:#FF7A3D}
+.tag{position:absolute;left:0;right:0;bottom:7vh;text-align:center;font-weight:700;font-size:clamp(12px,1.6vw,15px);letter-spacing:.2em;text-transform:uppercase;opacity:0;transition:opacity .9s ease .3s;color:rgba(255,255,255,.55)}
+.ld.light .tag{color:rgba(0,0,0,.5)}
+.tag.on{opacity:1}
 </style>
 </head>
 <body>
 <div class="site"><div><h1>Tiếp thị liên kết,<br><span>minh bạch từng đồng.</span></h1><p>Đây là trang web hiện ra sau lời chào (mô phỏng).</p><span class="cta">Đăng ký ngay</span></div></div>
-<div class="bar" role="tablist" aria-label="Chọn mẫu">
-  <button class="on" data-m="1" type="button">Mẫu 1 · Viết tay</button>
-  <button data-m="2" type="button">Mẫu 2 · Chào nhiều thứ tiếng</button>
-  <button data-m="3" type="button">Mẫu 3 · Robot trò chuyện</button>
+<div class="bar" aria-label="Tuỳ chọn demo">
+  <button class="on" data-f="Sacramento" type="button">Chữ 1</button>
+  <button data-f="Allura" type="button">Chữ 2</button>
+  <button data-f="Mrs Saint Delafield" type="button">Chữ 3</button>
+  <button class="re" id="th" type="button">Nền tối</button>
   <button class="re" id="lg" type="button">VI</button>
   <button class="re" id="re" type="button">↻ Chạy lại</button>
 </div>
-<div class="ld m1" id="ld" hidden></div>
-
-<template id="t1">
-  <div class="mid">
-    <svg class="hand" viewBox="0 0 640 200" aria-hidden="true">
-      <defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF3C8"/><stop offset=".55" stop-color="#FFC247"/><stop offset="1" stop-color="#FF7A3D"/></linearGradient></defs>
-      <text class="fl" x="320" y="150" text-anchor="middle" data-t="hello"></text>
-      <text class="st" x="320" y="150" text-anchor="middle" data-t="hello"></text>
-    </svg>
-    <div class="ul"></div>
-    <div class="wel" data-t="welcome"></div>
-    <div class="brand"><svg class="logo" data-logo viewBox="0 0 64 40" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><rect x="5" y="3" width="54" height="30" rx="14"/><path d="M18 37.5h28" stroke-width="3"/><rect x="18" y="13.5" width="5" height="12" rx="2.5" fill="#fff" stroke="none"/><path d="M37 23a5.5 5.5 0 0 1 10 0" stroke="#FF6A2B"/></svg><span>3RDHub <em>Vietnam</em></span></div>
-    <div class="sub" data-t="tag"></div>
-  </div>
-  <i class="sp" style="left:22%;top:30%">✦</i><i class="sp" style="left:76%;top:26%;animation-delay:.5s">✦</i><i class="sp" style="left:68%;top:64%;animation-delay:1s">✦</i><i class="sp" style="left:28%;top:68%;animation-delay:1.4s">✦</i>
-</template>
-<template id="t2">
-  <div class="half a"></div><div class="half b"></div>
-  <div class="mid">
-    <div class="hello" id="hello"></div>
-    <div class="brandwrap">
-      <div class="brand"><svg class="logo" viewBox="0 0 64 40" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><rect x="5" y="3" width="54" height="30" rx="14"/><path d="M18 37.5h28" stroke-width="3"/><rect x="18" y="13.5" width="5" height="12" rx="2.5" fill="#fff" stroke="none"/><path d="M37 23a5.5 5.5 0 0 1 10 0" stroke="#FF6A2B"/></svg><span>3RDHub <em>Vietnam</em></span></div>
-      <div class="sub" data-t="tag"></div>
-    </div>
-  </div>
-</template>
-<template id="t3">
-  <div class="mid">
-    <div class="chat">
-      <div class="bot"><svg class="logo" viewBox="0 0 64 40" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><rect x="5" y="3" width="54" height="30" rx="14"/><path d="M18 37.5h28" stroke-width="3"/><rect class="eye" x="18" y="13.5" width="5" height="12" rx="2.5" fill="#fff" stroke="none"/><path d="M37 23a5.5 5.5 0 0 1 10 0" stroke="#FF6A2B"/></svg></div>
-      <div class="bub"><span id="typ"></span><i class="caret"></i></div>
-    </div>
-    <div class="bub2" id="typ2"></div>
-  </div>
-  <div class="dots"><i></i><i></i><i></i></div>
-</template>
+<div class="ld" id="ld" hidden>
+  <div class="stage"><svg id="sv" viewBox="0 0 920 300" aria-hidden="true"></svg></div>
+  <div class="brand" id="br"><svg viewBox="0 0 64 40" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><rect x="5" y="3" width="54" height="30" rx="14"/><path d="M18 37.5h28" stroke-width="3"/><rect x="18" y="13.5" width="5" height="12" rx="2.5" fill="currentColor" stroke="none"/><path d="M37 23a5.5 5.5 0 0 1 10 0" stroke="#FF6A2B"/></svg><span>3RDHub <em>Vietnam</em></span></div>
+  <div class="tag" id="tg"></div>
+</div>
 
 <script>
 (function () {
-  var TXT = {
-    vi: { hello: 'Xin chào', welcome: 'Chào mừng bạn đến với', tag: 'Tiếp thị liên kết, minh bạch từng đồng.', say: ['3RDHub Vietnam', 'xin chào bạn! 👋'], say2: 'Tiếp thị liên kết, minh bạch từng đồng.', langs: ['Xin chào', 'Hello', '你好', 'こんにちは', '안녕하세요', 'Xin chào'] },
-    en: { hello: 'Hello', welcome: 'Welcome to', tag: 'Affiliate marketing, transparent to the last dong.', say: ['3RDHub Vietnam', 'says hello! 👋'], say2: 'Affiliate marketing, transparent to the last dong.', langs: ['Hello', 'Xin chào', '你好', 'こんにちは', '안녕하세요', 'Hello'] }
+  var NS = 'http://www.w3.org/2000/svg'
+  var L = {
+    vi: { words: ['Hello', 'Bonjour', 'Hola', 'Ciao', 'Olá', 'Xin chào'], tag: 'Tiếp thị liên kết, minh bạch từng đồng' },
+    en: { words: ['Xin chào', 'Bonjour', 'Hola', 'Ciao', 'Olá', 'Hello'], tag: 'Affiliate marketing, transparent to the last dong' }
   }
-  var ld = document.getElementById('ld'), cur = 1, lang = 'vi', timers = [], $ = function (s, r) { return (r || document).querySelector(s) }
-  function clear() { timers.forEach(clearTimeout); timers = [] }
+  var ld = document.getElementById('ld'), sv = document.getElementById('sv'), br = document.getElementById('br'), tg = document.getElementById('tg')
+  var lang = 'vi', font = 'Sacramento', light = false, timers = [], raf = 0
+  function clear() { timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf) }
   function at(ms, f) { timers.push(setTimeout(f, ms)) }
-  function type(el, str, ms, done) { var i = 0; (function n() { el.textContent = str.slice(0, ++i); if (i < str.length) timers.push(setTimeout(n, ms)); else if (done) done() })() }
-  function run(m) {
-    clear(); cur = m; var T = TXT[lang]
-    document.querySelectorAll('.bar [data-m]').forEach(function (b) { b.classList.toggle('on', +b.dataset.m === m) })
-    ld.className = 'ld m' + m; ld.innerHTML = ''
-    ld.appendChild(document.getElementById('t' + m).content.cloneNode(true))
-    ld.querySelectorAll('[data-t]').forEach(function (e) { e.textContent = T[e.dataset.t] })
-    ld.hidden = false; void ld.offsetWidth; ld.classList.add('go')
-    if (m === 1) { at(4100, out) }
-    if (m === 2) {
-      var h = $('#hello', ld), i = 0, prev = null
-      T.langs.forEach(function (w, k) {
-        var b = document.createElement('b'); b.textContent = w; h.appendChild(b)
-        at(200 + k * 520, function () { if (prev) { prev.className = 'off' } b.className = 'on'; prev = b })
+  function el(n, a) { var e = document.createElementNS(NS, n); for (var k in a) e.setAttribute(k, a[k]); return e }
+  var ease = function (u) { return u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2 }
+
+  // viết một từ: mặt nạ gradient quét từ trái sang phải như nét bút, kèm chấm sáng chạy theo đầu nét
+  function write(word, ms, final, done) {
+    sv.innerHTML = ''
+    var defs = el('defs', {})
+    var g = el('linearGradient', { id: 'fg', x1: 0, y1: 0, x2: 0, y2: 1 })
+    ;[['0', '#FFF3C8'], ['.55', '#FFC247'], ['1', '#FF7A3D']].forEach(function (s) { g.appendChild(el('stop', { offset: s[0], 'stop-color': s[1] })) })
+    defs.appendChild(g)
+    var m = el('mask', { id: 'mk', maskUnits: 'userSpaceOnUse', x: -100, y: -100, width: 1120, height: 500 })
+    var mg = el('linearGradient', { id: 'mgr', x1: 0, y1: 0, x2: 1, y2: 0 })
+    ;[['0', '#fff'], ['.78', '#fff'], ['1', '#000']].forEach(function (s) { mg.appendChild(el('stop', { offset: s[0], 'stop-color': s[1] })) })
+    defs.appendChild(mg)
+    var rect = el('rect', { x: -100, y: -100, width: 140, height: 500, fill: 'url(#mgr)' })
+    m.appendChild(rect); defs.appendChild(m); sv.appendChild(defs)
+    var t = el('text', { class: 'w' + (final ? ' fin' : ''), x: 0, y: 215, mask: 'url(#mk)' })
+    t.style.setProperty('--hf', '"' + font + '"'); t.textContent = word
+    var gg = el('g', { class: final ? 'glow' : '' }); gg.appendChild(t); sv.appendChild(gg)
+    var w = t.getComputedTextLength(), x0 = (920 - w) / 2
+    t.setAttribute('x', x0); rect.setAttribute('x', -100)
+    var pen = el('circle', { class: 'pen', r: 5, cx: x0, cy: 150 }); sv.appendChild(pen)
+    var t0 = performance.now(), L0 = x0 - 60, L1 = x0 + w + 40
+    ;(function step(now) {
+      var u = Math.min(1, (now - t0) / ms), e = ease(u), x = L0 + (L1 - L0) * e
+      rect.setAttribute('x', x - 140); rect.setAttribute('width', 140 + (920 + 200))
+      // chỉ phần phía trước đầu nét bị che: gradient nằm ở rìa phải của rect nên dịch cả rect
+      rect.setAttribute('x', -1000 + x); rect.setAttribute('width', 1000 + 40)
+      pen.setAttribute('cx', Math.min(x, x0 + w - 6)); pen.setAttribute('cy', 150 + Math.sin(e * w / 38) * 34)
+      pen.style.opacity = u < 1 ? .95 : 0
+      if (u < 1) raf = requestAnimationFrame(step); else if (done) done()
+    })(performance.now())
+  }
+  function erase(ms, done) {
+    sv.style.transition = 'opacity ' + ms + 'ms ease, filter ' + ms + 'ms ease'
+    sv.style.opacity = 0; sv.style.filter = 'blur(10px)'
+    at(ms + 40, function () { sv.style.transition = 'none'; sv.style.opacity = 1; sv.style.filter = 'none'; done() })
+  }
+  function run() {
+    clear(); var T = L[lang]; ld.hidden = false; ld.className = 'ld' + (light ? ' light' : '')
+    br.className = 'brand'; tg.className = 'tag'; tg.textContent = T.tag; sv.innerHTML = ''
+    ld.style.setProperty('--x', 0); void ld.offsetWidth
+    var i = 0
+    ;(function next() {
+      var final = i === T.words.length - 1
+      write(T.words[i], final ? 1500 : 850, final, function () {
+        if (final) {
+          at(300, function () { br.classList.add('on'); tg.classList.add('on') })
+          at(2300, function () { ld.classList.add('gone'); at(1000, function () { ld.hidden = true }) })
+        } else at(200, function () { erase(260, function () { i++; next() }) })
       })
-      at(200 + T.langs.length * 520 + 350, function () { ld.classList.add('fin') })
-      at(200 + T.langs.length * 520 + 2300, out)
-    }
-    if (m === 3) {
-      var a = $('#typ', ld), b2 = $('#typ2', ld)
-      at(900, function () { type(a, T.say.join(' '), 55, function () { at(300, function () { type(b2, T.say2, 28) }) }) })
-      at(900 + 55 * (T.say.join(' ').length) + 300 + 28 * T.say2.length + 900, out)
-    }
+    })()
   }
-  function out() {
-    ld.classList.add('out')
-    var m = cur
-    if (m === 2) { at(250, function () { var hs = ld.querySelectorAll('.half'); hs.forEach(function (x) { x.style.transition = 'transform .9s cubic-bezier(.7,0,.2,1)' }); void ld.offsetWidth; hs[0].style.transform = 'translateY(-100%)'; hs[1].style.transform = 'translateY(100%)' }); at(1300, function () { ld.hidden = true }) }
-    else at(950, function () { ld.hidden = true })
-  }
-  document.querySelectorAll('.bar [data-m]').forEach(function (b) { b.addEventListener('click', function () { run(+b.dataset.m) }) })
-  document.getElementById('re').addEventListener('click', function () { run(cur) })
-  document.getElementById('lg').addEventListener('click', function (e) { lang = lang === 'vi' ? 'en' : 'vi'; e.target.textContent = lang.toUpperCase(); run(cur) })
-  var qs = new URLSearchParams(location.search); if (qs.get('lang') === 'en') { lang = 'en'; document.getElementById('lg').textContent = 'EN' }
-  run(+qs.get('m') || 1)
+  document.querySelectorAll('.bar [data-f]').forEach(function (b) { b.addEventListener('click', function () {
+    document.querySelectorAll('.bar [data-f]').forEach(function (x) { x.classList.toggle('on', x === b) }); font = b.dataset.f; run() }) })
+  document.getElementById('re').addEventListener('click', run)
+  document.getElementById('th').addEventListener('click', function (e) { light = !light; e.target.textContent = light ? 'Nền sáng' : 'Nền tối'; run() })
+  document.getElementById('lg').addEventListener('click', function (e) { lang = lang === 'vi' ? 'en' : 'vi'; e.target.textContent = lang.toUpperCase(); run() })
+  var q = new URLSearchParams(location.search); if (q.get('lang') === 'en') { lang = 'en'; document.getElementById('lg').textContent = 'EN' }
+  if (q.get('light')) { light = true; document.getElementById('th').textContent = 'Nền sáng' }
+  if (q.get('f')) font = q.get('f')
+  ;(document.fonts && document.fonts.load ? Promise.all(['Sacramento', 'Allura', 'Mrs Saint Delafield'].map(function (f) { return document.fonts.load('48px "' + f + '"') })) : Promise.resolve()).then(run, run)
 })()
 </script>
 </body>
