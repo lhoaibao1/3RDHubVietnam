@@ -111,3 +111,10 @@ func TestSEORoutesAllKinds(t *testing.T) {
 		t.Fatalf("canonical en: %s", r.body)
 	}
 }
+
+func TestSSIEchoStripped(t *testing.T) {
+	out := string(applySSI(Content{}, []byte(`<meta name="rh-cc" content='<!--# echo var="http_cf_ipcountry" default="" -->'>`), "vi"))
+	if strings.Contains(out, "<!--#") || !strings.Contains(out, `content=''`) {
+		t.Fatalf("echo: %s", out)
+	}
+}

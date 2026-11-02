@@ -173,6 +173,7 @@ func (a *App) apiSEO(w http.ResponseWriter, r *http.Request, kind string) {
 
 var (
 	ssiBlockRe   = regexp.MustCompile(`(?s)<!--# block name="([a-z0-9]+)" -->(.*?)<!--# endblock -->`)
+	ssiEchoRe    = regexp.MustCompile(`<!--# echo var="[a-z_]+" default="" -->`)
 	ssiIncludeRe = regexp.MustCompile(`<!--# include virtual="/api/seo/([a-z])\?p=([a-z0-9-]+)(?:&l=\$rh_lg)?" stub="([a-z0-9]+)" -->`)
 )
 
@@ -191,6 +192,8 @@ func applySSI(c Content, page []byte, lang string) []byte {
 		}
 		return stubs[sm[3]]
 	})
+	// lệnh echo (vd. quốc gia theo IP cho màn chào) chỉ có nghĩa sau Cloudflare: khi chạy cục bộ thì để trống
+	out = ssiEchoRe.ReplaceAllString(out, "")
 	return []byte(out)
 }
 
