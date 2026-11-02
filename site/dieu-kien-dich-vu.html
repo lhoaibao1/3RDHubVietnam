@@ -29,8 +29,30 @@ html[data-theme=dark] #boot{background:#0E1426;color:#EDF1FF}
 @keyframes bootbar{0%{transform:translateX(-110%)}100%{transform:translateX(280%)}}
 @media(prefers-reduced-motion:reduce){#boot .bb span{animation:none;width:100%}}
 </style>
+<meta name="rh-cc" content='<!--# echo var="http_cf_ipcountry" default="" -->'>
+<style>
+/* Màn chào lần đầu vào site: điểm sáng hội tụ thành logo, "3RDHub Vietnam" và lời chào theo ngôn ngữ máy/IP */
+#rhi{position:fixed;inset:0;z-index:400;overflow:hidden;background:radial-gradient(120% 90% at 50% 40%,#0E1F5C 0%,#050A26 60%);color:#F4F6FF;font-family:'Nunito',ui-rounded,system-ui,sans-serif;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#rhi .au{position:absolute;width:70vmax;height:70vmax;border-radius:50%;filter:blur(70px);opacity:0;mix-blend-mode:screen;pointer-events:none}
+#rhi .a1{left:-18vmax;top:-26vmax;background:radial-gradient(circle,rgba(123,77,255,.55),transparent 65%)}
+#rhi .a2{right:-22vmax;bottom:-30vmax;background:radial-gradient(circle,rgba(255,106,43,.42),transparent 65%)}
+#rhi canvas{position:absolute;inset:0;width:100%;height:100%}
+#rhi .c{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:22px;text-align:center;padding:0 16px}
+#rhi .mk{width:clamp(140px,22vw,250px);height:auto;overflow:visible;opacity:0}
+#rhi .mk .ey{transform-box:fill-box;transform-origin:center}
+#rhi .wd,#rhi .hi{display:flex;justify-content:center;flex-wrap:wrap}
+#rhi .wd{font-weight:900;font-size:clamp(32px,5.4vw,62px);letter-spacing:-.025em;line-height:1.05}
+#rhi .hi{font-weight:800;font-size:clamp(24px,3.4vw,38px);letter-spacing:-.01em;line-height:1.15}
+#rhi .wd span,#rhi .hi span{display:inline-block;overflow:hidden;padding:0 .01em .1em}
+#rhi .wd i,#rhi .hi i{font-style:normal;display:inline-block;transform:translateY(110%)}
+#rhi .wd .o i{color:#FF6A2B}
+#rhi .hi i{background:linear-gradient(180deg,#FFE3B0,#FFB238 55%,#FF6A2B);-webkit-background-clip:text;background-clip:text;color:transparent}
+#rhi .sp{width:.28em}
+#rhi .ln{width:min(220px,46vw);height:2px;border-radius:2px;background:rgba(255,255,255,.12);overflow:hidden}
+#rhi .ln i{display:block;height:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,#7B4DFF,#FF6A2B,#FFB238)}
+</style>
 <meta name='dmca-site-verification' content='MFNpcThzSzN2ZC8yUmN1UG1lMHlnZmsxZnNwdlg0dzd2ZjJZOG01QktOWT01' />
-  <script type="module" crossorigin src="/assets/index-Bip-nVO3.js"></script>
+  <script type="module" crossorigin src="/assets/index-DN2E4vyc.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-jVIJlN6K.css">
 <!--# block name="st" --><title>Điều kiện và hạn chế cung cấp dịch vụ | 3RDHub Vietnam</title>
 <meta property="og:title" content="Điều kiện và hạn chế cung cấp dịch vụ | 3RDHub Vietnam">
@@ -51,6 +73,125 @@ html[data-theme=dark] #boot{background:#0E1426;color:#EDF1FF}
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://3rdhubvietnam.tech/#org","name":"Công ty TNHH Công nghệ 3RDVN","alternateName":"3RDVN Technology","url":"https://3rdvn.io.vn","taxID":"4001342613","logo":"https://3rdhubvietnam.tech/icon-512.png","address":{"@type":"PostalAddress","streetAddress":"Tổ 10 Tỉnh Thủy, Phường Quảng Phú","addressLocality":"Thành phố Đà Nẵng","addressCountry":"VN"},"contactPoint":{"@type":"ContactPoint","telephone":"+84398192414","email":"admin_support@3rdvn.io.vn","contactType":"customer support","availableLanguage":["vi","en"]}},{"@type":"WebSite","@id":"https://3rdhubvietnam.tech/#web","url":"https://3rdhubvietnam.tech/","name":"3RDHub Vietnam","inLanguage":"vi","publisher":{"@id":"https://3rdhubvietnam.tech/#org"}},{"@type":"WebPage","@id":"https://3rdhubvietnam.tech/vi/dieu-kien-dich-vu#page","url":"https://3rdhubvietnam.tech/vi/dieu-kien-dich-vu","name":"Điều kiện và hạn chế cung cấp dịch vụ | 3RDHub Vietnam","description":"Đối tượng, điều kiện kỹ thuật và các trường hợp hạn chế, từ chối cung cấp dịch vụ của Công ty TNHH Công nghệ 3RDVN.","inLanguage":"vi","isPartOf":{"@id":"https://3rdhubvietnam.tech/#web"},"primaryImageOfPage":"https://3rdhubvietnam.tech/og/dieu-kien-dich-vu.png","breadcrumb":{"@id":"https://3rdhubvietnam.tech/vi/dieu-kien-dich-vu#crumbs"}},{"@type":"BreadcrumbList","@id":"https://3rdhubvietnam.tech/vi/dieu-kien-dich-vu#crumbs","itemListElement":[{"@type":"ListItem","position":1,"name":"Trang chủ","item":"https://3rdhubvietnam.tech/"},{"@type":"ListItem","position":2,"name":"Điều kiện và hạn chế cung cấp dịch vụ","item":"https://3rdhubvietnam.tech/vi/dieu-kien-dich-vu"}]}]}</script>
 </head>
 <body>
+<script>
+(function () {
+  // Chỉ chạy lần đầu trong phiên, không chạy cho bot/công cụ kiểm thử, khung nhúng (sửa trực tiếp trong CMS) và người tắt hiệu ứng
+  var q = location.search, ss
+  try { ss = sessionStorage } catch (e) {}
+  var force = /[?&]intro=1/.test(q)
+  if (!force) {
+    if (/[?&](intro=0|edit)/.test(q) || window.top !== window || navigator.webdriver || /bot|crawl|spider|slurp|lighthouse|headless|preview/i.test(navigator.userAgent)) return
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    try { if (ss && ss.getItem('rh_intro')) return } catch (e) {}
+  }
+  try { ss && ss.setItem('rh_intro', '1') } catch (e) {}
+  // báo cho trang biết lúc nào dựng cảnh 3D (khi logo và chữ đã đứng yên), để màn chào không bị giật
+  var rel, w0 = performance.now(); window.__rhIntro = new Promise(function (r) { rel = r })
+  var HI = { vi: 'Xin chào', en: 'Hello', zh: '你好', ja: 'こんにちは', ko: '안녕하세요', th: 'สวัสดี', fr: 'Bonjour', es: 'Hola', de: 'Hallo', id: 'Halo', km: 'សួស្តី', lo: 'ສະບາຍດີ', ru: 'Здравствуйте' }
+  var CC = { VN: 'vi', CN: 'zh', TW: 'zh', HK: 'zh', SG: 'en', JP: 'ja', KR: 'ko', TH: 'th', FR: 'fr', ES: 'es', MX: 'es', DE: 'de', AT: 'de', ID: 'id', KH: 'km', LA: 'lo', RU: 'ru' }
+  // ngôn ngữ máy trước (trừ tiếng Anh mặc định), rồi quốc gia theo IP (Cloudflare), cuối cùng tiếng Anh
+  var dev = String((navigator.languages && navigator.languages[0]) || navigator.language || '').toLowerCase().split('-')[0]
+  var m = document.querySelector('meta[name=rh-cc]'), cc = m && /^[A-Z]{2}$/.test(m.content) ? m.content : ''
+  var lang = (HI[dev] && dev !== 'en') ? dev : (CC[cc] || (HI[dev] ? dev : 'en'))
+  var mq = q.match(/[?&]hi=([a-z]{2})/); if (mq && HI[mq[1]]) lang = mq[1]
+
+  var NS = 'http://www.w3.org/2000/svg', d = document, root = d.createElement('div')
+  root.id = 'rhi'; root.setAttribute('aria-hidden', 'true')
+  root.innerHTML = '<div class="au a1"></div><div class="au a2"></div><canvas></canvas><div class="c">' +
+    '<svg class="mk" viewBox="0 0 64 40" fill="none" stroke="#F4F6FF" stroke-width="4" stroke-linecap="round"><rect x="5" y="3" width="54" height="30" rx="14"/><path d="M18 37.5h28" stroke-width="3"/><rect class="ey" x="18" y="13.5" width="5" height="12" rx="2.5" fill="#F4F6FF" stroke="none"/><path d="M37 23a5.5 5.5 0 0 1 10 0" stroke="#FF6A2B"/></svg>' +
+    '<div class="wd"></div><div class="ln"><i></i></div><div class="hi"></div></div>'
+  d.body.insertBefore(root, d.body.firstChild)
+  var $ = function (s) { return root.querySelector(s) }
+  var cv = $('canvas'), cx = cv.getContext('2d'), core = $('.c'), mark = $('.mk'), eye = $('.ey'), bar = $('.ln i'), a1 = $('.a1'), a2 = $('.a2')
+  function chars(el, txt, orangeFrom) {
+    var out = []
+    Array.from(txt).forEach(function (c, i) {
+      var s = d.createElement('span')
+      if (c === ' ') { s.className = 'sp'; el.appendChild(s); return }
+      if (orangeFrom >= 0 && i >= orangeFrom) s.className = 'o'
+      var it = d.createElement('i'); it.textContent = c; s.appendChild(it); el.appendChild(s); out.push(it)
+    })
+    return out
+  }
+  var L1 = chars($('.wd'), '3RDHub Vietnam', 7), L2 = chars($('.hi'), HI[lang], -1)
+  $('.hi').lang = lang
+
+  var cl = function (u) { return u < 0 ? 0 : u > 1 ? 1 : u }
+  var eio = function (u) { return u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2 }
+  var eo = function (u) { return 1 - Math.pow(1 - u, 4) }
+  var seg = function (t, a, b) { return cl((t - a) / (b - a)) }
+  var W, H, P = [], dust = [], box, t = 0, last = 0, skipAt = 0, EXIT = 3450
+  var maskOK = window.CSS && CSS.supports && (CSS.supports('mask-image', 'radial-gradient(circle,#000,#000)') || CSS.supports('-webkit-mask-image', 'radial-gradient(circle,#000,#000)'))
+  function seed() {
+    var dpr = Math.min(2, devicePixelRatio || 1); W = innerWidth; H = innerHeight
+    cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    // các điểm trên nét logo: vẽ logo ra canvas phụ rồi đọc điểm ảnh
+    var r = mark.getBoundingClientRect(), s = r.width / 64, ow = Math.ceil(r.width), oh = Math.ceil(r.height), oc = d.createElement('canvas')
+    box = r; oc.width = ow; oc.height = oh
+    var o = oc.getContext('2d'), rr = function (x, y, w, h, k) { o.beginPath(); if (o.roundRect) o.roundRect(x, y, w, h, k); else o.rect(x, y, w, h) }
+    o.scale(s, s); o.lineCap = 'round'; o.lineWidth = 4; o.strokeStyle = '#fff'; rr(5, 3, 54, 30, 14); o.stroke()
+    o.lineWidth = 3; o.beginPath(); o.moveTo(18, 37.5); o.lineTo(46, 37.5); o.stroke()
+    o.fillStyle = '#fff'; rr(18, 13.5, 5, 12, 2.5); o.fill()
+    o.strokeStyle = '#f00'; o.lineWidth = 4; o.beginPath(); o.arc(42, 25.2, 5.5, Math.PI * 1.13, Math.PI * 1.87); o.stroke()
+    var px = o.getImageData(0, 0, ow, oh).data, step = Math.max(2, Math.round(s * (W < 700 ? 1 : .78))), T = []
+    for (var y = 0; y < oh; y += step) for (var x = 0; x < ow; x += step) {
+      var k = (y * ow + x) * 4
+      if (px[k + 3] > 128) T.push({ x: r.left + x + (Math.random() - .5) * step, y: r.top + y + (Math.random() - .5) * step, hot: px[k + 1] < 100 })
+    }
+    var R = Math.hypot(W, H) * .62
+    P = T.map(function (t) {
+      var a = Math.random() * 6.283, rd = R * (.55 + Math.random() * .6), sx = W / 2 + Math.cos(a) * rd, sy = H / 2 + Math.sin(a) * rd
+      var nx = -(t.y - sy), ny = t.x - sx, nl = Math.hypot(nx, ny) || 1, bend = (Math.random() - .3) * 360
+      return { sx: sx, sy: sy, cx: (sx + t.x) / 2 + nx / nl * bend, cy: (sy + t.y) / 2 + ny / nl * bend, tx: t.x, ty: t.y, hot: t.hot,
+        del: Math.random() * 380, dur: 1050 + Math.random() * 420, r: .8 + Math.random() * 1.3, tw: Math.random() * 6.283 }
+    })
+    dust = []
+    for (var i = 0; i < 60; i++) dust.push({ x: Math.random() * W, y: Math.random() * H, v: .1 + Math.random() * .3, r: .5 + Math.random(), a: Math.random() * 6.283 })
+  }
+  function frame(now) {
+    // đồng hồ riêng: khi máy bận tải trang thì hiệu ứng chờ chứ không nhảy cóc
+    t += Math.min(50, Math.max(0, now - (last || now))); last = now
+    if ((skipAt || now - w0 > 7000) && t < EXIT) t = EXIT
+    if (t > 2700 && rel) { rel(); rel = null }
+    a1.style.opacity = .9 * eo(seg(t, 0, 900)); a2.style.opacity = .9 * eo(seg(t, 150, 1100))
+    a1.style.transform = 'translate(' + Math.sin(t / 2200) * 3 + 'vmax,' + Math.cos(t / 2600) * 2 + 'vmax)'
+    a2.style.transform = 'translate(' + Math.cos(t / 2400) * -3 + 'vmax,' + Math.sin(t / 2000) * 2 + 'vmax)'
+    cx.clearRect(0, 0, W, H); cx.globalCompositeOperation = 'lighter'
+    var dk = eo(seg(t, 0, 700)) * (1 - seg(t, 3300, 3900))
+    for (var j = 0; j < dust.length; j++) { var q = dust[j]; q.y -= q.v; q.a += .02; if (q.y < -4) q.y = H + 4
+      cx.globalAlpha = dk * (.25 + .2 * Math.sin(q.a)); cx.fillStyle = '#B9C4FF'; cx.beginPath(); cx.arc(q.x, q.y, q.r, 0, 6.29); cx.fill() }
+    var pf = 1 - eo(seg(t, 1750, 2350))
+    if (pf > 0) for (var i = 0; i < P.length; i++) {
+      var p = P[i], u = eio(seg(t, 200 + p.del, 200 + p.del + p.dur)), v = 1 - u
+      var x = v * v * p.sx + 2 * v * u * p.cx + u * u * p.tx, y = v * v * p.sy + 2 * v * u * p.cy + u * u * p.ty
+      var al = eo(seg(t, 100 + p.del * .5, 600 + p.del)) * pf * (.7 + .3 * Math.sin(p.tw + t / 140))
+      cx.globalAlpha = al; cx.fillStyle = p.hot ? '#FF8A4C' : (u > .97 ? '#FFFFFF' : '#C9B8FF')
+      cx.beginPath(); cx.arc(x, y, p.r * (1 + (1 - u) * .8), 0, 6.29); cx.fill()
+      if (u > .02 && u < .96) { cx.globalAlpha = al * .25; cx.beginPath(); cx.arc(x, y, p.r * 3.2, 0, 6.29); cx.fill() }
+    }
+    cx.globalAlpha = 1; cx.globalCompositeOperation = 'source-over'
+    var lg = eo(seg(t, 1600, 2150))
+    mark.style.opacity = lg; mark.style.filter = 'blur(' + ((1 - lg) * 6).toFixed(2) + 'px) drop-shadow(0 0 ' + (18 * lg).toFixed(1) + 'px rgba(255,140,80,.35))'
+    var bl = seg(t, 2650, 2830); eye.style.transform = 'scaleY(' + (1 - Math.sin(bl * Math.PI) * .9).toFixed(3) + ')'
+    L1.forEach(function (l, i) { l.style.transform = 'translateY(' + ((1 - eo(seg(t, 1900 + i * 38, 2550 + i * 38))) * 110).toFixed(1) + '%)' })
+    L2.forEach(function (l, i) { l.style.transform = 'translateY(' + ((1 - eo(seg(t, 2350 + i * 55, 2950 + i * 55))) * 110).toFixed(1) + '%)' })
+    bar.style.transform = 'scaleX(' + eio(seg(t, 2100, 3150)).toFixed(4) + ')'
+    // mở vào trang: lỗ tròn nở từ giữa logo
+    var e = eio(seg(t, EXIT, EXIT + 1000))
+    core.style.transform = 'scale(' + (1 + e * .12).toFixed(4) + ')'; core.style.opacity = 1 - eo(seg(t, EXIT, EXIT + 600))
+    if (maskOK) {
+      var ox = box.left + box.width / 2, oy = box.top + box.height / 2, rad = e * Math.hypot(W, H) * 1.05
+      var mi = e > 0 ? 'radial-gradient(circle at ' + ox + 'px ' + oy + 'px,transparent ' + rad.toFixed(1) + 'px,#000 ' + (rad + 1.5).toFixed(1) + 'px)' : 'none'
+      root.style.webkitMaskImage = mi; root.style.maskImage = mi
+    } else root.style.opacity = 1 - e
+    if (t < EXIT + 1050) requestAnimationFrame(frame); else { root.remove(); if (rel) rel() }
+  }
+  function skip() { skipAt = 1 }
+  root.addEventListener('click', skip); addEventListener('keydown', skip, { once: true })
+  addEventListener('resize', function () { if (root.isConnected) seed() })
+  seed(); requestAnimationFrame(frame)
+})()
+</script>
 <div id="boot" role="status" aria-live="polite" aria-label="Đang tải"><div>3RDHub <i>Vietnam</i></div><div class="bb"><span></span></div><div class="bs">Đang tải, vui lòng chờ một chút…</div></div>
 <div id="app"><main class="seedpg"><h1>Điều kiện cung cấp dịch vụ.</h1><p>Đối tượng, điều kiện kỹ thuật và các trường hợp hạn chế, từ chối cung cấp dịch vụ của Công ty TNHH Công nghệ 3RDVN.</p><nav aria-label="Các trang"><ul><li><a href="/vi">3RDHub Vietnam | Tiếp thị liên kết minh bạch từng đồng</a></li><li><a href="/vi/mo-hinh">Mô hình hoạt động</a></li><li><a href="/vi/advertiser">Dành cho Advertiser</a></li><li><a href="/vi/san-pham">Sản phẩm: SaaS, Website/CMS, CRM/ERP, Mail Server</a></li><li><a href="/vi/cong-nghe">Công nghệ</a></li><li><a href="/vi/doi-tac">Đối tác</a></li><li><a href="/vi/hoi-dap">Hỏi đáp</a></li><li><a href="/vi/lien-he">Liên hệ</a></li><li><a href="/vi/dieu-khoan">Điều khoản sử dụng</a></li><li><a href="/vi/bao-mat">Chính sách bảo mật</a></li><li><a href="/vi/baogia">Báo giá</a></li><li><a href="/vi/dang-ky">Đăng ký sản phẩm</a></li><li><a href="/vi/khieu-nai">Chính sách tiếp nhận và giải quyết khiếu nại</a></li><li><a href="/vi/chinh-sach-gia">Chính sách giá</a></li><li><a href="/vi/chinh-sach-thanh-toan">Chính sách thanh toán</a></li><li><a href="/vi/dieu-kien-dich-vu">Điều kiện và hạn chế cung cấp dịch vụ</a></li><li><a href="/vi/cung-cap-va-hoan-tien">Chính sách cung cấp, chấm dứt dịch vụ và hoàn tiền</a></li><li><a href="/vi/ho-tro">Hỗ trợ trực tuyến</a></li><li><a href="/vi/chinh-sach">Chính sách và điều khoản</a></li></ul></nav><p>Công ty TNHH Công nghệ 3RDVN, mã số thuế 4001342613, Tổ 10 Tỉnh Thủy, Phường Quảng Phú, Thành phố Đà Nẵng. Hotline (+84) 398 192 414.</p></main><!-- Có sẵn trong HTML gốc để công cụ kiểm tra của DMCA.com và Bộ Công Thương đọc được; Vue thay bằng chân trang thật khi chạy -->
 <p class="seedbadges"><a href="https://www.dmca.com/Protection/Status.aspx?ID=05128573-eeec-4272-ad2b-a37ecfee4803" title="DMCA.com Protection Status" class="dmca-badge"><img src="https://images.dmca.com/Badges/dmca-badge-w100-5x1-10.png?ID=05128573-eeec-4272-ad2b-a37ecfee4803" alt="DMCA.com Protection Status" width="100" height="20"></a> <a href="https://online.gov.vn/nen-tang/07af9ec2-8fb6-4bfa-93ed-b960a9d6f21d" target="_blank" title="Đã xác nhận với Bộ Công Thương"><img src="https://fileserver.online.gov.vn/uploads/Resources/iconxacnhan/DaThongBao.png" alt="Đã xác nhận" style="height:44px;"></a></p>

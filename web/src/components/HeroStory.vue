@@ -59,7 +59,8 @@ watch(style, build)
 
 onMounted(() => {
   addEventListener('scroll', onScroll, { passive: true })
-  build()
+  const w = (window as any).__rhIntro
+  if (w) w.then(build); else build()
   let last = performance.now()
   const tick = (n: number) => {
     raf = requestAnimationFrame(tick)

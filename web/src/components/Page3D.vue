@@ -19,7 +19,8 @@ function mount() {
     console.error(e)
   }
 }
-onMounted(mount)
+// chờ màn chào đầu trang (nếu có) dựng xong logo rồi mới dựng cảnh 3D
+onMounted(() => { const w = (window as any).__rhIntro; if (w) w.then(mount); else mount() })
 watch(() => site.sceneStyle, mount)
 onBeforeUnmount(() => { hidePage3D(); hideStyledPage() })
 </script>
