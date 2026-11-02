@@ -20,7 +20,7 @@ label{display:block;font-weight:700;font-size:13px;margin:12px 0 4px}
 label:first-child{margin-top:0}
 input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:transparent;color:inherit;font:inherit}
 input:focus{outline:2px solid var(--or);outline-offset:1px}
-.prev{background:#fff;color:#111;border-radius:14px;padding:22px;overflow-x:auto;border:1px dashed #C9D0E2}
+.prev{background:#fff;color:#111;border-radius:14px;padding:14px;overflow-x:auto;border:1px dashed #C9D0E2}
 .acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
 button{font:inherit;font-weight:800;border-radius:999px;border:0;padding:11px 20px;cursor:pointer}
 .or{background:var(--or);color:#fff}.gh{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
@@ -64,35 +64,53 @@ ol b{color:var(--ink)}
     var phone = $('p').value.trim() || '(+84) 398 192 414'
     var mail = $('e').value.trim() || 'hello@3rdhubvietnam.tech'
     var tel = phone.replace(/[^\d+]/g, '')
-    var lab = 'font:bold 11px/16px ' + F + ';color:#FF6A2B;letter-spacing:1px;text-transform:uppercase;width:64px;padding:2px 0;vertical-align:top'
-    var val = 'font:14px/20px ' + F + ';color:#0B1B3F;padding:2px 0;vertical-align:top'
-    var a = 'color:#0B1B3F;text-decoration:none;font-weight:bold'
-    var row = function (l, v) { return '<tr><td style="' + lab + '">' + l + '</td><td style="' + val + '">' + v + '</td></tr>' }
+    var I = function (n) { return '<img src="' + SITE + '/email/i-' + n + '.png" width="18" height="18" alt="" style="display:block;border:0;width:18px;height:18px">' }
+    // nút bo tròn như chân trang: biểu tượng + chữ trắng
+    var pill = function (icon, href, text) {
+      return '<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:separate;margin:0 0 8px"><tr>' +
+        '<td bgcolor="#1C2B73" style="background:#1C2B73;border:1px solid #3A4A9A;border-radius:999px;padding:7px 16px 7px 12px">' +
+          '<table cellpadding="0" cellspacing="0" border="0" role="presentation"><tr><td style="padding-right:9px;vertical-align:middle">' + I(icon) + '</td>' +
+          '<td style="vertical-align:middle;font:bold 14px/18px ' + F + '"><a href="' + href + '" style="color:#FFFFFF;text-decoration:none">' + text + '</a></td></tr></table>' +
+        '</td></tr></table>'
+    }
+    // dòng trong thẻ thông tin công ty
+    var info = function (icon, label, val) {
+      return '<tr><td style="padding:0 12px 10px 0;vertical-align:top" width="30"><table cellpadding="0" cellspacing="0" border="0" role="presentation"><tr><td bgcolor="#243489" style="background:#243489;border-radius:9px;padding:6px">' + I(icon) + '</td></tr></table></td>' +
+        '<td style="padding:0 0 10px;vertical-align:top;font:12px/16px ' + F + ';color:#A9B6E8">' + label + '<br><span style="font:bold 14px/19px ' + F + ';color:#FFFFFF">' + val + '</span></td></tr>'
+    }
     return '' +
-'<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse;font-family:' + F + ';color:#0B1B3F;max-width:560px">' +
- '<tr>' +
-  '<td style="vertical-align:top;padding:0 18px 0 0;border-right:3px solid #FF6A2B" width="96">' +
-    '<img src="' + SITE + '/email/logo.png" width="84" alt="3RDHub Vietnam" style="display:block;border:0;width:84px;height:auto">' +
-    '<div style="font:bold 15px/18px ' + F + ';color:#0B1B3F;margin-top:8px">3RDHub <span style="color:#FF6A2B">Vietnam</span></div>' +
-  '</td>' +
-  '<td style="vertical-align:top;padding:0 0 0 18px">' +
-    '<div style="font:bold 18px/22px ' + F + ';color:#0B1B3F">' + name + '</div>' +
-    (title ? '<div style="font:14px/20px ' + F + ';color:#5C6577;margin-bottom:8px">' + title + ' · Công ty TNHH Công nghệ 3RDVN</div>' : '<div style="height:8px"></div>') +
-    '<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse">' +
-      row('Hotline', '<a href="tel:' + esc(tel) + '" style="' + a + '">' + esc(phone) + '</a>') +
-      row('Email', '<a href="mailto:' + esc(mail) + '" style="' + a + '">' + esc(mail) + '</a>') +
-      row('Website', '<a href="' + SITE + '" style="' + a + '">3rdhubvietnam.tech</a> &nbsp;·&nbsp; <a href="https://3rdvn.io.vn" style="' + a + '">3rdvn.io.vn</a>') +
-      row('Địa chỉ', 'Tổ 10 Tỉnh Thủy, Phường Quảng Phú, Thành phố Đà Nẵng') +
-    '</table>' +
-  '</td>' +
- '</tr>' +
- '<tr><td colspan="2" style="padding-top:14px"><table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="border-collapse:collapse"><tr><td height="2" bgcolor="#FF6A2B" style="height:2px;line-height:2px;font-size:0;background:#FF6A2B" width="64">&nbsp;</td><td height="2" bgcolor="#E3E7F0" style="height:2px;line-height:2px;font-size:0;background:#E3E7F0">&nbsp;</td></tr></table></td></tr>' +
- '<tr><td colspan="2" style="padding-top:10px">' +
-   '<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse:collapse"><tr>' +
-     '<td style="font:12px/18px ' + F + ';color:#5C6577;vertical-align:middle;padding-right:14px">Công ty TNHH Công nghệ 3RDVN · MST 4001342613<br>Tiếp thị liên kết, minh bạch từng đồng.</td>' +
-     '<td style="vertical-align:middle"><a href="https://online.gov.vn" style="border:0"><img src="' + SITE + '/img/bct-da-thong-bao.png" height="40" alt="Đã thông báo Bộ Công Thương" style="display:block;border:0;height:40px;width:auto"></a></td>' +
-   '</tr></table>' +
+'<table cellpadding="0" cellspacing="0" border="0" role="presentation" width="600" bgcolor="#0E1D55" style="border-collapse:separate;width:600px;max-width:100%;background:#0E1D55;background-image:linear-gradient(120deg,#0B1B4A 0%,#18287A 55%,#43227E 100%);border-radius:18px;font-family:' + F + '">' +
+ '<tr><td style="padding:24px 26px 18px">' +
+  '<table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%"><tr>' +
+   // cột trái: logo, tên, nút liên hệ
+   '<td style="vertical-align:top;padding-right:18px" width="300">' +
+     '<table cellpadding="0" cellspacing="0" border="0" role="presentation"><tr>' +
+       '<td style="vertical-align:middle;padding-right:10px"><img src="' + SITE + '/email/logo-white.png" width="46" alt="3RDHub" style="display:block;border:0;width:46px;height:auto"></td>' +
+       '<td style="vertical-align:middle;font:bold 22px/26px ' + F + ';color:#FFFFFF">3RDHub <span style="color:#FF7A3D">Vietnam</span></td>' +
+     '</tr></table>' +
+     '<div style="font:bold 17px/22px ' + F + ';color:#FFFFFF;margin-top:16px">' + name + '</div>' +
+     (title ? '<div style="font:13px/18px ' + F + ';color:#B8C4F0;margin:2px 0 0">' + title + '</div>' : '') +
+     '<div style="font:13px/19px ' + F + ';color:#B8C4F0;margin:10px 0 14px">Tiếp thị liên kết, minh bạch từng đồng.</div>' +
+     pill('phone', 'tel:' + esc(tel), esc(phone)) +
+     pill('mail', 'mailto:' + esc(mail), esc(mail)) +
+   '</td>' +
+   // cột phải: thẻ thông tin công ty
+   '<td style="vertical-align:top" width="250">' +
+     '<table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" bgcolor="#16256C" style="border-collapse:separate;background:#16256C;border:1px solid #33448F;border-radius:14px"><tr><td style="padding:16px 16px 6px">' +
+       '<div style="font:bold 14px/19px ' + F + ';color:#FFFFFF;padding-bottom:10px;margin-bottom:12px;border-bottom:1px solid #33448F">Công ty TNHH Công nghệ 3RDVN</div>' +
+       '<table cellpadding="0" cellspacing="0" border="0" role="presentation">' +
+         info('doc', 'Mã số thuế', '4001342613') +
+         info('pin', 'Địa chỉ', 'Tổ 10 Tỉnh Thủy, Phường Quảng Phú, Thành phố Đà Nẵng') +
+         info('globe', 'Website', '<a href="' + SITE + '" style="color:#FFFFFF;text-decoration:none">3rdhubvietnam.tech</a>') +
+       '</table>' +
+     '</td></tr></table>' +
+   '</td>' +
+  '</tr></table>' +
  '</td></tr>' +
+ '<tr><td style="padding:0 26px 20px"><table cellpadding="0" cellspacing="0" border="0" role="presentation" width="100%" style="border-top:1px solid #33448F"><tr>' +
+   '<td style="padding-top:12px;font:12px/17px ' + F + ';color:#A9B6E8;vertical-align:middle">© 2026 Công ty TNHH Công nghệ 3RDVN. Bảo lưu mọi quyền.</td>' +
+   '<td align="right" style="padding-top:12px;vertical-align:middle"><a href="https://online.gov.vn" style="border:0"><img src="' + SITE + '/img/bct-da-thong-bao.png" height="34" alt="Đã thông báo Bộ Công Thương" style="display:block;border:0;height:34px;width:auto"></a></td>' +
+ '</tr></table></td></tr>' +
 '</table>'
   }
   function render() { $('prev').innerHTML = sig() }
