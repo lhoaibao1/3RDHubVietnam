@@ -369,6 +369,6 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .trbtn{margin:0 0 6px 8px;vertical-align:middle}
 
 .gvt tr.hot td{background:rgba(255,106,43,.13)}
-.gvf{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.gvf{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr) auto;align-items:end}
 @media(max-width:700px){.gvf{grid-template-columns:1fr}}
 .gvt td:first-child{white-space:nowrap}

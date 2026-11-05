@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { api } from '../api'
 import { useAdmin } from '../store'
 
 // Chặn tấn công (DDoS, quét, bơm request): xem ai đang bị giới hạn, danh sách đang bị cấm (IP và trình duyệt), cấm/bỏ cấm tay,
 // chỉnh ngưỡng tự cấm và danh sách IP luôn cho phép. Việc cấm thật do nginx thực hiện (server/guard.go).
-interface Cfg { enabled: boolean; ip_strikes: number; ip_ban_min: number; fp_strikes: number; fp_ips: number; fp_ban_min: number; allow: string[]; level: string; tools_off: boolean; dv_strikes: number }
+interface Cfg { enabled: boolean; ip_strikes: number; ip_ban_min: number; fp_strikes: number; fp_ips: number; fp_ban_min: number; allow: string[]; level: string; tools_off: boolean; dv_strikes: number; visit_days: number }
 type Kind = 'ip' | 'dv' | 'model' | 'ua' | 'cc' | 'fp'
 interface Ban { id: number; kind: Kind; value: string; label: string; reason: string; source: string; created: number; expires: number; times: number }
 interface Seen { ip: string; count: number; last: number; ua: string; path: string; fp: string; dv: string; model: string; can_fp: boolean; banned: boolean }
-interface Vis { ip: string; cc: string; views: number; first: number; last: number; ua: string; br: string; os: string; dev: string; path: string; fp: string; dv: string; model: string; can_fp: boolean; banned: boolean }
+interface Vis { days?: number; ip: string; cc: string; views: number; first: number; last: number; ua: string; br: string; os: string; dev: string; path: string; fp: string; dv: string; model: string; can_fp: boolean; banned: boolean }
 interface State { config: Cfg; bans: Ban[]; recent: Seen[]; visitors: Vis[]; own_ip: string; behind_cf: boolean; enforce: boolean; synced: number; sync_error: string; now: number }
 
 const a = useAdmin()
 const st = ref<State | null>(null)
-const cfg = reactive<Cfg>({ enabled: true, ip_strikes: 10, ip_ban_min: 60, fp_strikes: 150, fp_ips: 5, fp_ban_min: 30, allow: [], level: 'standard', tools_off: false, dv_strikes: 20 })
+const cfg = reactive<Cfg>({ enabled: true, ip_strikes: 10, ip_ban_min: 60, fp_strikes: 150, fp_ips: 5, fp_ban_min: 30, allow: [], level: 'standard', tools_off: false, dv_strikes: 20, visit_days: 30 })
 const allowText = ref('')
 const manual = reactive({ kind: 'ip' as Kind, value: '', hours: 24, reason: '' })
 const KINDS: [Kind, string, string][] = [['ip', 'IP hoặc dải IP', '203.0.113.5 hoặc 203.0.113.0/24'], ['dv', 'Thiết bị (mã thiết bị)', '20 ký tự, chép từ danh sách bị giới hạn'], ['model', 'Model máy (Android)', 'SM-S911B'], ['ua', 'Từ khoá trình duyệt', 'BadBot'], ['cc', 'Quốc gia', 'RU hoặc CN (mã 2 chữ cái)']]
@@ -60,12 +60,36 @@ const short = (s: string, n = 70) => (s.length > n ? s.slice(0, n) + '…' : s)
 const browser = (fp: string) => fp.split('|')[0] || '(không có tên trình duyệt)'
 const vq = ref('')
 const vsort = ref<'last' | 'views'>('last')
+const vrange = ref(0) // 0 = trực tiếp (2 giờ qua), còn lại là số ngày lấy từ lịch sử
+const vhist = ref<Vis[]>([])
+const vkeep = ref(30)
+const vload = ref(false)
 const DEVL: Record<string, string> = { mobile: 'Điện thoại', tablet: 'Máy tính bảng', desktop: 'Máy tính' }
+let vtimer = 0
+async function loadHist() {
+  if (!vrange.value) return
+  vload.value = true
+  try {
+    const r = await api<{ visits: Vis[]; keep_days: number }>('GET', `guard/visits?days=${vrange.value}&sort=${vsort.value}&q=${encodeURIComponent(vq.value.trim())}`)
+    vhist.value = r.visits; vkeep.value = r.keep_days
+  } catch (e) { err.value = (e as Error).message } finally { vload.value = false }
+}
+watch([vrange, vsort], loadHist)
+watch(vq, () => { clearTimeout(vtimer); vtimer = window.setTimeout(loadHist, 350) })
+const RANGES = computed(() => [[0, 'Trực tiếp (2 giờ qua)'], [1, '24 giờ'], [7, '7 ngày'], [30, '30 ngày'], [90, '90 ngày'], [365, 'Cả năm']].filter((r) => r[0] === 0 || (r[0] as number) <= cfg.visit_days || r[0] === 1) as [number, string][])
 const visitors = computed(() => {
+  if (vrange.value) return vhist.value
   const q = vq.value.trim().toLowerCase()
   const l = (st.value?.visitors || []).filter((v) => !q || [v.ip, v.cc, v.br, v.os, v.model, v.dv, v.ua].join(' ').toLowerCase().includes(q))
   return [...l].sort((x, y) => (vsort.value === 'views' ? y.views - x.views || y.last - x.last : y.last - x.last))
 })
+function csv() {
+  const q = (x: string | number) => '"' + String(x ?? '').replace(/"/g, '""') + '"'
+  const rows = [['IP', 'Quốc gia', 'Trình duyệt', 'Hệ điều hành', 'Model', 'Mã thiết bị', 'Lượt xem', 'Số ngày', 'Lần đầu', 'Gần nhất', 'User-Agent'].map(q).join(',')]
+  visitors.value.forEach((v) => rows.push([v.ip, v.cc, v.br, v.os, v.model, v.dv, v.views, v.days || 1, fmt(v.first), fmt(v.last), v.ua].map(q).join(',')))
+  const url = URL.createObjectURL(new Blob(['\ufeff' + rows.join('\n')], { type: 'text/csv;charset=utf-8' }))
+  const el = document.createElement('a'); el.href = url; el.download = 'khach-truy-cap.csv'; el.click(); URL.revokeObjectURL(url)
+}
 const sortedBans = computed(() => [...(st.value?.bans || [])])
 const ph = computed(() => KINDS.find((k) => k[0] === manual.kind)![2])
 </script>
@@ -114,22 +138,25 @@ const ph = computed(() => KINDS.find((k) => k[0] === manual.kind)![2])
     </div>
 
     <div class="panel">
-      <h2>Khách đang truy cập <small>({{ st.visitors.length }})</small></h2>
-      <p class="sub">Những người vừa mở website trong <b>2 giờ</b> qua (chỉ tính trình duyệt thật). Mỗi dòng gồm <b>IP</b>, <b>quốc gia</b>, <b>trình duyệt</b>, <b>model máy</b> và <b>mã thiết bị</b> để bạn cấm ngay khi thấy bất thường. Dữ liệu chỉ giữ trong bộ nhớ máy chủ, tự xoá sau 2 giờ và khi khởi động lại. Dòng tô cam là người xem nhiều trang bất thường. Bot không chạy được trình duyệt sẽ không hiện ở đây mà hiện ở mục "Đang bị giới hạn" bên dưới.</p>
+      <h2>Khách truy cập <small>({{ visitors.length }})</small></h2>
+      <p class="sub">Những người mở website bằng trình duyệt thật. Mỗi dòng gồm <b>IP</b>, <b>quốc gia</b>, <b>trình duyệt</b>, <b>model máy</b> và <b>mã thiết bị</b> để bạn điều tra và cấm. <b>Trực tiếp</b> là 2 giờ gần nhất; các mốc còn lại lấy từ <b>lịch sử lưu {{ cfg.visit_days }} ngày</b> (đổi ở mục Cài đặt bên dưới), gộp theo IP và thiết bị. Dòng tô cam là người xem nhiều trang bất thường. Bot không chạy được trình duyệt sẽ hiện ở mục "Đang bị giới hạn" bên dưới.</p>
       <div class="gform gvf">
+        <label class="f">Khoảng thời gian<select v-model.number="vrange"><option v-for="r in RANGES" :key="r[0]" :value="r[0]">{{ r[1] }}</option></select></label>
         <label class="f">Tìm<input v-model="vq" type="search" placeholder="IP, trình duyệt, model, quốc gia…" spellcheck="false"></label>
         <label class="f">Sắp xếp<select v-model="vsort"><option value="last">Mới nhất</option><option value="views">Nhiều lượt xem nhất</option></select></label>
+        <button type="button" class="btn gh" :disabled="!visitors.length" @click="csv">Tải CSV</button>
       </div>
-      <p v-if="!visitors.length" class="sub"><b>Chưa có ai.</b> Khi có người mở website, họ sẽ hiện ở đây trong vài giây.</p>
+      <p v-if="vload" class="sub">Đang tải…</p>
+      <p v-else-if="!visitors.length" class="sub"><b>Chưa có ai.</b> Khi có người mở website, họ sẽ hiện ở đây trong vài giây.</p>
       <div v-else class="gtw">
         <table class="gt gvt">
           <thead><tr><th>IP</th><th>Trình duyệt, thiết bị</th><th>Lượt xem</th><th>Gần nhất</th><th></th></tr></thead>
           <tbody>
-            <tr v-for="v in visitors" :key="v.ip + v.dv" :class="{ hot: v.views >= 60 }">
+            <tr v-for="v in visitors" :key="v.ip + v.dv" :class="{ hot: v.views >= (vrange ? 60 * vrange : 60) }">
               <td><b>{{ v.ip }}</b><small v-if="v.cc"> {{ v.cc }}</small><small v-if="v.banned" class="gbn"> đã cấm</small></td>
               <td><span :title="v.ua">{{ v.br || 'Trình duyệt lạ' }}<template v-if="v.os"> · {{ v.os }}</template> · {{ DEVL[v.dev] || v.dev }}</span><small v-if="v.model"> · model {{ v.model }}</small><small v-if="v.dv"> · thiết bị <code>{{ v.dv.slice(0, 8) }}…</code></small><small> {{ short(v.path, 40) }}</small></td>
-              <td>{{ v.views }}</td>
-              <td>{{ ago(v.last) }}</td>
+              <td>{{ v.views }}<small v-if="v.days && v.days > 1"> · {{ v.days }} ngày</small></td>
+              <td>{{ ago(v.last) }}<small v-if="vrange" style="display:block">{{ fmt(v.last) }}</small></td>
               <td class="gact">
                 <button type="button" class="btn gh sm" :disabled="busy" @click="ban('ip', v.ip, 24, 'Cấm thủ công từ danh sách khách')">Cấm IP</button>
                 <button v-if="v.dv" type="button" class="btn gh sm" :disabled="busy" title="Cấm thiết bị này dù đổi IP hay xoá cookie" @click="ban('dv', v.dv, 24, 'Cấm thiết bị thủ công', v.model + ' ' + v.ua)">Cấm thiết bị</button>
@@ -179,6 +206,7 @@ const ph = computed(() => KINDS.find((k) => k[0] === manual.kind)![2])
         <label class="f">Cấm trình duyệt khi cùng một trình duyệt bị giới hạn bao nhiêu lần trong 1 phút<input v-model.number="cfg.fp_strikes" type="number" min="20"></label>
         <label class="f">…từ ít nhất bao nhiêu IP khác nhau<input v-model.number="cfg.fp_ips" type="number" min="2"></label>
         <label class="f">Thời gian cấm trình duyệt (phút)<input v-model.number="cfg.fp_ban_min" type="number" min="1"></label>
+        <label class="f">Lưu lịch sử khách truy cập (số ngày)<input v-model.number="cfg.visit_days" type="number" min="1" max="365"><small>Để điều tra khi bị phá. Quá hạn tự xoá. Tối đa 365 ngày.</small></label>
         <label class="f">Cấm thiết bị khi bị giới hạn bao nhiêu lần trong 5 phút (từ ít nhất 2 IP)<input v-model.number="cfg.dv_strikes" type="number" min="5"><small>Bắt kẻ đổi proxy nhưng vẫn dùng một máy.</small></label>
       </div>
       <label class="f">IP luôn cho phép (mỗi dòng một IP hoặc dải, không bao giờ bị giới hạn hay cấm: văn phòng, máy của bạn, dịch vụ giám sát)

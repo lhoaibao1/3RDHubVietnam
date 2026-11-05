@@ -239,3 +239,29 @@ func TestGuardVisitors(t *testing.T) {
 		t.Fatalf("thông tin khách: %v", x)
 	}
 }
+
+func TestGuardVisitHistory(t *testing.T) {
+	a := testApp(t)
+	ck := login(t, a)
+	ua := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"
+	for i := 0; i < 3; i++ {
+		do(a, "POST", "example.vn", "/api/hit", []byte(`{"p":"/","l":"vi"}`), map[string]string{"User-Agent": ua, "X-Real-IP": "203.0.113.50", "Content-Type": "application/json", "Cookie": "rh_dv=abcdefabcdefabcdefab"})
+		a.guardFlush(context.Background()) // ghi nhiều lần: số lượt phải cộng dồn
+	}
+	h := map[string]string{"Cookie": ck, "X-CMS": "1", "X-Real-IP": "198.51.100.1"}
+	j := do(a, "GET", cms, "/api/admin/guard/visits?days=7&q=203.0.113", nil, h).json(t)
+	v, _ := j["visits"].([]any)
+	if len(v) != 1 || v[0].(map[string]any)["views"].(float64) != 3 || v[0].(map[string]any)["days"].(float64) != 1 {
+		t.Fatalf("lịch sử: %v", j)
+	}
+	if j["keep_days"].(float64) != 30 {
+		t.Fatalf("mặc định giữ 30 ngày: %v", j["keep_days"])
+	}
+	// xoá lịch sử cũ
+	a.pool.Exec(context.Background(), `UPDATE guard_visits SET last=1`)
+	a.guardVisitsPrune(context.Background())
+	j = do(a, "GET", cms, "/api/admin/guard/visits?days=7", nil, h).json(t)
+	if v, _ := j["visits"].([]any); len(v) != 0 {
+		t.Fatalf("phải xoá lịch sử quá hạn: %v", v)
+	}
+}

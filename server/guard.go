@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"net/netip"
@@ -10,6 +11,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -33,6 +35,7 @@ type guardCfg struct {
 	Allow     []string `json:"allow"`      // IP/dải IP không bao giờ bị giới hạn hay cấm
 	Level     string   `json:"level"`      // standard | strong | max: tốc độ tối đa nginx cho phép (zones.conf)
 	ToolsOff  bool     `json:"tools_off"`  // true: không chặn công cụ tự động (curl, python, máy quét lỗ hổng...)
+	VisitDays int      `json:"visit_days"` // số ngày giữ lịch sử khách truy cập (IP, thiết bị) để điều tra; mặc định 30
 	DVStrikes int      `json:"dv_strikes"` // một thiết bị bị giới hạn ngần này lần trong 5 phút từ ít nhất 2 IP thì cấm thiết bị
 }
 
@@ -40,7 +43,7 @@ type guardCfg struct {
 var guardLevels = map[string][4]int{"standard": {20, 5, 1, 300}, "strong": {10, 3, 1, 150}, "max": {5, 2, 1, 60}}
 
 func defaultGuardCfg() guardCfg {
-	return guardCfg{Enabled: true, IPStrikes: 10, IPBanMin: 60, FPStrikes: 150, FPIPs: 5, FPBanMin: 30, Level: "standard", DVStrikes: 20}
+	return guardCfg{Enabled: true, IPStrikes: 10, IPBanMin: 60, FPStrikes: 150, FPIPs: 5, FPBanMin: 30, Level: "standard", DVStrikes: 20, VisitDays: 30}
 }
 
 // Dải IP của Cloudflare (dự phòng khi chưa có file cloudflare.conf do deploy.sh ghi). Không bao giờ cấm các IP này:
@@ -70,6 +73,13 @@ type gVisitor struct {
 
 const visitorKeep = 2 * time.Hour
 
+// gVDay: số lượt xem của một (ngày, IP, thiết bị) chờ ghi xuống bảng guard_visits.
+type gVDay struct {
+	Day, IP, DV, CC, UA, Model, FP, Path string
+	Views                                int
+	First, Last                          int64
+}
+
 type gFP struct {
 	hits []time.Time
 	ips  map[string][]time.Time
@@ -87,6 +97,7 @@ type guard struct {
 	dir     string
 	seen    map[string]*gSeen
 	vis     map[string]*gVisitor
+	vday    map[string]*gVDay // lượt xem chưa ghi xuống cơ sở dữ liệu
 	fps     map[string]*gFP
 	cfg     guardCfg
 	cfgAt   time.Time
@@ -98,7 +109,7 @@ type guard struct {
 }
 
 func newGuard(dir string) *guard {
-	g := &guard{dir: dir, seen: map[string]*gSeen{}, vis: map[string]*gVisitor{}, fps: map[string]*gFP{}, dvs: map[string]*gDV{}, dvBans: map[string]map[string]bool{}, written: map[string]string{}}
+	g := &guard{dir: dir, seen: map[string]*gSeen{}, vis: map[string]*gVisitor{}, vday: map[string]*gVDay{}, fps: map[string]*gFP{}, dvs: map[string]*gDV{}, dvBans: map[string]map[string]bool{}, written: map[string]string{}}
 	g.loadCF()
 	return g
 }
@@ -242,6 +253,10 @@ func normalizeGuardCfg(c guardCfg) guardCfg {
 	if c.DVStrikes == 0 {
 		c.DVStrikes = d.DVStrikes
 	}
+	if c.VisitDays == 0 {
+		c.VisitDays = d.VisitDays
+	}
+	c.VisitDays = clampInt(c.VisitDays, 1, 365)
 	if _, ok := guardLevels[c.Level]; !ok {
 		c.Level = "standard"
 	}
@@ -749,15 +764,17 @@ func (a *App) startGuard(ctx context.Context) {
 			g.trimLocked(now)
 			g.mu.Unlock()
 			g.loadCF()
+			a.guardFlush(context.Background())
 			if now.Minute() == 7 {
 				a.statsPrune(context.Background())
+				a.guardVisitsPrune(context.Background())
 			}
 			a.guardSync(context.Background()) // lệnh cấm hết hạn thì tự rút khỏi file
 		}
 	}()
 }
 
-// guardVisit ghi nhận một lượt xem từ trình duyệt thật (tín hiệu /api/hit). Không lưu vào cơ sở dữ liệu: mất sau 2 giờ hoặc khi máy chủ khởi động lại.
+// guardVisit ghi nhận một lượt xem từ trình duyệt thật (tín hiệu /api/hit): danh sách trực tiếp giữ 2 giờ trong bộ nhớ, lịch sử lưu theo ngày trong guard_visits.
 func (a *App) guardVisit(r *http.Request, ip, path string) {
 	ap, err := netip.ParseAddr(ip)
 	if err != nil {
@@ -810,6 +827,43 @@ func (a *App) guardVisit(r *http.Request, ip, path string) {
 	}
 	v.Views++
 	v.Last, v.UA, v.Model, v.DV, v.FP, v.CC, v.Path = now, truncate(ua, 300), model, dv, fpOf(r.Header), cc, truncate(path, 120)
+	// ghi lịch sử (ngày, IP, thiết bị) để điều tra về sau; gom lại và ghi xuống cơ sở dữ liệu mỗi vài chục giây
+	day := now.In(vnLoc()).Format("2006-01-02")
+	kd := day + "|" + k
+	d := g.vday[kd]
+	if d == nil {
+		if len(g.vday) >= 8000 {
+			return // bị bơm IP giả: bỏ qua cho tới lần ghi kế tiếp, tránh làm đầy bộ nhớ
+		}
+		d = &gVDay{Day: day, IP: ap.String(), DV: dv, First: now.Unix()}
+		g.vday[kd] = d
+	}
+	d.Views++
+	d.Last, d.UA, d.Model, d.FP, d.CC, d.Path = now.Unix(), v.UA, model, v.FP, cc, v.Path
+}
+
+// guardFlush ghi các lượt xem đang chờ xuống bảng guard_visits.
+func (a *App) guardFlush(ctx context.Context) {
+	g := a.guardState()
+	g.mu.Lock()
+	batch := g.vday
+	g.vday = map[string]*gVDay{}
+	g.mu.Unlock()
+	for _, d := range batch {
+		_, err := a.pool.Exec(ctx, `INSERT INTO guard_visits(day,ip,dv,cc,ua,model,fp,path,views,first,last) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+			ON CONFLICT (day,ip,dv) DO UPDATE SET views=guard_visits.views+EXCLUDED.views, last=GREATEST(guard_visits.last,EXCLUDED.last), cc=EXCLUDED.cc, ua=EXCLUDED.ua, model=EXCLUDED.model, fp=EXCLUDED.fp, path=EXCLUDED.path`,
+			d.Day, d.IP, d.DV, d.CC, d.UA, d.Model, d.FP, d.Path, d.Views, d.First, d.Last)
+		if err != nil {
+			log.Printf("ghi lịch sử khách: %v", err)
+			return
+		}
+	}
+}
+
+// guardVisitsPrune xoá lịch sử cũ hơn số ngày đã cài.
+func (a *App) guardVisitsPrune(ctx context.Context) {
+	days := a.guardConfig(ctx).VisitDays
+	a.pool.Exec(ctx, `DELETE FROM guard_visits WHERE last < $1`, time.Now().Add(-time.Duration(days)*24*time.Hour).Unix())
 }
 
 type guardVisOut struct {
@@ -828,6 +882,48 @@ type guardVisOut struct {
 	Model  string `json:"model"`
 	CanFP  bool   `json:"can_fp"`
 	Banned bool   `json:"banned"`
+	Days   int    `json:"days,omitempty"`
+}
+
+// guardVisitsQuery trả lịch sử khách trong "days" ngày gần nhất (gộp theo IP + thiết bị).
+func (a *App) guardVisitsQuery(ctx context.Context, days int, q, sortBy string) ([]guardVisOut, error) {
+	cfg := a.guardConfig(ctx)
+	if days < 1 || days > cfg.VisitDays {
+		days = cfg.VisitDays
+	}
+	order := "max(last) DESC"
+	if sortBy == "views" {
+		order = "sum(views) DESC, max(last) DESC"
+	}
+	like := "%"
+	if q = strings.TrimSpace(q); q != "" {
+		like = "%" + strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(q) + "%"
+	}
+	rows, err := a.pool.Query(ctx, `SELECT ip, dv, max(cc), sum(views)::int, min(first), max(last), count(*)::int,
+		(array_agg(ua ORDER BY last DESC))[1], (array_agg(model ORDER BY last DESC))[1], (array_agg(fp ORDER BY last DESC))[1], (array_agg(path ORDER BY last DESC))[1]
+		FROM guard_visits WHERE last >= $1 AND (ip ILIKE $2 OR ua ILIKE $2 OR model ILIKE $2 OR dv ILIKE $2 OR cc ILIKE $2)
+		GROUP BY ip, dv ORDER BY `+order+` LIMIT 500`, time.Now().Add(-time.Duration(days)*24*time.Hour).Unix(), like)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	bans, _ := a.guardActiveBans(ctx, false)
+	banned := map[string]bool{}
+	for _, b := range bans {
+		banned[b.Kind+"|"+b.Value] = true
+	}
+	out := []guardVisOut{}
+	for rows.Next() {
+		var v guardVisOut
+		if err := rows.Scan(&v.IP, &v.DV, &v.CC, &v.Views, &v.First, &v.Last, &v.Days, &v.UA, &v.Model, &v.FP, &v.Path); err != nil {
+			return nil, err
+		}
+		v.Dev, v.Br, v.OS = parseUA(v.UA, 0)
+		v.CanFP = fpBannable(v.FP)
+		v.Banned = banned["ip|"+v.IP] || banned["fp|"+v.FP] || (v.DV != "" && banned["dv|"+v.DV]) || (v.Model != "" && banned["model|"+v.Model]) || (v.CC != "" && banned["cc|"+v.CC])
+		out = append(out, v)
+	}
+	return out, rows.Err()
 }
 
 // ---- API quản trị
@@ -920,6 +1016,11 @@ func (a *App) guardAdmin(ctx context.Context, w http.ResponseWriter, r *http.Req
 	case sub == "guard" && m == http.MethodGet:
 		v, err := a.guardStatus(ctx, r)
 		return v, true, err
+	case sub == "guard/visits" && m == http.MethodGet:
+		days, _ := strconv.Atoi(r.URL.Query().Get("days"))
+		a.guardFlush(ctx)
+		v, err := a.guardVisitsQuery(ctx, days, r.URL.Query().Get("q"), r.URL.Query().Get("sort"))
+		return map[string]any{"ok": true, "visits": v, "keep_days": a.guardConfig(ctx).VisitDays}, true, err
 	case sub == "guard/config" && m == http.MethodPut:
 		d, err := readJSON(r, 16384)
 		if err != nil {
@@ -930,7 +1031,7 @@ func (a *App) guardAdmin(ctx context.Context, w http.ResponseWriter, r *http.Req
 			return int(f)
 		}
 		level, _ := d["level"].(string)
-		c := guardCfg{Enabled: d["enabled"] != false, IPStrikes: num("ip_strikes"), IPBanMin: num("ip_ban_min"), FPStrikes: num("fp_strikes"), FPIPs: num("fp_ips"), FPBanMin: num("fp_ban_min"), DVStrikes: num("dv_strikes"), Level: level, ToolsOff: d["tools_off"] == true}
+		c := guardCfg{Enabled: d["enabled"] != false, IPStrikes: num("ip_strikes"), IPBanMin: num("ip_ban_min"), FPStrikes: num("fp_strikes"), FPIPs: num("fp_ips"), FPBanMin: num("fp_ban_min"), DVStrikes: num("dv_strikes"), VisitDays: num("visit_days"), Level: level, ToolsOff: d["tools_off"] == true}
 		if c.Allow, err = cleanAllow(d["allow"]); err != nil {
 			return nil, true, err
 		}
