@@ -94,6 +94,8 @@ type Project struct {
 	Tag    Pair   `json:"tag"`
 	Desc   Pair   `json:"desc"`
 	Points []Pair `json:"points"`
+	Logo   string `json:"logo,omitempty"` // ảnh logo của dự án (thay cho biểu tượng), đường dẫn nội bộ /img/... hoặc /uploads/...
+	Link   string `json:"link,omitempty"` // website của dự án (https)
 }
 
 // Shot là một ảnh giao diện hệ thống ở trang Sản phẩm (ảnh mẫu trong /hub/ hoặc ảnh tải lên /uploads/).
@@ -680,6 +682,12 @@ func cleanContent(in any) (Content, error) {
 			if pj.Desc, err = pairOf(m["desc"], 2000, "Mô tả dự án"); err != nil {
 				return out, err
 			}
+			if pj.Logo, err = cleanAssetPath(m["logo"], "Logo dự án"); err != nil {
+				return out, err
+			}
+			if pj.Link, err = cleanHTTPS(m["link"], "Website dự án"); err != nil {
+				return out, err
+			}
 			pts, _ := m["points"].([]any)
 			if len(pts) > 30 {
 				return out, bad("Mỗi dự án tối đa 30 dòng")
@@ -786,4 +794,33 @@ func cleanContent(in any) (Content, error) {
 		return out, bad("Nội dung quá lớn")
 	}
 	return out, nil
+}
+
+var (
+	assetPathRe = regexp.MustCompile(`^/(?:img|uploads|hub)/[A-Za-z0-9._/-]{1,160}$`)
+	httpsURLRe  = regexp.MustCompile(`^https://[A-Za-z0-9.-]{3,100}(?:/[A-Za-z0-9._~:/?#@!$&'()*+,;=%-]{0,200})?$`)
+)
+
+// cleanAssetPath nhận đường dẫn ảnh nội bộ (không cho địa chỉ ngoài hay "..").
+func cleanAssetPath(v any, label string) (string, error) {
+	s, _ := v.(string)
+	if s = strings.TrimSpace(s); s == "" {
+		return "", nil
+	}
+	if !assetPathRe.MatchString(s) || strings.Contains(s, "..") {
+		return "", bad("%s phải là ảnh của website (đường dẫn bắt đầu bằng /img/, /uploads/ hoặc /hub/)", label)
+	}
+	return s, nil
+}
+
+// cleanHTTPS nhận địa chỉ website https.
+func cleanHTTPS(v any, label string) (string, error) {
+	s, _ := v.(string)
+	if s = strings.TrimSpace(s); s == "" {
+		return "", nil
+	}
+	if !httpsURLRe.MatchString(s) {
+		return "", bad("%s phải là địa chỉ bắt đầu bằng https://", label)
+	}
+	return s, nil
 }

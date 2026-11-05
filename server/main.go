@@ -105,6 +105,7 @@ func serve(a *App) {
 	}()
 	a.startZalo(context.Background())
 	a.startGuard(context.Background())
+	a.ensureNewProjects(context.Background())
 	go func() { time.Sleep(20 * time.Second); a.repairTranslations(context.Background()) }()
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)

@@ -37,6 +37,7 @@ async function changeShot(i: number, e: Event) { const img = await pickImage(e);
 function moveS(i: number, d: number) { const arr = ensureShots(), j = i + d; if (j < 0 || j >= arr.length) return; [arr[i], arr[j]] = [arr[j], arr[i]] }
 function removeS(i: number) { const arr = ensureShots(); if (confirm('Gỡ ảnh "' + (arr[i].label.vi || 'chưa đặt tên') + '" khỏi trang Sản phẩm?')) arr.splice(i, 1) }
 function restoreS() { if (confirm('Khôi phục bộ ảnh giao diện mặc định? (chưa lưu cho đến khi bạn bấm Lưu)')) a.content!.product!.shots = a.cloneOf(a.defaults!.product.shots || []) }
+async function pickLogo(p: any, e: Event) { const img = await pickImage(e); if (img) p.logo = img }
 function removeP(i: number) { if (confirm('Xoá dự án "' + (prjs.value[i].name.vi || 'chưa đặt tên') + '"?')) prjs.value.splice(i, 1) }
 const uid = () => 'm' + Math.random().toString(36).slice(2, 7)
 function add() { mods.value.push({ id: uid(), code: { vi: String(mods.value.length + 1).padStart(2, '0') + ' · ', en: '' }, title: { vi: '', en: '' }, items: [{ vi: '', en: '' }] }) }
@@ -66,6 +67,11 @@ function remove(i: number) { if (confirm('Xoá nhóm "' + (mods.value[i].title.v
         <label class="f">Mô tả ngắn (một dòng)<input v-model="p.tag.vi" type="text"></label>
         <label class="f">Giải thích (Là gì)<textarea v-model="p.desc.vi" rows="4" /></label>
         <label class="f">Mã (dùng cho đường dẫn, chỉ chữ thường không dấu)<input v-model="p.id" type="text" pattern="[a-z0-9-]+"></label>
+        <details class="prjx"><summary>Logo và website của dự án (không bắt buộc)</summary>
+          <label class="f">Logo của dự án (thay cho biểu tượng)<input v-model="p.logo" type="text" placeholder="/img/3credit-icon.svg hoặc ảnh tải lên"></label>
+          <label class="btn gh sm" style="cursor:pointer;margin:6px 0">Tải logo lên<input type="file" accept="image/png,image/jpeg,image/webp" style="display:none" @change="pickLogo(p, $event)"></label>
+          <label class="f">Website của dự án<input v-model="p.link" type="url" placeholder="https://3credit.asia"></label>
+        </details>
         <div class="sub" style="margin:8px 0 0">Có gì</div>
         <div v-for="(it, k) in p.points" :key="k" style="display:flex;gap:8px;margin-top:8px"><input v-model="it.vi" type="text" style="flex:1" placeholder="Một ý"><button class="ib" type="button" title="Xoá dòng" @click="p.points.splice(k, 1)">✕</button></div>
         <button class="btn gh sm" type="button" style="margin-top:8px" @click="p.points.push({ vi: '', en: '' })">+ Thêm ý</button>

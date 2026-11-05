@@ -351,3 +351,60 @@ func TestTranslateStaleEnglish(t *testing.T) {
 		t.Fatalf("nội dung mặc định không được dịch lại: %d", d)
 	}
 }
+
+func TestEnsureNewProjects(t *testing.T) {
+	a := testApp(t)
+	ctx := context.Background()
+	c, _, _ := a.currentContent(ctx)
+	if len(c.Product.Projects) == 0 { // bản đã lưu theo mặc định cũ (4 dự án, chưa có 3Credit)
+		def, _ := loadDefaults()
+		c.Product.Projects = def.Product.Projects[:4]
+	}
+	has := func(c Content) bool {
+		for _, p := range c.Product.Projects {
+			if p.ID == "3credit" {
+				return true
+			}
+		}
+		return false
+	}
+	var keep []Project
+	for _, p := range c.Product.Projects {
+		if p.ID != "3credit" {
+			keep = append(keep, p)
+		}
+	}
+	c.Product.Projects = keep
+	if err := a.saveContent(ctx, c, "thử"); err != nil {
+		t.Fatal(err)
+	}
+	a.pool.Exec(ctx, `DELETE FROM kv WHERE key='mig_project_3credit'`)
+	a.ensureNewProjects(ctx)
+	c2, _, _ := a.currentContent(ctx)
+	if !has(c2) {
+		t.Fatal("phải tự thêm 3Credit")
+	}
+	var pj Project
+	for _, p := range c2.Product.Projects {
+		if p.ID == "3credit" {
+			pj = p
+		}
+	}
+	if pj.Logo != "/img/3credit-icon.svg" || pj.Link != "https://3credit.asia" {
+		t.Fatalf("thiếu logo, liên kết hoặc đơn vị sở hữu: %+v", pj)
+	}
+	// xoá đi thì không tự hiện lại
+	c2.Product.Projects = keep
+	a.saveContent(ctx, c2, "xoá")
+	a.ensureNewProjects(ctx)
+	if c3, _, _ := a.currentContent(ctx); has(c3) {
+		t.Fatal("đã xoá thì không được tự thêm lại")
+	}
+	// kiểm tra đầu vào: ảnh ngoài hay địa chỉ không https bị từ chối
+	if _, err := cleanAssetPath("https://evil.example/x.png", "Logo"); err == nil {
+		t.Fatal("ảnh ngoài phải bị từ chối")
+	}
+	if _, err := cleanHTTPS("javascript:alert(1)", "Web"); err == nil {
+		t.Fatal("địa chỉ không https phải bị từ chối")
+	}
+}

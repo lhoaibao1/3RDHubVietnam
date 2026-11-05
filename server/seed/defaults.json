@@ -1535,7 +1535,47 @@
       "en": "Backups, monitoring and technical support"
      }
     ]
-   }
+   },
+    {
+      "id": "3credit",
+      "icon": "workflow",
+      "logo": "/img/3credit-icon.svg",
+      "link": "https://3credit.asia",
+      "name": {
+        "vi": "3Credit",
+        "en": "3Credit"
+      },
+      "tag": {
+        "vi": "Tìm sản phẩm tài chính phù hợp, có giải thích lý do",
+        "en": "Find the financial product that fits you, with reasons"
+      },
+      "desc": {
+        "vi": "3Credit đối chiếu điều kiện công bố của ngân hàng và công ty tài chính với hồ sơ bạn tự khai, rồi đề xuất vay tiêu dùng, thẻ tín dụng hoặc vay bằng đăng ký xe. Bạn thấy rõ điều kiện nào đã khớp, điều kiện nào cần kiểm tra thêm, rồi đăng ký trên kênh chính thức của đối tác. 3Credit không phải tổ chức tín dụng và không cam kết duyệt.",
+        "en": "3Credit matches the published conditions of banks and finance companies against the profile you enter, then suggests consumer loans, credit cards or vehicle-registration loans. You see which conditions you already meet and which need checking, then apply on the partner's official channel. 3Credit is not a credit institution and does not guarantee approval."
+      },
+      "points": [
+        {
+          "vi": "Đề xuất có giải thích lý do, không cam kết duyệt",
+          "en": "Suggestions come with reasons, no approval guarantee"
+        },
+        {
+          "vi": "Đối chiếu sản phẩm của nhiều đối tác có pháp nhân rõ ràng",
+          "en": "Compares products from many partners with a clear legal entity"
+        },
+        {
+          "vi": "So sánh lãi quy ra năm (APR), hạn mức, kỳ hạn và phí",
+          "en": "Compare annual rate (APR), limit, term and fees"
+        },
+        {
+          "vi": "Không cần CCCD để xem đề xuất, không ảnh hưởng điểm tín dụng",
+          "en": "No ID card needed to see suggestions, no effect on your credit score"
+        },
+        {
+          "vi": "Đăng ký trực tiếp trên kênh chính thức của đối tác",
+          "en": "Apply directly on the partner's official channel"
+        }
+      ]
+    }
   ]
  }
 }
