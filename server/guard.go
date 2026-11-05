@@ -61,6 +61,15 @@ type gSeen struct {
 	hits  []time.Time // trong cửa sổ 1 phút
 }
 
+// gVisitor: một khách đang xem website (IP + thiết bị), chỉ giữ trong bộ nhớ tối đa 2 giờ để chủ website thấy ai đang vào và cấm khi bị tấn công.
+type gVisitor struct {
+	IP, UA, Model, DV, FP, CC, Path string
+	Views                           int
+	First, Last                     time.Time
+}
+
+const visitorKeep = 2 * time.Hour
+
 type gFP struct {
 	hits []time.Time
 	ips  map[string][]time.Time
@@ -77,6 +86,7 @@ type guard struct {
 	mu      sync.Mutex
 	dir     string
 	seen    map[string]*gSeen
+	vis     map[string]*gVisitor
 	fps     map[string]*gFP
 	cfg     guardCfg
 	cfgAt   time.Time
@@ -88,7 +98,7 @@ type guard struct {
 }
 
 func newGuard(dir string) *guard {
-	g := &guard{dir: dir, seen: map[string]*gSeen{}, fps: map[string]*gFP{}, dvs: map[string]*gDV{}, dvBans: map[string]map[string]bool{}, written: map[string]string{}}
+	g := &guard{dir: dir, seen: map[string]*gSeen{}, vis: map[string]*gVisitor{}, fps: map[string]*gFP{}, dvs: map[string]*gDV{}, dvBans: map[string]map[string]bool{}, written: map[string]string{}}
 	g.loadCF()
 	return g
 }
@@ -747,6 +757,79 @@ func (a *App) startGuard(ctx context.Context) {
 	}()
 }
 
+// guardVisit ghi nhận một lượt xem từ trình duyệt thật (tín hiệu /api/hit). Không lưu vào cơ sở dữ liệu: mất sau 2 giờ hoặc khi máy chủ khởi động lại.
+func (a *App) guardVisit(r *http.Request, ip, path string) {
+	ap, err := netip.ParseAddr(ip)
+	if err != nil {
+		return
+	}
+	ap = ap.Unmap()
+	if ap.IsLoopback() || ap.IsPrivate() || ap.IsUnspecified() {
+		return
+	}
+	var dv, model string
+	if c, err := r.Cookie("rh_dv"); err == nil && dvRe.MatchString(c.Value) {
+		dv = c.Value
+	}
+	ua := r.Header.Get("User-Agent")
+	if c, err := r.Cookie("rh_md"); err == nil && modelRe.MatchString(c.Value) {
+		model = c.Value
+	} else if m := androidModelRe.FindStringSubmatch(ua); m != nil {
+		model = m[1]
+	}
+	cc := strings.ToUpper(strings.TrimSpace(r.Header.Get("CF-IPCountry")))
+	if !ccRe.MatchString(cc) || cc == "XX" || cc == "T1" {
+		cc = ""
+	}
+	g := a.guardState()
+	now := time.Now()
+	k := ap.String() + "|" + dv
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	v := g.vis[k]
+	if v == nil {
+		if len(g.vis) >= 3000 {
+			for kk, x := range g.vis {
+				if now.Sub(x.Last) > visitorKeep {
+					delete(g.vis, kk)
+				}
+			}
+			if len(g.vis) >= 3000 { // vẫn đầy (bị bơm IP giả): bỏ bớt người cũ nhất
+				var oldK string
+				var oldT time.Time
+				for kk, x := range g.vis {
+					if oldK == "" || x.Last.Before(oldT) {
+						oldK, oldT = kk, x.Last
+					}
+				}
+				delete(g.vis, oldK)
+			}
+		}
+		v = &gVisitor{IP: ap.String(), First: now}
+		g.vis[k] = v
+	}
+	v.Views++
+	v.Last, v.UA, v.Model, v.DV, v.FP, v.CC, v.Path = now, truncate(ua, 300), model, dv, fpOf(r.Header), cc, truncate(path, 120)
+}
+
+type guardVisOut struct {
+	IP     string `json:"ip"`
+	CC     string `json:"cc"`
+	Views  int    `json:"views"`
+	First  int64  `json:"first"`
+	Last   int64  `json:"last"`
+	UA     string `json:"ua"`
+	Br     string `json:"br"`
+	OS     string `json:"os"`
+	Dev    string `json:"dev"`
+	Path   string `json:"path"`
+	FP     string `json:"fp"`
+	DV     string `json:"dv"`
+	Model  string `json:"model"`
+	CanFP  bool   `json:"can_fp"`
+	Banned bool   `json:"banned"`
+}
+
 // ---- API quản trị
 
 type guardSeenOut struct {
@@ -778,9 +861,24 @@ func (a *App) guardStatus(ctx context.Context, r *http.Request) (map[string]any,
 	for ip, s := range g.seen {
 		recent = append(recent, guardSeenOut{IP: ip, Count: s.Total, Last: s.Last.Unix(), UA: s.UA, Path: s.Path, FP: s.FP, DV: s.DV, Model: s.Model, CanFP: fpBannable(s.FP), Banned: banned["ip|"+ip] || banned["fp|"+s.FP] || (s.DV != "" && banned["dv|"+s.DV]) || (s.Model != "" && banned["model|"+s.Model])})
 	}
+	now := time.Now()
+	visitors := []guardVisOut{}
+	for k, v := range g.vis {
+		if now.Sub(v.Last) > visitorKeep {
+			delete(g.vis, k)
+			continue
+		}
+		dev, br, osn := parseUA(v.UA, 0)
+		visitors = append(visitors, guardVisOut{IP: v.IP, CC: v.CC, Views: v.Views, First: v.First.Unix(), Last: v.Last.Unix(), UA: v.UA, Br: br, OS: osn, Dev: dev, Path: v.Path, FP: v.FP, DV: v.DV, Model: v.Model, CanFP: fpBannable(v.FP),
+			Banned: banned["ip|"+v.IP] || banned["fp|"+v.FP] || (v.DV != "" && banned["dv|"+v.DV]) || (v.Model != "" && banned["model|"+v.Model]) || (v.CC != "" && banned["cc|"+v.CC])})
+	}
 	synced, syncErr := g.synced, g.syncErr
 	dirOK := g.dir != ""
 	g.mu.Unlock()
+	sort.Slice(visitors, func(i, j int) bool { return visitors[i].Last > visitors[j].Last })
+	if len(visitors) > 300 {
+		visitors = visitors[:300]
+	}
 	sort.Slice(recent, func(i, j int) bool { return recent[i].Last > recent[j].Last })
 	if len(recent) > 100 {
 		recent = recent[:100]
@@ -791,7 +889,7 @@ func (a *App) guardStatus(ctx context.Context, r *http.Request) (map[string]any,
 	if !synced.IsZero() {
 		syncedAt = synced.Unix()
 	}
-	return map[string]any{"ok": true, "config": cfg, "bans": bans, "recent": recent, "own_ip": own, "behind_cf": behindCF,
+	return map[string]any{"ok": true, "config": cfg, "bans": bans, "recent": recent, "visitors": visitors, "own_ip": own, "behind_cf": behindCF,
 		"enforce": dirOK, "synced": syncedAt, "sync_error": syncErr, "now": time.Now().Unix()}, nil
 }
 

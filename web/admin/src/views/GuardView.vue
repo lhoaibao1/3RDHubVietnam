@@ -9,7 +9,8 @@ interface Cfg { enabled: boolean; ip_strikes: number; ip_ban_min: number; fp_str
 type Kind = 'ip' | 'dv' | 'model' | 'ua' | 'cc' | 'fp'
 interface Ban { id: number; kind: Kind; value: string; label: string; reason: string; source: string; created: number; expires: number; times: number }
 interface Seen { ip: string; count: number; last: number; ua: string; path: string; fp: string; dv: string; model: string; can_fp: boolean; banned: boolean }
-interface State { config: Cfg; bans: Ban[]; recent: Seen[]; own_ip: string; behind_cf: boolean; enforce: boolean; synced: number; sync_error: string; now: number }
+interface Vis { ip: string; cc: string; views: number; first: number; last: number; ua: string; br: string; os: string; dev: string; path: string; fp: string; dv: string; model: string; can_fp: boolean; banned: boolean }
+interface State { config: Cfg; bans: Ban[]; recent: Seen[]; visitors: Vis[]; own_ip: string; behind_cf: boolean; enforce: boolean; synced: number; sync_error: string; now: number }
 
 const a = useAdmin()
 const st = ref<State | null>(null)
@@ -57,6 +58,14 @@ const ago = (t: number) => { const s = Math.max(0, (st.value?.now || Date.now() 
 const left = (b: Ban) => { if (!b.expires) return 'Vĩnh viễn'; const s = b.expires - (st.value?.now || Date.now() / 1000); return s < 90 ? 'còn ' + Math.max(1, Math.round(s)) + ' giây' : s < 5400 ? 'còn ' + Math.round(s / 60) + ' phút' : s < 172800 ? 'còn ' + Math.round(s / 3600) + ' giờ' : 'còn ' + Math.round(s / 86400) + ' ngày' }
 const short = (s: string, n = 70) => (s.length > n ? s.slice(0, n) + '…' : s)
 const browser = (fp: string) => fp.split('|')[0] || '(không có tên trình duyệt)'
+const vq = ref('')
+const vsort = ref<'last' | 'views'>('last')
+const DEVL: Record<string, string> = { mobile: 'Điện thoại', tablet: 'Máy tính bảng', desktop: 'Máy tính' }
+const visitors = computed(() => {
+  const q = vq.value.trim().toLowerCase()
+  const l = (st.value?.visitors || []).filter((v) => !q || [v.ip, v.cc, v.br, v.os, v.model, v.dv, v.ua].join(' ').toLowerCase().includes(q))
+  return [...l].sort((x, y) => (vsort.value === 'views' ? y.views - x.views || y.last - x.last : y.last - x.last))
+})
 const sortedBans = computed(() => [...(st.value?.bans || [])])
 const ph = computed(() => KINDS.find((k) => k[0] === manual.kind)![2])
 </script>
@@ -102,6 +111,36 @@ const ph = computed(() => KINDS.find((k) => k[0] === manual.kind)![2])
         <button type="button" class="btn" :disabled="busy || !manual.value.trim()" @click="addManual">Cấm</button>
       </div>
       <p class="sub gnote"><b>Về IMEI, số seri, địa chỉ MAC:</b> trình duyệt web không bao giờ cho website đọc các mã phần cứng này (Chrome, Safari, Firefox đều chặn vì lý do riêng tư), nên không có cách nào chặn theo IMEI hay số seri qua website. Thay vào đó website chặn theo <b>thiết bị</b> (mã băm từ GPU, màn hình, múi giờ, cấu hình máy, cộng model Android: kẻ tấn công đổi IP hay xoá cookie vẫn bị nhận ra), <b>model máy</b> Android, <b>trình duyệt</b>, <b>IP và cả dải IP</b>, <b>quốc gia</b>, và <b>công cụ tự động</b>. Muốn chặn theo IMEI/seri thật thì phải có ứng dụng điện thoại riêng của bạn đăng nhập và gửi mã đó lên.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Khách đang truy cập <small>({{ st.visitors.length }})</small></h2>
+      <p class="sub">Những người vừa mở website trong <b>2 giờ</b> qua (chỉ tính trình duyệt thật). Mỗi dòng gồm <b>IP</b>, <b>quốc gia</b>, <b>trình duyệt</b>, <b>model máy</b> và <b>mã thiết bị</b> để bạn cấm ngay khi thấy bất thường. Dữ liệu chỉ giữ trong bộ nhớ máy chủ, tự xoá sau 2 giờ và khi khởi động lại. Dòng tô cam là người xem nhiều trang bất thường. Bot không chạy được trình duyệt sẽ không hiện ở đây mà hiện ở mục "Đang bị giới hạn" bên dưới.</p>
+      <div class="gform gvf">
+        <label class="f">Tìm<input v-model="vq" type="search" placeholder="IP, trình duyệt, model, quốc gia…" spellcheck="false"></label>
+        <label class="f">Sắp xếp<select v-model="vsort"><option value="last">Mới nhất</option><option value="views">Nhiều lượt xem nhất</option></select></label>
+      </div>
+      <p v-if="!visitors.length" class="sub"><b>Chưa có ai.</b> Khi có người mở website, họ sẽ hiện ở đây trong vài giây.</p>
+      <div v-else class="gtw">
+        <table class="gt gvt">
+          <thead><tr><th>IP</th><th>Trình duyệt, thiết bị</th><th>Lượt xem</th><th>Gần nhất</th><th></th></tr></thead>
+          <tbody>
+            <tr v-for="v in visitors" :key="v.ip + v.dv" :class="{ hot: v.views >= 60 }">
+              <td><b>{{ v.ip }}</b><small v-if="v.cc"> {{ v.cc }}</small><small v-if="v.banned" class="gbn"> đã cấm</small></td>
+              <td><span :title="v.ua">{{ v.br || 'Trình duyệt lạ' }}<template v-if="v.os"> · {{ v.os }}</template> · {{ DEVL[v.dev] || v.dev }}</span><small v-if="v.model"> · model {{ v.model }}</small><small v-if="v.dv"> · thiết bị <code>{{ v.dv.slice(0, 8) }}…</code></small><small> {{ short(v.path, 40) }}</small></td>
+              <td>{{ v.views }}</td>
+              <td>{{ ago(v.last) }}</td>
+              <td class="gact">
+                <button type="button" class="btn gh sm" :disabled="busy" @click="ban('ip', v.ip, 24, 'Cấm thủ công từ danh sách khách')">Cấm IP</button>
+                <button v-if="v.dv" type="button" class="btn gh sm" :disabled="busy" title="Cấm thiết bị này dù đổi IP hay xoá cookie" @click="ban('dv', v.dv, 24, 'Cấm thiết bị thủ công', v.model + ' ' + v.ua)">Cấm thiết bị</button>
+                <button v-if="v.model" type="button" class="btn gh sm" :disabled="busy" title="Cấm mọi máy cùng model này" @click="ban('model', v.model, 24, 'Cấm model thủ công')">Cấm model</button>
+                <button v-if="v.can_fp" type="button" class="btn gh sm" :disabled="busy" title="Cấm mọi IP dùng đúng trình duyệt này" @click="ban('fp', v.fp, 24, 'Cấm trình duyệt thủ công', v.ua)">Cấm trình duyệt</button>
+                <button v-if="v.cc && v.cc !== 'VN'" type="button" class="btn gh sm" :disabled="busy" title="Cấm cả quốc gia này (không áp dụng cho Việt Nam)" @click="ban('cc', v.cc, 24, 'Cấm quốc gia thủ công')">Cấm {{ v.cc }}</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <div class="panel">

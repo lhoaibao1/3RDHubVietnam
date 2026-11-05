@@ -165,6 +165,7 @@ func (a *App) statsHit(w http.ResponseWriter, r *http.Request) {
 	if len(cc) != 2 || cc == "XX" || cc == "T1" {
 		cc = ""
 	}
+	a.guardVisit(r, ip, path)
 	a.pool.Exec(r.Context(), `INSERT INTO stats_hits(ts,vid,path,ref,ch,cc,dev,br,os,lang) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, now.Unix(), vid, path, name, ch, cc, dev, br, osn, lang)
 	done()
 }

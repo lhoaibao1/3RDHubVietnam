@@ -216,3 +216,26 @@ func TestGuardAdminAPI(t *testing.T) {
 }
 
 func testCtx() context.Context { return context.Background() }
+
+func TestGuardVisitors(t *testing.T) {
+	a := testApp(t)
+	ck := login(t, a)
+	hit := func(ip, ua, cookie string) {
+		h := map[string]string{"User-Agent": ua, "X-Real-IP": ip, "Content-Type": "application/json", "Cookie": cookie, "CF-IPCountry": "VN"}
+		do(a, "POST", "example.vn", "/api/hit", []byte(`{"p":"/","l":"vi","w":390}`), h)
+	}
+	ua := "Mozilla/5.0 (Linux; Android 14; SM-S911B Build/UP1A) AppleWebKit/537.36 Chrome/124.0 Mobile Safari/537.36"
+	hit("203.0.113.9", ua, "rh_dv=0123456789abcdef0123")
+	hit("203.0.113.9", ua, "rh_dv=0123456789abcdef0123")
+	hit("10.1.2.3", ua, "") // IP nội bộ không ghi
+	r := do(a, "GET", cms, "/api/admin/guard", nil, map[string]string{"Cookie": ck, "X-CMS": "1", "X-Real-IP": "198.51.100.1"})
+	j := r.json(t)
+	v, _ := j["visitors"].([]any)
+	if len(v) != 1 {
+		t.Fatalf("phải có đúng 1 khách: %v", j["visitors"])
+	}
+	x := v[0].(map[string]any)
+	if x["ip"] != "203.0.113.9" || x["views"].(float64) != 2 || x["model"] != "SM-S911B" || x["dv"] != "0123456789abcdef0123" || x["cc"] != "VN" || x["br"] == "" {
+		t.Fatalf("thông tin khách: %v", x)
+	}
+}
