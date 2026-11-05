@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 )
@@ -73,8 +74,11 @@ func TestStats(t *testing.T) {
 	if ips != 0 {
 		t.Fatal("không được lưu IP hay User-Agent")
 	}
-	if strings.Contains(string(r.body), "1.1.1.1") {
-		t.Fatal("thống kê không được lộ IP")
+	// số liệu thống kê vẫn ẩn danh; IP chỉ nằm riêng trong "visitors" (lịch sử bảo mật, chỉ chủ website xem)
+	sj := r.json(t)
+	delete(sj, "visitors")
+	if rest, _ := json.Marshal(sj); strings.Contains(string(rest), "1.1.1.1") {
+		t.Fatal("số liệu thống kê (ngoài danh sách khách) không được lộ IP")
 	}
 	if do(a, "GET", cms, "/api/admin/stats", nil, nil).code != 401 {
 		t.Fatal("phải đăng nhập")

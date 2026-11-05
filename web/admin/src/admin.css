@@ -372,3 +372,9 @@ html::-webkit-scrollbar,body::-webkit-scrollbar{display:none;width:0;height:0}
 .gvf{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr) auto;align-items:end}
 @media(max-width:700px){.gvf{grid-template-columns:1fr}}
 .gvt td:first-child{white-space:nowrap}
+
+.vtw{overflow-x:auto}.vt{width:100%;border-collapse:collapse;font-size:14px}
+.vt th{text-align:left;font-weight:800;font-size:12px;letter-spacing:.04em;color:var(--ink2);padding:8px 10px;border-bottom:1px solid var(--line)}
+.vt td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.vt td:first-child{white-space:nowrap}.vt small{color:var(--ink2)}.vt .bnn{color:#C0392B;font-weight:800}
+.vt tr.bn td{opacity:.6}

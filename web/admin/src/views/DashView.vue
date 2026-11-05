@@ -12,6 +12,7 @@ interface S {
   series: Pt[]; pages: C[]; sources: C[]; countries: C[]; devices: C[]; browsers: C[]; os: C[]; langs: C[]
   leads_by_status: Record<string, number>; needs: C[]
   recent_leads: { id: number; ts: number; name: string; need: string; status: string }[]
+  visitors: { ip: string; cc: string; br: string; os: string; dev: string; model: string; dv: string; views: number; days: number; last: number; path: string; banned: boolean }[]
   guard: { bans: number; limited_1h: number; enforce: boolean }
   system: { smtp: boolean; zalo: boolean; cf: boolean; content_updated: number }
 }
@@ -159,6 +160,19 @@ const stLabel = (v: string) => STATUS.find((x) => x[0] === v)?.[1] || v
         <h3 class="sh">Ngôn ngữ</h3><div v-for="r in bars(s.langs)" :key="r.k" class="brow"><span class="bl">{{ r.k === 'vi' ? 'Tiếng Việt' : r.k === 'en' ? 'English' : r.k || 'Không rõ' }}</span><span class="bt"><i class="c1" :style="{ width: r.w + '%' }"></i></span><b>{{ n0(r.n) }}</b></div></div>
       <div class="panel"><h3>Quốc gia</h3><p v-if="!s.countries.length" class="sub">Chưa có dữ liệu. Cần bật Cloudflare phía trước để biết quốc gia.</p>
         <div v-for="r in countries" :key="r.k" class="brow"><span class="bl">{{ r.k }}</span><span class="bt"><i class="c1" :style="{ width: r.w + '%' }"></i></span><b>{{ n0(r.n) }}</b></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="phead"><h3>Khách truy cập gần đây</h3><button type="button" class="btn gh sm" @click="a.go('guard')">Xem tất cả và cấm</button></div>
+      <p v-if="!s.visitors.length" class="sub">Chưa có lịch sử. Khi có người mở website, IP, trình duyệt và model máy sẽ hiện ở đây.</p>
+      <div v-else class="vtw"><table class="vt">
+        <thead><tr><th>IP</th><th>Trình duyệt, thiết bị</th><th>Lượt xem</th><th>Gần nhất</th></tr></thead>
+        <tbody><tr v-for="v in s.visitors" :key="v.ip + v.dv" :class="{ bn: v.banned }">
+          <td><b>{{ v.ip }}</b><small v-if="v.cc"> {{ v.cc }}</small><small v-if="v.banned" class="bnn"> đã cấm</small></td>
+          <td>{{ v.br || 'Trình duyệt lạ' }}<template v-if="v.os"> · {{ v.os }}</template><small v-if="v.model"> · {{ v.model }}</small><small v-if="v.dv"> · <code>{{ v.dv.slice(0, 8) }}</code></small></td>
+          <td>{{ v.views }}<small v-if="v.days > 1"> · {{ v.days }} ngày</small></td>
+          <td>{{ ago(v.last) }}</td>
+        </tr></tbody></table></div>
     </div>
 
     <div class="g2c">

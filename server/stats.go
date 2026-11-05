@@ -321,8 +321,14 @@ func (a *App) statsAdmin(ctx context.Context, r *http.Request) (map[string]any, 
 	smtp := a.loadSMTP(ctx)
 	_, upd, _ := a.currentContent(ctx)
 
+	a.guardFlush(ctx)
+	visitors, _ := a.guardVisitsQuery(ctx, days, "", "last")
+	if len(visitors) > 12 {
+		visitors = visitors[:12]
+	}
 	return map[string]any{
-		"ok": true, "days": days, "now": now.Unix(), "from": from, "hourly": hourly, "tracking_since_hits": totalHits,
+		"visitors": visitors,
+		"ok":       true, "days": days, "now": now.Unix(), "from": from, "hourly": hourly, "tracking_since_hits": totalHits,
 		"totals":          map[string]any{"views": views, "visitors": vis, "leads": leads, "prev_views": pviews, "prev_visitors": pvis, "prev_leads": pleads, "online": online},
 		"series":          series,
 		"pages":           a.statTop(ctx, "path", from, to, 8),
