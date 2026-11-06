@@ -21,7 +21,7 @@ p{margin:0}a{color:inherit}img{display:block;max-width:100%}button{font:inherit;
 
 .nav{position:fixed;z-index:50;top:calc(env(safe-area-inset-top,0px) + 14px);left:50%;transform:translateX(-50%);width:min(1200px,calc(100% - 2 * max(16px,env(safe-area-inset-left,0px))));display:flex;align-items:center;gap:22px;padding:8px 8px 8px 18px;border-radius:999px;background:color-mix(in srgb,var(--card) 96%,transparent);box-shadow:0 10px 30px -18px rgba(30,30,60,.35)}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
-.brand .hd{height:26px;width:auto;color:var(--ink)}.brand .bn{font-weight:900;font-size:19px;letter-spacing:-.02em;color:var(--ink);line-height:1}.brand .bn i{font-style:normal;color:var(--or);margin-left:4px}
+.brand .hd{height:22px;width:auto;color:var(--ink)}.brand .bn{font-weight:900;font-size:19px;letter-spacing:-.02em;color:var(--ink);line-height:1}.brand .bn i{font-style:normal;color:var(--or);margin-left:4px}
 .nav nav{display:flex;gap:22px;margin-left:auto;font-size:15px;font-weight:700}
 .nav nav a{text-decoration:none;color:var(--ink2)}.nav nav a:hover{color:var(--ink)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border-radius:999px;font:800 15.5px var(--f);text-decoration:none;border:0;transition:transform .2s,background .2s}
@@ -176,7 +176,7 @@ form input:focus,form textarea:focus{outline:none;border-color:var(--or)}
 @media(max-width:900px){.contact{grid-template-columns:1fr}.two{grid-template-columns:1fr}}
 @media(max-width:900px){
   .nav{gap:8px;padding:6px 6px 6px 12px;top:calc(env(safe-area-inset-top,0px) + 10px)}
-  .brand{gap:7px}.brand .hd{height:22px}.brand .bn{font-size:16px}
+  .brand{gap:7px}.brand .hd{height:19px}.brand .bn{font-size:16px}
   .nav .btn{padding:9px 14px;font-size:13px;white-space:nowrap}
   .node,.node.core{max-width:none;width:100%}
   .contact{padding:26px 18px;border-radius:28px;gap:28px}
@@ -211,7 +211,7 @@ form input:focus,form textarea:focus{outline:none;border-color:var(--or)}
 .fqi{position:sticky;top:100px}
 .fqi p{color:var(--ink2);margin-top:16px;max-width:26em}
 .fqc{display:flex;align-items:center;gap:14px;margin-top:26px;background:var(--card);border-radius:20px;padding:14px 18px;width:max-content;max-width:100%}
-.fqc img,.fqc .hd{height:30px;width:auto;color:var(--ink)}.fqc small{display:block;color:var(--ink2);font-size:12.5px;font-weight:700}.fqc b{font-size:18px;font-weight:900}
+.fqc img,.fqc .hd{height:26px;width:auto;color:var(--ink)}.fqc small{display:block;color:var(--ink2);font-size:12.5px;font-weight:700}.fqc b{font-size:18px;font-weight:900}
 .faq .fq{margin-top:0;max-width:none;gap:0;border-top:1.5px solid var(--line)}
 .faq .fq details{background:none;border-radius:0;padding:0;border-bottom:1.5px solid var(--line);transition:background .3s}
 .faq .fq summary{padding:24px 4px;font-size:19px;font-weight:800;transition:color .25s}
@@ -564,7 +564,7 @@ footer.ft2 a:hover{color:#fff}
 .ft2 .w{padding-inline:max(16px,calc((100vw - 1200px)/2));max-width:none;margin:0}
 .ftg{display:grid;grid-template-columns:minmax(0,1.45fr) repeat(2,minmax(0,.75fr)) minmax(0,1.35fr);gap:40px;position:relative}
 .ftl{display:inline-flex;margin-bottom:16px}.ftl .hd{color:#fff}
-.ftl .hd{height:28px;width:auto}.ftl .bn{font-weight:900;font-size:19px;letter-spacing:-.02em;color:#fff;line-height:1}
+.ftl .hd{height:24px;width:auto}.ftl .bn{font-weight:900;font-size:19px;letter-spacing:-.02em;color:#fff;line-height:1}
 .ftd{max-width:34em;line-height:1.7;margin:0}
 .ftquick{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
 .ftquick a{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);font-weight:800;font-size:14px;transition:background .25s,transform .25s;overflow-wrap:anywhere}
@@ -867,10 +867,10 @@ a,button,summary,label{-webkit-tap-highlight-color:transparent;touch-action:mani
 .pi.pl img{display:block;height:56px;width:auto;max-width:100%}
 [data-theme="dark"] .pi.pl{background:#fff;padding:8px 14px;border-radius:16px}
 /* chân trang: logo 3RDHub Vietnam, bên dưới góc phải là "Powered by" + logo 3RDVN (cùng bố cục logo đối tác) */
-.ftlock{display:flex;flex-direction:column;align-items:flex-end;width:max-content;max-width:100%;gap:8px;margin-bottom:16px}
+.ftlock{display:flex;flex-direction:column;align-items:flex-end;width:max-content;max-width:100%;gap:0;margin-bottom:16px}
 .ftlock .ftl{margin:0}
 .ftby{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;letter-spacing:.01em;color:rgba(255,255,255,.78);text-decoration:none}
-.ftby img{display:block;height:28px;width:auto}
+.ftby img{display:block;height:26px;width:auto}
 a.ftby:hover{color:#fff}
 .prj .pi.pl img{height:44px}
 .pi.pl{justify-self:start}
