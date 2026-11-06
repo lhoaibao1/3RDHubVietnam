@@ -35,8 +35,10 @@ const top = () => scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-moti
     <div class="ftbg" aria-hidden="true"><i class="o1"></i><i class="o2"></i><i class="o3"></i><span>3RDHub</span></div>
     <div class="w ftg">
       <div class="ftb">
-        <RouterLink class="brand ftl" to="/" aria-label="3RDHub Vietnam"><BrandMark /></RouterLink>
-        <a class="ftby" :href="site.S('parent_url') || 'https://3rdvn.io.vn'" target="_blank" rel="noopener"><span data-nl>Powered by</span><img src="/img/3rdvn-logo.png" alt="3RDVN" width="38" height="23" loading="lazy"></a>
+        <div class="ftlock">
+          <RouterLink class="brand ftl" to="/" aria-label="3RDHub Vietnam"><BrandMark /></RouterLink>
+          <a class="ftby" :href="site.S('parent_url') || 'https://3rdvn.io.vn'" target="_blank" rel="noopener"><span data-nl>Powered by</span><img src="/img/3rdvn-logo.png" alt="3RDVN" width="48" height="28" loading="lazy"></a>
+        </div>
         <p class="ftd">Nền tảng tiếp thị liên kết kết nối Advertiser tài chính với mạng lưới publisher. Mỗi lượt bấm, mỗi hồ sơ và mỗi đồng hoa hồng đều được ghi nhận.</p>
         <div class="ftquick">
           <a :href="'tel:' + site.S('hotline_tel')"><Icon name="phone" />{{ site.S('hotline') }}</a>

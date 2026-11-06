@@ -866,11 +866,12 @@ a,button,summary,label{-webkit-tap-highlight-color:transparent;touch-action:mani
 .pi.pl{width:auto;height:auto;background:none;box-shadow:none;border-radius:0;display:block}
 .pi.pl img{display:block;height:56px;width:auto;max-width:100%}
 [data-theme="dark"] .pi.pl{background:#fff;padding:8px 14px;border-radius:16px}
-/* dòng "Một sản phẩm của 3RDVN" dưới tên thương hiệu ở chân trang: nhỏ, logo trắng trên nền tối */
-.ftby{display:flex;width:max-content;align-items:center;gap:8px;margin:-6px 0 14px;font-size:12px;font-weight:700;letter-spacing:.02em;color:rgba(255,255,255,.62);text-decoration:none}
-.ftby img{display:block;height:23px;width:auto;opacity:.95}
-.ftby b{font-weight:900;color:rgba(255,255,255,.9);letter-spacing:.04em}
-a.ftby:hover b,a.ftby:hover{color:#fff}
+/* chân trang: logo 3RDHub Vietnam, bên dưới góc phải là "Powered by" + logo 3RDVN (cùng bố cục logo đối tác) */
+.ftlock{display:flex;flex-direction:column;align-items:flex-end;width:max-content;max-width:100%;gap:8px;margin-bottom:16px}
+.ftlock .ftl{margin:0}
+.ftby{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;letter-spacing:.01em;color:rgba(255,255,255,.78);text-decoration:none}
+.ftby img{display:block;height:28px;width:auto}
+a.ftby:hover{color:#fff}
 .prj .pi.pl img{height:44px}
 .pi.pl{justify-self:start}
 
