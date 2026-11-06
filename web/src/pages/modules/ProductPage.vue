@@ -51,7 +51,7 @@ function jump(id: string) { document.getElementById('pj-' + id)?.scrollIntoView(
       <a v-for="(p, i) in site.projects" :key="p.id" class="cd prj" :href="'#pj-' + p.id" @click.prevent="jump(p.id)">
         <span class="pi" :class="{ pl: p.logo }"><img v-if="p.logo" :src="p.logo" :alt="site.pick(p.name)" height="56" loading="lazy"><Icon v-else :name="p.icon" /></span>
         <span class="pn">{{ num(i) }}</span>
-        <h3>{{ site.pick(p.name) }}</h3>
+        <h3 :class="{ sr: p.logo }">{{ site.pick(p.name) }}</h3>
         <p>{{ site.pick(p.tag) }}</p>
         <span class="more">Xem chi tiết →</span>
       </a>
@@ -59,9 +59,9 @@ function jump(id: string) { document.getElementById('pj-' + id)?.scrollIntoView(
 
   <template v-for="(p, i) in site.projects" :key="p.id">
     <div :id="'pj-' + p.id" class="ps pjd" data-cms="product">
-      <div class="pjh">
+      <div class="pjh" :class="{ lg: p.logo }">
         <span class="pi" :class="{ pl: p.logo }"><img v-if="p.logo" :src="p.logo" :alt="site.pick(p.name)" height="56" loading="lazy"><Icon v-else :name="p.icon" /></span>
-        <div><div class="k2">{{ num(i) }} / {{ site.pick(p.tag) }}</div><h2>{{ site.pick(p.name) }}</h2></div>
+        <div><div class="k2">{{ num(i) }} / {{ site.pick(p.tag) }}</div><h2 :class="{ sr: p.logo }">{{ site.pick(p.name) }}</h2></div>
       </div>
       <div class="pjb">
         <div class="pjx"><h3>Là gì</h3><p>{{ site.pick(p.desc) }}</p>
