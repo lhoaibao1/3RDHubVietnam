@@ -877,6 +877,6 @@ a.ftby:hover b,a.ftby:hover{color:#fff}
 /* dự án có logo đầy đủ (đã gồm tên): logo thay cho biểu tượng và tên, tên chỉ để trình đọc màn hình */
 .sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 .pi.pl{width:fit-content;max-width:100%}
-.prj .pi.pl img{height:auto;width:190px;max-width:100%}
+.prj .pi.pl img{height:auto;width:150px;max-width:calc(100% - 34px)}
 .pjh.lg{flex-direction:column;align-items:flex-start;gap:14px}
 .pjh.lg .pi.pl img{height:auto;width:360px;max-width:100%}
