@@ -390,7 +390,7 @@ func TestEnsureNewProjects(t *testing.T) {
 			pj = p
 		}
 	}
-	if pj.Logo != "/img/3credit-icon.svg" || pj.Link != "https://3credit.asia" {
+	if pj.Logo != "/img/3credit-powered.webp" || pj.Link != "https://3credit.asia" {
 		t.Fatalf("thiếu logo, liên kết hoặc đơn vị sở hữu: %+v", pj)
 	}
 	// xoá đi thì không tự hiện lại

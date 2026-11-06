@@ -38,6 +38,17 @@ func (a *App) ensureNewProjects(ctx context.Context) {
 		}
 		_ = kvSetPool(ctx, a.pool, "mig_project_"+id, true)
 	}
+	// logo 3Credit đổi sang bản có dòng "Powered by 3RDVN": cập nhật một lần cho dự án đã thêm trước đó
+	var logoDone bool
+	if ok, _ := kvGet(ctx, a.pool, "mig_3credit_logo_v2", &logoDone); !ok || !logoDone {
+		for i := range c.Product.Projects {
+			if p := &c.Product.Projects[i]; p.ID == "3credit" && p.Logo == "/img/3credit-icon.svg" {
+				p.Logo = "/img/3credit-powered.webp"
+				added = append(added, p.Name.VI+" (logo)")
+			}
+		}
+		_ = kvSetPool(ctx, a.pool, "mig_3credit_logo_v2", true)
+	}
 	if len(added) == 0 {
 		return
 	}
